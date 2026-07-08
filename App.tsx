@@ -5576,8 +5576,8 @@ export default function App() {
         </View>
       ) : (
       <ScrollView ref={mainScrollRef} style={styles.mainScroll} contentContainerStyle={[styles.container, { width: mainContentWidth }]}> 
-        <Text style={styles.title}>Holton Hero Trial v0.92</Text>
-        <Text style={styles.subtitle}>手機試玩版：把真正會用的功能縮成大卡片。孩子只看：換卡、開始、完成、求救。</Text>
+        <Text style={styles.title}>Holton Hero Trial v0.93</Text>
+        <Text style={styles.subtitle}>手機試玩版：孩子端與家長端都改成大卡片操作。孩子玩任務，家長用三鍵接住卡點。</Text>
         <View style={styles.trialBanner}>
           <Text style={styles.trialBannerKicker}>TRIAL FLOW</Text>
           <Text style={styles.trialBannerTitle}>{isChildMode ? "小朋友只要找最大顆按鈕" : "家長先看接法，不用先開系統面板"}</Text>
@@ -5849,31 +5849,44 @@ export default function App() {
             {challengeSelectionConfirmed ? <Pressable style={styles.childTinyResetButton} onPress={() => { setChallengeSelectionConfirmed(false); setMessage("可以重新選今天的卡。換到喜歡的再按最大顆按鈕。"); }}><Text style={styles.childTinyResetText}>不對，換一張</Text></Pressable> : null}
           </View> : null}
 
-          {isParentMode && missionPhase === "ready" && showParentHomeModules && !showParentAssist ? <View style={styles.childEntryCard}>
-            <Text style={styles.childEntryTitle}>家長先選這次時間挑戰</Text>
-            <Text style={styles.childEntryText}>{selectedChallenge.name}</Text>
-            {selectedChallenge.imageSource ? <Image source={selectedChallenge.imageSource} style={styles.childEntryHeroImage} resizeMode="contain" /> : null}
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.secondaryButton} onPress={() => selectAdjacentReadyChallenge(-1)}><Text style={styles.secondaryButtonText}>上一個</Text></Pressable>
-              <Pressable style={styles.secondaryButton} onPress={() => selectAdjacentReadyChallenge(1)}><Text style={styles.secondaryButtonText}>下一個</Text></Pressable>
+          {isParentMode && missionPhase === "ready" && showParentHomeModules && !showParentAssist ? <View style={styles.parentMissionHeroCard}>
+            <Text style={styles.parentHeroKicker}>PARENT QUICK START</Text>
+            <Text style={styles.parentHeroTitle}>今天先陪他完成這張</Text>
+            <Text style={styles.parentHeroMission}>{selectedChallenge.name}</Text>
+            {selectedChallenge.imageSource ? <View style={styles.parentHeroImageFrame}><Image source={selectedChallenge.imageSource} style={styles.parentHeroImage} resizeMode="contain" /></View> : null}
+            <View style={styles.parentHeroRewardRow}>
+              <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>時間</Text><Text style={styles.parentHeroRewardValue}>{selectedChallenge.untimed ? "不限時" : `${selectedChallenge.minutes} 分`}</Text></View>
+              <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>獎勵</Text><Text style={styles.parentHeroRewardValue}>+{selectedChallenge.orbs}</Text></View>
+              <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>完成後</Text><Text style={styles.parentHeroRewardValue}>{orbs + selectedChallenge.orbs}</Text></View>
             </View>
-            <Text style={styles.minorHint}>先像孩子入口一樣一張一張選，決定這次要用哪種進場節奏。</Text>
-            <Text style={styles.infoText}>{selectedChallenge.untimed ? "不限時任務" : `${selectedChallenge.minutes} 分鐘`}|+{selectedChallenge.orbs} Orbs</Text>
-            <Text style={styles.sopJourneyText}>{challengeSelectionConfirmed ? "這次挑戰已確認。接下來先問 Are you ready? 等孩子說 I'm ready，再按下面的 I'm Ready。" : "選好後直接開始這次挑戰，系統會把你帶到 Are you ready? / I'm Ready 這一拍。"}</Text>
-            {challengeSelectionConfirmed ? <View style={[styles.infoBox, { backgroundColor: "#ecfeff", marginTop: 12, marginBottom: 0 }]}><Text style={styles.infoTitle}>接下來怎麼帶</Text><Text style={styles.infoText}>{"請爸爸媽媽先問孩子：Are you ready? 等孩子自己說出 I'm ready 之後，再按下面的 I'm Ready。"}</Text></View> : null}
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.primaryButton} onPress={confirmSelectedChallengeAndFocusReadyCheck}><Text style={styles.primaryButtonText}>{challengeSelectionConfirmed ? "再去問 Are you ready?" : "直接開始這次挑戰"}</Text></Pressable>
+            <Text style={styles.parentHeroGuide}>{challengeSelectionConfirmed ? "接下來只要問：Are you ready? 孩子說 ready 後，按開始。" : "先幫孩子挑一張看起來做得到的卡，不用先看下面細節。"}</Text>
+            <View style={styles.parentHeroControlRow}>
+              <Pressable style={styles.parentSmallButton} onPress={() => selectAdjacentReadyChallenge(-1)}><Text style={styles.parentSmallButtonText}>← 換卡</Text></Pressable>
+              <Pressable style={styles.parentSmallButton} onPress={() => selectAdjacentReadyChallenge(1)}><Text style={styles.parentSmallButtonText}>換卡 →</Text></Pressable>
+            </View>
+            <Pressable style={styles.parentBigStartButton} onPress={confirmSelectedChallengeAndFocusReadyCheck}>
+              <Text style={styles.parentBigStartKicker}>{challengeSelectionConfirmed ? "READY CHECK" : "CHOOSE CARD"}</Text>
+              <Text style={styles.parentBigStartText}>{challengeSelectionConfirmed ? "開始帶這一輪" : "選這張，準備開始"}</Text>
+            </Pressable>
+          </View> : null}
+
+          {isParentMode && showParentHomeModules && !showParentAssist ? <View style={styles.parentQuickActionCard}>
+            <Text style={styles.parentQuickActionKicker}>家長常用 3 鍵</Text>
+            <View style={styles.parentQuickActionGrid}>
+              <Pressable style={styles.parentQuickActionButton} onPress={() => { setShowParentHomeModules(true); setShowHomeDetails(true); setShowParentAssist(true); setSelectedSupportScenario("start"); setSelectedSupportVariant(null); setMessage("先看『不想開始』怎麼接，拿一句話把孩子帶回進場點。"); }}><Text style={styles.parentQuickActionTitle}>不想開始</Text><Text style={styles.parentQuickActionText}>拿一句起手</Text></Pressable>
+              <Pressable style={styles.parentQuickActionButton} onPress={() => { setShowParentHomeModules(true); setShowHomeDetails(true); setShowParentAssist(true); setSelectedSupportScenario("emotion"); setSelectedSupportVariant(null); setMessage("先看『情緒上來』怎麼接，先降速再回主線。"); }}><Text style={styles.parentQuickActionTitle}>情緒上來</Text><Text style={styles.parentQuickActionText}>先降速</Text></Pressable>
+              <Pressable style={styles.parentQuickActionButton} onPress={() => { setShowParentHomeModules(true); setShowHomeDetails(true); setShowParentAssist(true); setSelectedSupportScenario("stuck"); setSelectedSupportVariant("stuck_no_next_step"); setMessage("先看『卡住』怎麼接，只縮到下一步。"); }}><Text style={styles.parentQuickActionTitle}>卡住了</Text><Text style={styles.parentQuickActionText}>接下一步</Text></Pressable>
             </View>
           </View> : null}
 
           {isParentMode && showParentHomeModules && !showParentAssist ? <View style={styles.parentLayerDivider}>
-            <Text style={styles.parentLayerDividerKicker}>家長再看</Text>
-            <Text style={styles.parentLayerDividerText}>上面先處理帶法與操作判斷;下面再看系統細節、狀態與測試工具。</Text>
+            <Text style={styles.parentLayerDividerKicker}>下面才是細節</Text>
+            <Text style={styles.parentLayerDividerText}>先用上面的大卡片陪玩；需要判斷或測試時，再打開下面。</Text>
           </View> : null}
 
           {isParentMode && showParentHomeModules && !showParentAssist ? (
-            <Pressable style={styles.homeDetailsToggle} onPress={() => { const next = !showHomeDetails; setShowHomeDetails(next); setMessage(next ? "已打開系統 / 細節 / 狀態。" : "已先收起系統 / 細節 / 狀態。"); }}>
-              <Text style={styles.homeDetailsToggleText}>{showHomeDetails ? "先收起系統 / 細節 / 狀態" : "打開系統 / 細節 / 狀態"}</Text>
+            <Pressable style={styles.homeDetailsToggle} onPress={() => { const next = !showHomeDetails; setShowHomeDetails(next); setMessage(next ? "已打開家長細節 / 狀態 / 測試。" : "已先收起家長細節。先用上面大卡片就好。"); }}>
+              <Text style={styles.homeDetailsToggleText}>{showHomeDetails ? "收起家長細節" : "打開家長細節 / 狀態 / 測試"}</Text>
             </Pressable>
           ) : null}
 
@@ -8533,6 +8546,29 @@ const styles = StyleSheet.create({
   infoTitle: { fontSize: 18, fontWeight: "800", color: "#4338ca", marginBottom: 6 },
   infoText: { fontSize: 17, color: "#334155", lineHeight: 26 },
   parentLayerBox: { backgroundColor: "#fff7ed", borderWidth: 1, borderColor: "#fdba74" },
+  parentMissionHeroCard: { backgroundColor: "#fff7ed", borderRadius: 28, padding: 18, marginTop: 14, marginBottom: 16, marginHorizontal: 10, borderWidth: 2, borderColor: "#fb923c", shadowColor: "#f97316", shadowOpacity: 0.12, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
+  parentHeroKicker: { fontSize: 12, color: "#c2410c", fontWeight: "900", letterSpacing: 1.1 },
+  parentHeroTitle: { fontSize: 24, color: "#7c2d12", fontWeight: "900", lineHeight: 30, marginTop: 6 },
+  parentHeroMission: { fontSize: 19, color: "#0f172a", fontWeight: "900", lineHeight: 26, marginTop: 8 },
+  parentHeroImageFrame: { backgroundColor: "#ffffff", borderRadius: 24, padding: 8, marginTop: 14, borderWidth: 1, borderColor: "#fed7aa" },
+  parentHeroImage: { width: "100%", height: 390, borderRadius: 20, backgroundColor: "#ffffff" },
+  parentHeroRewardRow: { flexDirection: "row", gap: 8, marginTop: 12 },
+  parentHeroRewardChip: { flex: 1, backgroundColor: "#ffffff", borderRadius: 18, paddingVertical: 10, paddingHorizontal: 8, alignItems: "center", borderWidth: 1, borderColor: "#fed7aa" },
+  parentHeroRewardLabel: { fontSize: 11, color: "#c2410c", fontWeight: "900" },
+  parentHeroRewardValue: { fontSize: 18, color: "#7c2d12", fontWeight: "900", marginTop: 3 },
+  parentHeroGuide: { fontSize: 15, color: "#9a3412", fontWeight: "800", lineHeight: 22, marginTop: 12 },
+  parentHeroControlRow: { flexDirection: "row", gap: 10, marginTop: 14 },
+  parentSmallButton: { flex: 1, backgroundColor: "#ffffff", borderRadius: 20, paddingVertical: 14, paddingHorizontal: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#fdba74" },
+  parentSmallButtonText: { fontSize: 16, color: "#9a3412", fontWeight: "900" },
+  parentBigStartButton: { backgroundColor: "#111827", borderRadius: 28, paddingVertical: 20, paddingHorizontal: 18, alignItems: "center", justifyContent: "center", marginTop: 14, shadowColor: "#111827", shadowOpacity: 0.16, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
+  parentBigStartKicker: { fontSize: 12, color: "#cbd5e1", fontWeight: "900", letterSpacing: 1.2 },
+  parentBigStartText: { fontSize: 23, color: "#ffffff", fontWeight: "900", marginTop: 2 },
+  parentQuickActionCard: { backgroundColor: "#f8fafc", borderRadius: 24, padding: 14, marginHorizontal: 10, marginBottom: 14, borderWidth: 1, borderColor: "#e2e8f0" },
+  parentQuickActionKicker: { fontSize: 13, color: "#475569", fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 },
+  parentQuickActionGrid: { gap: 10 },
+  parentQuickActionButton: { backgroundColor: "#ffffff", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "#dbeafe" },
+  parentQuickActionTitle: { fontSize: 17, color: "#0f172a", fontWeight: "900" },
+  parentQuickActionText: { fontSize: 13, color: "#64748b", fontWeight: "800", marginTop: 4 },
   parentLayerMode: { fontSize: 18, color: "#9a3412", fontWeight: "800", marginBottom: 4 },
   parentLayerTheory: { fontSize: 12, color: "#c2410c", fontWeight: "800", marginBottom: 8, letterSpacing: 0.4 },
   nowStatusCard: { backgroundColor: "#eef2ff", borderRadius: 18, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: "#c7d2fe" },
@@ -8743,7 +8779,7 @@ const styles = StyleSheet.create({
   childEntryTaskCard: { backgroundColor: "#ffffff", borderRadius: 30, padding: 30, borderWidth: 2, borderColor: "#93c5fd", marginTop: 24, shadowColor: "#93c5fd", shadowOpacity: 0.14, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
   childCuePairRow: { flexDirection: "row", gap: 10, justifyContent: "center", marginTop: 8 },
   childEntryTaskNo: { fontSize: 15, color: "#475569", fontWeight: "800" },
-  childEntryHeroImage: { width: "100%", height: 300, borderRadius: 20, marginTop: 10, backgroundColor: "#ffffff" },
+  childEntryHeroImage: { width: "100%", height: 390, borderRadius: 20, marginTop: 10, backgroundColor: "#ffffff" },
   guardianShowcaseHeroImage: { width: "100%", height: 280, borderRadius: 22, marginBottom: 18, backgroundColor: "rgba(255,255,255,0.18)" },
   childEntryTaskHeroImage: { width: "100%", height: 520, borderRadius: 24, marginTop: 12, backgroundColor: "#ffffff" },
   childEntryTaskImage: { width: "100%", height: 120, marginTop: 10 },
@@ -8867,9 +8903,9 @@ const styles = StyleSheet.create({
   pillActive: { backgroundColor: "#111827", borderColor: "#111827" },
   pillText: { fontSize: 14, color: "#334155", fontWeight: "700", letterSpacing: 0.2 },
   pillTextActive: { color: "#fff" },
-  quickCard: { width: 300, backgroundColor: "#f8fafc", borderRadius: 22, padding: 18, marginRight: 14, borderWidth: 1, borderColor: "#e2e8f0" },
+  quickCard: { width: 330, backgroundColor: "#f8fafc", borderRadius: 22, padding: 18, marginRight: 14, borderWidth: 1, borderColor: "#e2e8f0" },
   quickCardRecommended: { borderWidth: 1.5, borderColor: "#7c3aed", backgroundColor: "#f5f3ff", shadowColor: "#7c3aed", shadowOpacity: 0.10, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
-  quickCardImage: { width: "100%", height: 170, marginBottom: 10 },
+  quickCardImage: { width: "100%", height: 230, marginBottom: 10 },
   quickCardTitle: { fontSize: 18, fontWeight: "800", color: "#0f172a", marginBottom: 6 },
   quickCardText: { fontSize: 16, color: "#475569", lineHeight: 24 },
   quickCardHint: { fontSize: 14, color: "#64748b", marginTop: 8, lineHeight: 20 },
@@ -8902,7 +8938,7 @@ const styles = StyleSheet.create({
   missionSopShowcaseCardPhone: { flexDirection: "column" },
   missionSopShowcaseMediaColumn: { width: "42%", minWidth: 118, gap: 8 },
   missionSopShowcaseMediaColumnPhone: { width: "100%", minWidth: 0 },
-  missionSopShowcaseMediaFrame: { flex: 1, minHeight: 168, backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#e2e8f0", overflow: "hidden", alignItems: "center", justifyContent: "center", padding: 6 },
+  missionSopShowcaseMediaFrame: { flex: 1, minHeight: 240, backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#e2e8f0", overflow: "hidden", alignItems: "center", justifyContent: "center", padding: 6 },
   missionSopShowcaseImage: { width: "100%", height: "100%", borderRadius: 10, backgroundColor: "#ffffff" },
   missionSopShowcaseContentColumn: { flex: 1, gap: 6 },
   missionSopShowcaseTitle: { fontSize: 16, color: "#0f172a", fontWeight: "800", lineHeight: 21 },
@@ -8970,8 +9006,8 @@ const styles = StyleSheet.create({
   missionSopActionSecondaryText: { fontSize: 12, color: "#334155", fontWeight: "800" },
   parentGuardianPanelCard: { backgroundColor: "#eef2ff", alignItems: "stretch", borderRadius: 24, borderWidth: 1.5, borderColor: "#c7d2fe", paddingTop: 16, paddingBottom: 16 },
   parentGuardianPanelKicker: { fontSize: 11, color: "#4338ca", fontWeight: "800", letterSpacing: 1, marginBottom: 6 },
-  parentGuardianPanelImageWrap: { width: "100%", height: 240, borderRadius: 20, backgroundColor: "#ffffff", overflow: "hidden", marginTop: 6, marginBottom: 14 },
-  parentGuardianPanelImage: { width: "100%", height: 280 },
+  parentGuardianPanelImageWrap: { width: "100%", height: 340, borderRadius: 20, backgroundColor: "#ffffff", overflow: "hidden", marginTop: 6, marginBottom: 14 },
+  parentGuardianPanelImage: { width: "100%", height: 360 },
   parentGuardianPanelTitle: { fontSize: 22, color: "#0f172a", fontWeight: "800", marginBottom: 8, textAlign: "center" },
   parentGuardianPanelMetaRow: { flexDirection: "row", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 12 },
   parentGuardianPanelMetaChip: { backgroundColor: "#ffffff", borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: "#c7d2fe" },
@@ -9009,7 +9045,7 @@ const styles = StyleSheet.create({
   parentAssistDetailCard: { backgroundColor: "#f8fafc", borderRadius: 18, padding: 14, borderWidth: 1, borderColor: "#e2e8f0" },
   parentAssistInnerCard: { backgroundColor: "#ffffff", borderRadius: 16, padding: 12, marginTop: 10, marginBottom: 10, borderWidth: 1, borderColor: "#e2e8f0" },
   parentAssistActionCard: { marginBottom: 0, borderColor: "#c7d2fe", backgroundColor: "#eef2ff" },
-  selectedChallengeImage: { width: "100%", height: 320, marginBottom: 14, borderRadius: 22, backgroundColor: "#ffffff" },
+  selectedChallengeImage: { width: "100%", height: 420, marginBottom: 14, borderRadius: 22, backgroundColor: "#ffffff" },
   timerMission: { fontSize: 30, fontWeight: "700", color: "#0f172a" },
   timerNote: { fontSize: 18, color: "#64748b", marginTop: 6, marginBottom: 16 },
   timerValue: { fontSize: 42, fontWeight: "800", color: "#0f172a", marginBottom: 12 },
