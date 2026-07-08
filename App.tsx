@@ -5587,6 +5587,19 @@ export default function App() {
             <Text style={styles.trialStepChip}>3 完成 / 求救</Text>
           </View>
         </View>
+        <View style={styles.orbScoreHeroCard}>
+          <View style={styles.orbScoreMain}>
+            <Text style={styles.orbScoreKicker}>MY ORBS</Text>
+            <Text style={styles.orbScoreValue}>{orbs}</Text>
+            <Text style={styles.orbScoreLabel}>目前能量球</Text>
+          </View>
+          <View style={styles.orbScoreDivider} />
+          <View style={styles.orbScoreSide}>
+            <Text style={styles.orbScoreGain}>這張任務 +{selectedChallenge.orbs}</Text>
+            <Text style={styles.orbScoreAfter}>完成後會變成 {orbs + selectedChallenge.orbs}</Text>
+            <Text style={styles.orbScoreHint}>做完按「我做完了 ✅」就加分</Text>
+          </View>
+        </View>
         <View style={styles.actionFeedbackCard}>
           <Text style={styles.actionFeedbackKicker}>即時回應</Text>
           <Text style={styles.actionFeedbackText}>{message}</Text>
@@ -5809,9 +5822,13 @@ export default function App() {
             <Text style={styles.childEntryTitle}>{challengeSelectionConfirmed ? "就是這一張！" : "今天想挑戰哪一張？"}</Text>
             <Text style={styles.childEntryText}>{selectedChallenge.name}</Text>
             {selectedChallenge.imageSource ? <View style={styles.childQuestImageFrame}><Image source={selectedChallenge.imageSource} style={styles.childEntryHeroImage} resizeMode="contain" /></View> : null}
+            <View style={styles.childQuestRewardPanel}>
+              <Text style={styles.childQuestRewardKicker}>完成獎勵</Text>
+              <Text style={styles.childQuestRewardValue}>+{selectedChallenge.orbs} Orbs</Text>
+              <Text style={styles.childQuestRewardText}>現在 {orbs} 顆 → 完成後 {orbs + selectedChallenge.orbs} 顆</Text>
+            </View>
             <View style={styles.childQuestMetaRow}>
               <View style={styles.childQuestMetaChip}><Text style={styles.childQuestMetaChipText}>{selectedChallenge.untimed ? "不限時" : `${selectedChallenge.minutes} 分鐘`}</Text></View>
-              <View style={styles.childQuestMetaChip}><Text style={styles.childQuestMetaChipText}>+{selectedChallenge.orbs} Orbs</Text></View>
               <View style={styles.childQuestMetaChip}><Text style={styles.childQuestMetaChipText}>第 {readyChallengeIndex + 1}/{starterChallenges.length} 張</Text></View>
             </View>
             <View style={styles.childQuestPath}>
@@ -6621,7 +6638,12 @@ export default function App() {
             {selectedChallenge.imageSource ? <Image source={selectedChallenge.imageSource} style={styles.selectedChallengeImage} resizeMode="contain" /> : null}
             <Text style={styles.timerMission}>{selectedChallenge.name}</Text>
             <Text style={styles.timerNote}>{missionInProgress ? `先把這一輪跑完;如果要換卡,先取消或先暫停。` : selectedChallenge.cue}</Text>
-            <Text style={styles.infoText}>{selectedChallenge.untimed ? "不限時任務|+5 Orbs" : `${selectedChallenge.minutes} 分鐘|+${selectedChallenge.orbs} Orbs`}</Text>
+            <View style={styles.missionOrbPillRow}>
+              <Text style={styles.missionOrbPill}>現在 {orbs} Orbs</Text>
+              <Text style={styles.missionOrbPill}>完成 +{selectedChallenge.orbs}</Text>
+              <Text style={styles.missionOrbPillStrong}>目標 {orbs + selectedChallenge.orbs}</Text>
+            </View>
+            <Text style={styles.infoText}>{selectedChallenge.untimed ? `不限時任務|+${selectedChallenge.orbs} Orbs` : `${selectedChallenge.minutes} 分鐘|+${selectedChallenge.orbs} Orbs`}</Text>
             <Text style={styles.timerValue}>{selectedChallenge.untimed ? "不限時" : formatTime(remaining)}</Text>
             {!selectedChallenge.untimed ? <ProgressBar value={progress} color="#7c3aed" /> : null}
             {missionInProgress ? (
@@ -8573,6 +8595,16 @@ const styles = StyleSheet.create({
   trialBannerTitle: { fontSize: 17, color: "#ffffff", fontWeight: "900", lineHeight: 24, marginTop: 6 },
   trialStepRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   trialStepChip: { backgroundColor: "#1e293b", color: "#dbeafe", borderRadius: 999, paddingVertical: 8, paddingHorizontal: 10, fontSize: 12, fontWeight: "900", overflow: "hidden" },
+  orbScoreHeroCard: { flexDirection: "row", alignItems: "center", backgroundColor: "#fff7ed", borderRadius: 24, padding: 16, marginBottom: 14, borderWidth: 2, borderColor: "#fb923c", shadowColor: "#f97316", shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
+  orbScoreMain: { width: 104, alignItems: "center", justifyContent: "center" },
+  orbScoreKicker: { fontSize: 11, color: "#c2410c", fontWeight: "900", letterSpacing: 1 },
+  orbScoreValue: { fontSize: 44, color: "#9a3412", fontWeight: "900", lineHeight: 50, marginTop: 2 },
+  orbScoreLabel: { fontSize: 12, color: "#9a3412", fontWeight: "800" },
+  orbScoreDivider: { width: 1, alignSelf: "stretch", backgroundColor: "#fed7aa", marginHorizontal: 14 },
+  orbScoreSide: { flex: 1 },
+  orbScoreGain: { fontSize: 20, color: "#7c2d12", fontWeight: "900", lineHeight: 26 },
+  orbScoreAfter: { fontSize: 15, color: "#9a3412", fontWeight: "800", marginTop: 4, lineHeight: 21 },
+  orbScoreHint: { fontSize: 12, color: "#c2410c", fontWeight: "700", marginTop: 6, lineHeight: 17 },
   testingToggle: { marginTop: 12, backgroundColor: "#eef2ff", borderRadius: 14, paddingVertical: 12, alignItems: "center" },
   testingToggleText: { fontSize: 13, color: "#4338ca", fontWeight: "800" },
   testingDashboardToggle: { marginTop: 12, marginBottom: 10, backgroundColor: "#eff6ff", borderRadius: 14, paddingVertical: 12, alignItems: "center" },
@@ -8649,6 +8681,10 @@ const styles = StyleSheet.create({
   childEntryText: { fontSize: 18, fontWeight: "800", color: "#0f172a", lineHeight: 26, marginTop: 8 },
   childEntrySupportLine: { fontSize: 11, color: "#475569", lineHeight: 16, marginTop: 6 },
   childQuestImageFrame: { backgroundColor: "#ffffff", borderRadius: 24, padding: 8, marginTop: 12, borderWidth: 1, borderColor: "#c7d2fe" },
+  childQuestRewardPanel: { backgroundColor: "#fffbeb", borderRadius: 22, padding: 14, marginTop: 12, borderWidth: 2, borderColor: "#fbbf24", alignItems: "center" },
+  childQuestRewardKicker: { fontSize: 12, color: "#92400e", fontWeight: "900", letterSpacing: 1 },
+  childQuestRewardValue: { fontSize: 30, color: "#b45309", fontWeight: "900", marginTop: 4, lineHeight: 36 },
+  childQuestRewardText: { fontSize: 14, color: "#92400e", fontWeight: "800", marginTop: 4, lineHeight: 20 },
   childQuestMetaRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   childQuestMetaChip: { backgroundColor: "#ffffff", borderRadius: 999, paddingVertical: 8, paddingHorizontal: 12, borderWidth: 1, borderColor: "#c7d2fe" },
   childQuestMetaChipText: { fontSize: 13, color: "#3730a3", fontWeight: "900" },
@@ -8657,6 +8693,9 @@ const styles = StyleSheet.create({
   childQuestStepDone: { backgroundColor: "#dcfce7", borderColor: "#86efac" },
   childQuestStepNo: { fontSize: 13, color: "#334155", fontWeight: "900" },
   childQuestStepText: { fontSize: 13, color: "#334155", fontWeight: "800", marginTop: 2 },
+  missionOrbPillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10, marginBottom: 6 },
+  missionOrbPill: { backgroundColor: "#fffbeb", color: "#92400e", borderRadius: 999, paddingVertical: 8, paddingHorizontal: 11, fontSize: 12, fontWeight: "900", overflow: "hidden", borderWidth: 1, borderColor: "#fcd34d" },
+  missionOrbPillStrong: { backgroundColor: "#f97316", color: "#ffffff", borderRadius: 999, paddingVertical: 8, paddingHorizontal: 11, fontSize: 12, fontWeight: "900", overflow: "hidden" },
   childEntryVisualGrid: { gap: 18, marginTop: 20 },
   childEntryVisualCard: { borderRadius: 28, padding: 28, borderWidth: 1, overflow: "hidden" },
   childEntryVisualPrimary: { backgroundColor: "#ffffff", borderColor: "#bfdbfe" },
