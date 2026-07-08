@@ -5576,7 +5576,7 @@ export default function App() {
         </View>
       ) : (
       <ScrollView ref={mainScrollRef} style={styles.mainScroll} contentContainerStyle={[styles.container, { width: mainContentWidth }]}> 
-        <Text style={styles.title}>Holton Hero Trial v0.96</Text>
+        <Text style={styles.title}>Holton Hero Trial v0.97</Text>
         <Text style={styles.subtitle}>手機試玩版：孩子端與家長端都改成大卡片操作。孩子玩任務，家長用三鍵接住卡點。</Text>
         <View style={styles.trialBanner}>
           <Text style={styles.trialBannerKicker}>TRIAL FLOW</Text>
@@ -5854,10 +5854,20 @@ export default function App() {
             <Text style={styles.parentHeroTitle}>今天先陪他完成這張</Text>
             <Text style={styles.parentHeroMission}>{selectedChallenge.name}</Text>
             {selectedChallenge.imageSource ? <View style={styles.parentHeroImageFrame}><Image source={selectedChallenge.imageSource} style={styles.parentHeroImage} resizeMode="contain" /></View> : null}
+            <View style={styles.parentCardHowToUseBox}>
+              <Text style={styles.parentCardHowToUseKicker}>第一次用卡，照這 3 步</Text>
+              <View style={styles.parentCardUseStep}><Text style={styles.parentCardUseNo}>1</Text><Text style={styles.parentCardUseText}>先給孩子看圖：今天用這張出戰。</Text></View>
+              <View style={styles.parentCardUseStep}><Text style={styles.parentCardUseNo}>2</Text><Text style={styles.parentCardUseText}>只問一句：你想用這張挑戰嗎？</Text></View>
+              <View style={styles.parentCardUseStep}><Text style={styles.parentCardUseNo}>3</Text><Text style={styles.parentCardUseText}>孩子點頭後，按下面最大顆按鈕。</Text></View>
+            </View>
             <View style={styles.parentHeroRewardRow}>
               <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>時間</Text><Text style={styles.parentHeroRewardValue}>{selectedChallenge.untimed ? "不限時" : `${selectedChallenge.minutes} 分`}</Text></View>
               <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>獎勵</Text><Text style={styles.parentHeroRewardValue}>+{selectedChallenge.orbs}</Text></View>
               <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>完成後</Text><Text style={styles.parentHeroRewardValue}>{orbs + selectedChallenge.orbs}</Text></View>
+            </View>
+            <View style={styles.parentHeroMeaningCard}>
+              <Text style={styles.parentHeroMeaningLabel}>這張卡現在的意思</Text>
+              <Text style={styles.parentHeroMeaningText}>{challengeSelectionConfirmed ? "已經選好了。現在只剩確認孩子準備好了沒。" : "這不是設定頁，是今天要陪孩子玩的任務卡。先選一張看起來最做得到的。"}</Text>
             </View>
             <Text style={styles.parentHeroGuide}>{challengeSelectionConfirmed ? "接下來只要問：Are you ready? 孩子說 ready 後，按開始。" : "先幫孩子挑一張看起來做得到的卡，不用先看下面細節。"}</Text>
             <View style={styles.parentHeroControlRow}>
@@ -6609,6 +6619,10 @@ export default function App() {
               <View style={styles.readyGuardianMetaRow}>
                 <View style={styles.readyGuardianMetaChip}><Text style={styles.readyGuardianMetaText}>{coreGuardianStage}</Text></View>
                 <View style={styles.readyGuardianMetaChip}><Text style={styles.readyGuardianMetaText}>本週 {coreGuardianWeeklyFeed}/{coreGuardianWeeklyFeedTarget}</Text></View>
+              </View>
+              <View style={styles.readyGuardianUseBox}>
+                <Text style={styles.readyGuardianUseKicker}>這張不是收藏卡，是陪跑卡</Text>
+                <Text style={styles.readyGuardianUseText}>家長現在只要把牠當成一句話：『牠會陪你一起開始。』</Text>
               </View>
               <Text style={styles.readyGuardianText}>{missionCompanionPresenceLine}</Text>
               <Text style={styles.readyGuardianText}>現在先不要急著推進度,先讓孩子看到:牠會陪這一步一起開始。</Text>
@@ -8552,6 +8566,14 @@ const styles = StyleSheet.create({
   parentHeroMission: { fontSize: 19, color: "#0f172a", fontWeight: "900", lineHeight: 26, marginTop: 8 },
   parentHeroImageFrame: { backgroundColor: "#ffffff", borderRadius: 24, padding: 8, marginTop: 14, borderWidth: 1, borderColor: "#fed7aa" },
   parentHeroImage: { width: "100%", height: 390, borderRadius: 20, backgroundColor: "#ffffff" },
+  parentCardHowToUseBox: { backgroundColor: "#ffffff", borderRadius: 22, padding: 14, marginTop: 12, borderWidth: 1.5, borderColor: "#fdba74" },
+  parentCardHowToUseKicker: { fontSize: 13, color: "#c2410c", fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 },
+  parentCardUseStep: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 8 },
+  parentCardUseNo: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#fed7aa", color: "#7c2d12", fontSize: 15, fontWeight: "900", textAlign: "center", lineHeight: 28, overflow: "hidden" },
+  parentCardUseText: { flex: 1, fontSize: 16, color: "#7c2d12", fontWeight: "800", lineHeight: 23 },
+  parentHeroMeaningCard: { backgroundColor: "#ffedd5", borderRadius: 18, padding: 12, marginTop: 12, borderWidth: 1, borderColor: "#fdba74" },
+  parentHeroMeaningLabel: { fontSize: 12, color: "#c2410c", fontWeight: "900", letterSpacing: 0.4 },
+  parentHeroMeaningText: { fontSize: 15, color: "#7c2d12", fontWeight: "800", lineHeight: 22, marginTop: 5 },
   parentHeroRewardRow: { flexDirection: "row", gap: 8, marginTop: 12 },
   parentHeroRewardChip: { flex: 1, backgroundColor: "#ffffff", borderRadius: 18, paddingVertical: 10, paddingHorizontal: 8, alignItems: "center", borderWidth: 1, borderColor: "#fed7aa" },
   parentHeroRewardLabel: { fontSize: 11, color: "#c2410c", fontWeight: "900" },
@@ -9026,6 +9048,9 @@ const styles = StyleSheet.create({
   readyGuardianMetaChip: { backgroundColor: "#ffffff", borderRadius: 999, paddingVertical: 5, paddingHorizontal: 10, borderWidth: 1, borderColor: "#c7d2fe" },
   readyGuardianMetaText: { fontSize: 12, color: "#4338ca", fontWeight: "800" },
   readyGuardianText: { fontSize: 14, lineHeight: 21, color: "#334155", marginTop: 6 },
+  readyGuardianUseBox: { backgroundColor: "#ffffff", borderRadius: 16, padding: 12, marginTop: 10, borderWidth: 1, borderColor: "#c7d2fe" },
+  readyGuardianUseKicker: { fontSize: 12, color: "#4338ca", fontWeight: "900", letterSpacing: 0.4 },
+  readyGuardianUseText: { fontSize: 15, color: "#3730a3", fontWeight: "800", lineHeight: 22, marginTop: 5 },
   readyGuardianTapHint: { fontSize: 12, color: "#4338ca", fontWeight: "800", marginTop: 10 },
   missionActionRowTop: { marginTop: 12 },
   missionCompanionAvatarFrame: { width: "100%", height: 240, borderRadius: 22, backgroundColor: "#ffffff", overflow: "hidden", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#dbeafe" },
