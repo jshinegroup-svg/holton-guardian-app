@@ -4,6 +4,7 @@ const projectId =
   "838483da-86b0-4ca2-a79f-308b189e92ce";
 const owner = process.env.EXPO_OWNER || "jshinegroup";
 const appEnv = process.env.EXPO_PUBLIC_APP_ENV || process.env.APP_ENV || "preview";
+const webBaseUrl = process.env.EXPO_PUBLIC_BASE_URL || "";
 
 /** @type {import('expo/config').ExpoConfig} */
 const expoConfig = {
@@ -46,6 +47,9 @@ const expoConfig = {
   web: {
     output: "single",
     favicon: "./assets/images/favicon.png",
+  },
+  experiments: {
+    ...(webBaseUrl ? { baseUrl: webBaseUrl } : {}),
   },
   plugins: [
     "expo-font",
