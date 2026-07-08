@@ -5576,7 +5576,7 @@ export default function App() {
         </View>
       ) : (
       <ScrollView ref={mainScrollRef} style={styles.mainScroll} contentContainerStyle={[styles.container, { width: mainContentWidth }]}> 
-        <Text style={styles.title}>Holton Hero Trial v0.95</Text>
+        <Text style={styles.title}>Holton Hero Trial v0.96</Text>
         <Text style={styles.subtitle}>手機試玩版：孩子端與家長端都改成大卡片操作。孩子玩任務，家長用三鍵接住卡點。</Text>
         <View style={styles.trialBanner}>
           <Text style={styles.trialBannerKicker}>TRIAL FLOW</Text>
@@ -6601,8 +6601,8 @@ export default function App() {
         {(isChildMode ? missionPhase === "challenge" : (missionInProgress || ((showParentHomeModules && (missionPhase === "ready" || missionPhase === "challenge")) && !showParentAssist))) ? <View style={[styles.card, missionPhase === "challenge" && styles.cardPhaseActive]}>
           <SectionTitle title={missionInProgress ? "目前這一輪" : isChildMode ? "現在這輪" : "時間挑戰卡總覽|Holton 出戰型態"} subtitle={missionInProgress ? "開始後就先把這一輪跑完,不用再回頭重選。" : isChildMode ? "開始後就看這一張,不用再切很多設定。" : `上面先單張選,下面再看完整 ${timeChallenges.length} 張時間挑戰卡。`} />
           {!(isChildMode && missionInProgress) ? <Text style={styles.phaseHint}>{missionPhase === "challenge" ? `${selectedChallenge.name} 這一輪已經開始了。` : isChildMode ? "開始後,這裡就是你現在這一輪。" : `這裡是完整時間挑戰展示區，讓家長知道目前總共有 ${timeChallenges.length} 張可用。`}</Text> : null}
-          {isParentMode && hasCoreGuardian && missionPhase === "ready" ? <View style={[styles.readyGuardianCard, isPhoneLayout && styles.readyGuardianCardPhone]}>
-            {activeCoreGuardianPreviewImage ? <View style={[styles.readyGuardianImageFrame, isPhoneLayout && styles.readyGuardianImageFramePhone]}><Image source={activeCoreGuardianPreviewImage} style={[styles.readyGuardianImage, isPhoneLayout && styles.readyGuardianImagePhone]} resizeMode={activeCoreGuardianPreviewResizeMode} /></View> : null}
+          {isParentMode && hasCoreGuardian && missionPhase === "ready" ? <View style={styles.readyGuardianCard}>
+            {activeCoreGuardianPreviewImage ? <View style={styles.readyGuardianImageFrame}><Image source={activeCoreGuardianPreviewImage} style={styles.readyGuardianImage} resizeMode={activeCoreGuardianPreviewResizeMode} /></View> : null}
             <View style={styles.readyGuardianContent}>
               <Text style={styles.readyGuardianKicker}>READY CHECK × 本命獸</Text>
               <Text style={styles.readyGuardianTitle}>{coreGuardianName || coreGuardianBase?.name || "你的本命獸"} 先出來陪進場</Text>
@@ -6613,9 +6613,9 @@ export default function App() {
               <Text style={styles.readyGuardianText}>{missionCompanionPresenceLine}</Text>
               <Text style={styles.readyGuardianText}>現在先不要急著推進度,先讓孩子看到:牠會陪這一步一起開始。</Text>
               <Text style={styles.readyGuardianTapHint}>這裡直接進本命獸，不要先被其他 summary 卡住。</Text>
-              <View style={[styles.buttonRow, isPhoneLayout && styles.readyGuardianButtonRowPhone]}>
-                <Pressable style={[styles.secondaryButton, isPhoneLayout && styles.readyGuardianActionButtonPhone]} onPress={() => openParentGuardianPanel("已直接打開本命獸面板。先看牠，再決定要不要往下帶。")}><Text style={styles.secondaryButtonText}>直接看本命獸</Text></Pressable>
-                <Pressable style={[styles.primaryButton, isPhoneLayout && styles.readyGuardianActionButtonPhone]} onPress={() => { openParentGuardianPanel(coreGuardianWeeklyFeed === 0 ? "已打開本命獸面板。現在先餵第 1 顆，讓陪跑感真的出來。" : "已打開本命獸面板。現在先餵 1 顆，再看牠怎麼陪這一步。"); feedCoreGuardian(); }}><Text style={styles.primaryButtonText}>{coreGuardianWeeklyFeed === 0 ? "先餵第 1 顆" : "先餵 1 顆"}</Text></Pressable>
+              <View style={styles.readyGuardianButtonRow}>
+                <Pressable style={[styles.secondaryButton, styles.readyGuardianActionButton]} onPress={() => openParentGuardianPanel("已直接打開本命獸面板。先看牠，再決定要不要往下帶。")}><Text style={styles.secondaryButtonText}>直接看本命獸</Text></Pressable>
+                <Pressable style={[styles.primaryButton, styles.readyGuardianActionButton]} onPress={() => { openParentGuardianPanel(coreGuardianWeeklyFeed === 0 ? "已打開本命獸面板。現在先餵第 1 顆，讓陪跑感真的出來。" : "已打開本命獸面板。現在先餵 1 顆，再看牠怎麼陪這一步。"); feedCoreGuardian(); }}><Text style={styles.primaryButtonText}>{coreGuardianWeeklyFeed === 0 ? "先餵第 1 顆" : "先餵 1 顆"}</Text></Pressable>
               </View>
             </View>
           </View> : null}
@@ -6676,8 +6676,8 @@ export default function App() {
                 </View>
               </>
             ) : null}
-            {hasCoreGuardian ? <View style={[styles.missionCompanionBar, isPhoneLayout && styles.missionCompanionBarPhone]}>
-              {activeCoreGuardianPreviewImage ? <View style={[styles.missionCompanionAvatarFrame, isPhoneLayout && styles.missionCompanionAvatarFramePhone]}><Image source={activeCoreGuardianPreviewImage} style={[styles.missionCompanionAvatar, isPhoneLayout && styles.missionCompanionAvatarPhone]} resizeMode={activeCoreGuardianPreviewResizeMode} /></View> : null}
+            {hasCoreGuardian ? <View style={styles.missionCompanionBar}>
+              {activeCoreGuardianPreviewImage ? <View style={styles.missionCompanionAvatarFrame}><Image source={activeCoreGuardianPreviewImage} style={styles.missionCompanionAvatar} resizeMode={activeCoreGuardianPreviewResizeMode} /></View> : null}
               <View style={styles.missionCompanionContent}>
                 <Text style={styles.missionCompanionKicker}>MISSION COMPANION</Text>
                 <Text style={styles.missionCompanionName}>{coreGuardianName || coreGuardianBase?.name || "你的本命獸"}</Text>
@@ -8928,8 +8928,7 @@ const styles = StyleSheet.create({
   challengeUseHint: { fontSize: 14, color: "#7c3aed", marginTop: 8, fontWeight: "700", lineHeight: 20 },
   challengeTapHint: { fontSize: 15, color: "#334155", fontWeight: "700" },
   timerPanel: { borderRadius: 24, backgroundColor: "#eef6ff", padding: 22, marginTop: 10, borderWidth: 1, borderColor: "#bfdbfe", shadowColor: "#60a5fa", shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
-  missionCompanionBar: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12, backgroundColor: "#ffffff", borderRadius: 18, padding: 12, borderWidth: 1, borderColor: "#dbeafe" },
-  missionCompanionBarPhone: { flexDirection: "column", alignItems: "stretch", padding: 14 },
+  missionCompanionBar: { flexDirection: "column", alignItems: "stretch", gap: 12, marginTop: 12, backgroundColor: "#ffffff", borderRadius: 20, padding: 14, borderWidth: 1, borderColor: "#dbeafe" },
   missionSopCard: { marginTop: 8, backgroundColor: "#ffffff", borderRadius: 20, padding: 10, borderWidth: 1, borderColor: "#dbeafe", gap: 6 },
   missionSopKicker: { fontSize: 10, color: "#6366f1", fontWeight: "800", letterSpacing: 0.8, marginBottom: 2 },
   missionSopTitle: { fontSize: 20, color: "#0f172a", fontWeight: "800" },
@@ -9015,15 +9014,12 @@ const styles = StyleSheet.create({
   parentGuardianPanelMetaChipText: { fontSize: 12, color: "#4338ca", fontWeight: "800" },
   parentGuardianPanelBody: { fontSize: 14, color: "#334155", lineHeight: 21, marginBottom: 8, textAlign: "left" },
   parentGuardianPanelActions: { flexDirection: "column", gap: 10, marginTop: 12 },
-  readyGuardianCard: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 12, backgroundColor: "#eef2ff", borderRadius: 24, padding: 16, borderWidth: 1.5, borderColor: "#c7d2fe", shadowColor: "#6366f1", shadowOpacity: 0.08, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
-  readyGuardianCardPhone: { flexDirection: "column", alignItems: "stretch", padding: 18, gap: 14 },
-  readyGuardianImageFrame: { width: 124, height: 116, borderRadius: 20, backgroundColor: "#ffffff", overflow: "hidden", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#dbeafe" },
-  readyGuardianImageFramePhone: { width: "100%", height: 260, borderRadius: 24 },
-  readyGuardianImage: { width: 124, height: 152, backgroundColor: "#ffffff" },
-  readyGuardianImagePhone: { width: "100%", height: 310 },
+  readyGuardianCard: { flexDirection: "column", alignItems: "stretch", gap: 14, marginBottom: 12, backgroundColor: "#eef2ff", borderRadius: 24, padding: 18, borderWidth: 1.5, borderColor: "#c7d2fe", shadowColor: "#6366f1", shadowOpacity: 0.08, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  readyGuardianImageFrame: { width: "100%", height: 280, borderRadius: 24, backgroundColor: "#ffffff", overflow: "hidden", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#dbeafe" },
+  readyGuardianImage: { width: "100%", height: 330, backgroundColor: "#ffffff" },
   readyGuardianContent: { flex: 1 },
-  readyGuardianButtonRowPhone: { flexDirection: "column", gap: 10, marginTop: 14 },
-  readyGuardianActionButtonPhone: { width: "100%", minHeight: 58 },
+  readyGuardianButtonRow: { flexDirection: "column", gap: 10, marginTop: 14, alignItems: "stretch" },
+  readyGuardianActionButton: { width: "100%", minHeight: 58 },
   readyGuardianKicker: { fontSize: 12, color: "#4338ca", fontWeight: "800", letterSpacing: 0.6 },
   readyGuardianTitle: { fontSize: 20, color: "#0f172a", fontWeight: "800", marginTop: 4 },
   readyGuardianMetaRow: { flexDirection: "row", gap: 8, flexWrap: "wrap", marginTop: 8 },
@@ -9032,10 +9028,8 @@ const styles = StyleSheet.create({
   readyGuardianText: { fontSize: 14, lineHeight: 21, color: "#334155", marginTop: 6 },
   readyGuardianTapHint: { fontSize: 12, color: "#4338ca", fontWeight: "800", marginTop: 10 },
   missionActionRowTop: { marginTop: 12 },
-  missionCompanionAvatarFrame: { width: 84, height: 84, borderRadius: 18, backgroundColor: "#ffffff", overflow: "hidden", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#dbeafe" },
-  missionCompanionAvatarFramePhone: { width: "100%", height: 240, borderRadius: 22 },
-  missionCompanionAvatar: { width: 84, height: 104, backgroundColor: "#f8fafc" },
-  missionCompanionAvatarPhone: { width: "100%", height: 290 },
+  missionCompanionAvatarFrame: { width: "100%", height: 240, borderRadius: 22, backgroundColor: "#ffffff", overflow: "hidden", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#dbeafe" },
+  missionCompanionAvatar: { width: "100%", height: 290, backgroundColor: "#f8fafc" },
   missionCompanionContent: { flex: 1 },
   missionCompanionKicker: { fontSize: 11, color: "#4338ca", fontWeight: "800", letterSpacing: 0.8, marginBottom: 4 },
   missionCompanionName: { fontSize: 18, color: "#0f172a", fontWeight: "800" },
