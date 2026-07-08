@@ -148,7 +148,7 @@ export default function App() {
   const [selectedChallengeId, setSelectedChallengeId] = useState("mini-fighter");
   const [remaining, setRemaining] = useState(5 * 60);
   const [running, setRunning] = useState(false);
-  const [message, setMessage] = useState("試用版路線：先選出戰卡 → 說 Ready → 只做眼前一步；卡住就按我卡住了。");
+  const [message, setMessage] = useState("今天只做三件事：選一張 → 按開始 → 做完按完成。卡住就按求救。");
   const [challengeSelectionConfirmed, setChallengeSelectionConfirmed] = useState(false);
   const [showHomeDetails, setShowHomeDetails] = useState(false);
   const [showParentReviewPage, setShowParentReviewPage] = useState(false);
@@ -5576,14 +5576,14 @@ export default function App() {
         </View>
       ) : (
       <ScrollView ref={mainScrollRef} style={styles.mainScroll} contentContainerStyle={[styles.container, { width: mainContentWidth }]}> 
-        <Text style={styles.title}>Holton Hero Trial v0.9</Text>
-        <Text style={styles.subtitle}>試用版主線：選卡 → Ready → 任務一步一步做 → 收尾。先讓 Holton 玩得懂，再讓家長看得到怎麼接。</Text>
+        <Text style={styles.title}>Holton Hero Trial v0.91</Text>
+        <Text style={styles.subtitle}>手機試玩版：先讓 Holton 一眼知道下一個按鈕在哪裡。孩子端只留主線，家長細節放後面。</Text>
         <View style={styles.trialBanner}>
           <Text style={styles.trialBannerKicker}>TRIAL FLOW</Text>
-          <Text style={styles.trialBannerTitle}>{isChildMode ? "小朋友只看藍色主按鈕" : "家長先看接法，不用先開系統面板"}</Text>
+          <Text style={styles.trialBannerTitle}>{isChildMode ? "小朋友只要找最大顆按鈕" : "家長先看接法，不用先開系統面板"}</Text>
           <View style={styles.trialStepRow}>
-            <Text style={styles.trialStepChip}>1 選出戰卡</Text>
-            <Text style={styles.trialStepChip}>2 開始任務</Text>
+            <Text style={styles.trialStepChip}>1 選卡</Text>
+            <Text style={styles.trialStepChip}>2 開始</Text>
             <Text style={styles.trialStepChip}>3 完成 / 求救</Text>
           </View>
         </View>
@@ -5806,7 +5806,7 @@ export default function App() {
 
           {isChildMode && missionPhase === "ready" ? <View style={[styles.childEntryCard, styles.childQuestCard]}>
             <Text style={styles.childEntryKicker}>TODAY QUEST</Text>
-            <Text style={styles.childEntryTitle}>{challengeSelectionConfirmed ? "出戰卡已選好" : "先選今天的出戰卡"}</Text>
+            <Text style={styles.childEntryTitle}>{challengeSelectionConfirmed ? "就是這一張！" : "今天想挑戰哪一張？"}</Text>
             <Text style={styles.childEntryText}>{selectedChallenge.name}</Text>
             {selectedChallenge.imageSource ? <View style={styles.childQuestImageFrame}><Image source={selectedChallenge.imageSource} style={styles.childEntryHeroImage} resizeMode="contain" /></View> : null}
             <View style={styles.childQuestMetaRow}>
@@ -5816,17 +5816,17 @@ export default function App() {
             </View>
             <View style={styles.childQuestPath}>
               <View style={[styles.childQuestStep, styles.childQuestStepDone]}><Text style={styles.childQuestStepNo}>1</Text><Text style={styles.childQuestStepText}>選卡</Text></View>
-              <View style={[styles.childQuestStep, challengeSelectionConfirmed && styles.childQuestStepDone]}><Text style={styles.childQuestStepNo}>2</Text><Text style={styles.childQuestStepText}>說 Ready</Text></View>
-              <View style={styles.childQuestStep}><Text style={styles.childQuestStepNo}>3</Text><Text style={styles.childQuestStepText}>開始</Text></View>
+              <View style={[styles.childQuestStep, challengeSelectionConfirmed && styles.childQuestStepDone]}><Text style={styles.childQuestStepNo}>2</Text><Text style={styles.childQuestStepText}>開始</Text></View>
+              <View style={styles.childQuestStep}><Text style={styles.childQuestStepNo}>3</Text><Text style={styles.childQuestStepText}>完成</Text></View>
             </View>
-            <Text style={styles.sopJourneyText}>{challengeSelectionConfirmed ? "好，這張就是今天的任務。孩子說出 I'm ready 後，就直接開始。" : "左右換卡，選一張現在看起來做得到的任務。先不要看太多設定。"}</Text>
+            <Text style={styles.sopJourneyText}>{challengeSelectionConfirmed ? "準備好了就按最大顆按鈕。" : "換到喜歡的卡，再按下面最大顆按鈕。"}</Text>
             <View style={styles.buttonRow}>
               <Pressable style={styles.secondaryButton} onPress={() => selectAdjacentReadyChallenge(-1)}><Text style={styles.secondaryButtonText}>上一張</Text></Pressable>
               <Pressable style={styles.secondaryButton} onPress={() => selectAdjacentReadyChallenge(1)}><Text style={styles.secondaryButtonText}>下一張</Text></Pressable>
             </View>
             <View style={styles.buttonRow}>
-              <Pressable style={styles.primaryButton} onPress={challengeSelectionConfirmed ? () => transitionNow(transitionCards.find((item) => item.id === "im-ready") ?? transitionCards[0]) : confirmSelectedChallengeAndFocusReadyCheck}><Text style={styles.primaryButtonText}>{challengeSelectionConfirmed ? "我準備好了，開始任務" : "選這張出戰"}</Text></Pressable>
-              {challengeSelectionConfirmed ? <Pressable style={styles.secondaryButton} onPress={() => { setChallengeSelectionConfirmed(false); setMessage("可以重新選今天的出戰卡。"); }}><Text style={styles.secondaryButtonText}>我想換卡</Text></Pressable> : null}
+              <Pressable style={styles.primaryButton} onPress={challengeSelectionConfirmed ? () => transitionNow(transitionCards.find((item) => item.id === "im-ready") ?? transitionCards[0]) : confirmSelectedChallengeAndFocusReadyCheck}><Text style={styles.primaryButtonText}>{challengeSelectionConfirmed ? "開始任務 🚀" : "就選這張"}</Text></Pressable>
+              {challengeSelectionConfirmed ? <Pressable style={styles.secondaryButton} onPress={() => { setChallengeSelectionConfirmed(false); setMessage("可以重新選今天的卡。換到喜歡的再按最大顆按鈕。"); }}><Text style={styles.secondaryButtonText}>換一張</Text></Pressable> : null}
             </View>
           </View> : null}
 
@@ -6652,20 +6652,18 @@ export default function App() {
               </View>
             </View> : null}
             {missionInProgress && isChildMode ? <View style={styles.childEntryTaskCard}>
-              <Text style={styles.childEntryTaskNo}>STEP {effectiveCurrentStep + 1} / {missionSopFlowCards.length}</Text>
+              <Text style={styles.childEntryTaskNo}>第 {effectiveCurrentStep + 1} 步 / 共 {missionSopFlowCards.length} 步</Text>
               {renderChildCue("NOW", "task")}
               <Image source={childSceneImages.currentAction} style={styles.childEntryTaskHeroImage} resizeMode="cover" />
-              <Text style={styles.childEntryTaskTitle}>{activeSopCard.title}</Text>
+              <Text style={styles.childEntryTaskTitle}>現在做這個</Text>
               <Text style={styles.childEntryTaskText}>{activeSopCard.childLine}</Text>
               <View style={styles.sopJourneyBox}>
-                <Text style={styles.sopJourneyLabel}>現在只做這一步</Text>
+                <Text style={styles.sopJourneyLabel}>小任務</Text>
                 <Text style={styles.sopJourneyText}>{activeSopGoalLine}</Text>
-                <Text style={styles.sopJourneyLabel}>做完後</Text>
-                <Text style={styles.sopJourneyText}>{activeSopNextLine}</Text>
               </View>
               <View style={styles.buttonRow}>
-                <Pressable style={[styles.primaryButton, !canConfirmCurrentStep && styles.buttonDisabled]} onPress={confirmCurrentStep}><Text style={styles.primaryButtonText}>完成這步</Text></Pressable>
-                <Pressable style={styles.secondaryButton} onPress={() => { setShowParentAssist(true); setSelectedSupportScenario("stuck"); setSelectedSupportVariant("stuck_no_next_step"); setMessage(`如果卡住，就先回到 ${activeSopCard.title} 這一步，再決定要不要叫幫助卡。`); }}><Text style={styles.secondaryButtonText}>我卡住了</Text></Pressable>
+                <Pressable style={[styles.primaryButton, !canConfirmCurrentStep && styles.buttonDisabled]} onPress={confirmCurrentStep}><Text style={styles.primaryButtonText}>我做完了 ✅</Text></Pressable>
+                <Pressable style={styles.secondaryButton} onPress={() => { setShowParentAssist(true); setSelectedSupportScenario("stuck"); setSelectedSupportVariant("stuck_no_next_step"); setMessage(`卡住沒關係。先停一下，請爸爸媽媽幫忙看「${activeSopCard.title}」這一步。`); }}><Text style={styles.secondaryButtonText}>我需要幫忙</Text></Pressable>
               </View>
             </View> : null}
             {missionInProgress && isParentMode ? <View style={styles.missionSopCard}>
