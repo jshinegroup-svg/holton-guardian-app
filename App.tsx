@@ -543,6 +543,16 @@ export default function App() {
     setMessage(messageText);
   };
 
+  const startFirstPlayGuide = () => {
+    setShowParentHomeModules(true);
+    setShowHomeDetails(false);
+    setShowParentAssist(false);
+    setShowParentReviewPage(false);
+    setShowParentArchives(false);
+    setChallengeSelectionConfirmed(false);
+    setMessage(`第一次玩先不用懂規則。先把 ${selectedChallenge.name} 這張圖給 Holton 看,照著卡片上的一句話問他,再按最大顆按鈕。`);
+  };
+
   const confirmSelectedChallengeAndFocusReadyCheck = () => {
     setShowParentHomeModules(true);
     setShowHomeDetails(true);
@@ -5576,7 +5586,7 @@ export default function App() {
         </View>
       ) : (
       <ScrollView ref={mainScrollRef} style={styles.mainScroll} contentContainerStyle={[styles.container, { width: mainContentWidth }]}> 
-        <Text style={styles.title}>Holton Hero Trial v0.97</Text>
+        <Text style={styles.title}>Holton Hero Trial v0.98</Text>
         <Text style={styles.subtitle}>手機試玩版：孩子端與家長端都改成大卡片操作。孩子玩任務，家長用三鍵接住卡點。</Text>
         <View style={styles.trialBanner}>
           <Text style={styles.trialBannerKicker}>TRIAL FLOW</Text>
@@ -5849,33 +5859,46 @@ export default function App() {
             {challengeSelectionConfirmed ? <Pressable style={styles.childTinyResetButton} onPress={() => { setChallengeSelectionConfirmed(false); setMessage("可以重新選今天的卡。換到喜歡的再按最大顆按鈕。"); }}><Text style={styles.childTinyResetText}>不對，換一張</Text></Pressable> : null}
           </View> : null}
 
+          {isParentMode && missionPhase === "ready" && !missionInProgress && !showParentAssist ? <View style={styles.firstPlayGuideCard}>
+            <Text style={styles.firstPlayGuideKicker}>NEW USER MODE</Text>
+            <Text style={styles.firstPlayGuideTitle}>第一次玩，照我帶一次</Text>
+            <Text style={styles.firstPlayGuideText}>不用先懂所有卡牌。這次只做一件事：選一張卡，給 Holton 看，照念一句話，按開始。</Text>
+            <Pressable style={styles.firstPlayGuideButton} onPress={startFirstPlayGuide}>
+              <Text style={styles.firstPlayGuideButtonText}>開始第一次帶玩</Text>
+            </Pressable>
+          </View> : null}
+
           {isParentMode && missionPhase === "ready" && showParentHomeModules && !showParentAssist ? <View style={styles.parentMissionHeroCard}>
             <Text style={styles.parentHeroKicker}>PARENT QUICK START</Text>
             <Text style={styles.parentHeroTitle}>今天先陪他完成這張</Text>
             <Text style={styles.parentHeroMission}>{selectedChallenge.name}</Text>
             {selectedChallenge.imageSource ? <View style={styles.parentHeroImageFrame}><Image source={selectedChallenge.imageSource} style={styles.parentHeroImage} resizeMode="contain" /></View> : null}
+            <View style={styles.parentScriptCard}>
+              <Text style={styles.parentScriptKicker}>家長照念這一句</Text>
+              <Text style={styles.parentScriptText}>「Holton，今天我們只玩這一張。你選好了，我就陪你開始。」</Text>
+            </View>
             <View style={styles.parentCardHowToUseBox}>
               <Text style={styles.parentCardHowToUseKicker}>第一次用卡，照這 3 步</Text>
               <View style={styles.parentCardUseStep}><Text style={styles.parentCardUseNo}>1</Text><Text style={styles.parentCardUseText}>先給孩子看圖：今天用這張出戰。</Text></View>
-              <View style={styles.parentCardUseStep}><Text style={styles.parentCardUseNo}>2</Text><Text style={styles.parentCardUseText}>只問一句：你想用這張挑戰嗎？</Text></View>
+              <View style={styles.parentCardUseStep}><Text style={styles.parentCardUseNo}>2</Text><Text style={styles.parentCardUseText}>照念上面那一句，不再多解釋。</Text></View>
               <View style={styles.parentCardUseStep}><Text style={styles.parentCardUseNo}>3</Text><Text style={styles.parentCardUseText}>孩子點頭後，按下面最大顆按鈕。</Text></View>
             </View>
             <View style={styles.parentHeroRewardRow}>
               <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>時間</Text><Text style={styles.parentHeroRewardValue}>{selectedChallenge.untimed ? "不限時" : `${selectedChallenge.minutes} 分`}</Text></View>
-              <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>獎勵</Text><Text style={styles.parentHeroRewardValue}>+{selectedChallenge.orbs}</Text></View>
+              <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>能量球</Text><Text style={styles.parentHeroRewardValue}>+{selectedChallenge.orbs}</Text></View>
               <View style={styles.parentHeroRewardChip}><Text style={styles.parentHeroRewardLabel}>完成後</Text><Text style={styles.parentHeroRewardValue}>{orbs + selectedChallenge.orbs}</Text></View>
             </View>
             <View style={styles.parentHeroMeaningCard}>
               <Text style={styles.parentHeroMeaningLabel}>這張卡現在的意思</Text>
               <Text style={styles.parentHeroMeaningText}>{challengeSelectionConfirmed ? "已經選好了。現在只剩確認孩子準備好了沒。" : "這不是設定頁，是今天要陪孩子玩的任務卡。先選一張看起來最做得到的。"}</Text>
             </View>
-            <Text style={styles.parentHeroGuide}>{challengeSelectionConfirmed ? "接下來只要問：Are you ready? 孩子說 ready 後，按開始。" : "先幫孩子挑一張看起來做得到的卡，不用先看下面細節。"}</Text>
+            <Text style={styles.parentHeroGuide}>{challengeSelectionConfirmed ? "接下來只要問：準備好了嗎？孩子點頭後，按開始。" : "先幫孩子挑一張看起來做得到的卡，不用先看下面細節。"}</Text>
             <View style={styles.parentHeroControlRow}>
               <Pressable style={styles.parentSmallButton} onPress={() => selectAdjacentReadyChallenge(-1)}><Text style={styles.parentSmallButtonText}>← 換卡</Text></Pressable>
               <Pressable style={styles.parentSmallButton} onPress={() => selectAdjacentReadyChallenge(1)}><Text style={styles.parentSmallButtonText}>換卡 →</Text></Pressable>
             </View>
             <Pressable style={styles.parentBigStartButton} onPress={confirmSelectedChallengeAndFocusReadyCheck}>
-              <Text style={styles.parentBigStartKicker}>{challengeSelectionConfirmed ? "READY CHECK" : "CHOOSE CARD"}</Text>
+              <Text style={styles.parentBigStartKicker}>{challengeSelectionConfirmed ? "READY" : "CHOOSE"}</Text>
               <Text style={styles.parentBigStartText}>{challengeSelectionConfirmed ? "開始帶這一輪" : "選這張，準備開始"}</Text>
             </Pressable>
           </View> : null}
@@ -8560,12 +8583,21 @@ const styles = StyleSheet.create({
   infoTitle: { fontSize: 18, fontWeight: "800", color: "#4338ca", marginBottom: 6 },
   infoText: { fontSize: 17, color: "#334155", lineHeight: 26 },
   parentLayerBox: { backgroundColor: "#fff7ed", borderWidth: 1, borderColor: "#fdba74" },
+  firstPlayGuideCard: { backgroundColor: "#111827", borderRadius: 28, padding: 18, marginTop: 14, marginBottom: 14, marginHorizontal: 10, shadowColor: "#111827", shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
+  firstPlayGuideKicker: { fontSize: 12, color: "#fed7aa", fontWeight: "900", letterSpacing: 1.1 },
+  firstPlayGuideTitle: { fontSize: 26, color: "#ffffff", fontWeight: "900", lineHeight: 32, marginTop: 6 },
+  firstPlayGuideText: { fontSize: 16, color: "#e5e7eb", fontWeight: "800", lineHeight: 24, marginTop: 8 },
+  firstPlayGuideButton: { backgroundColor: "#f97316", borderRadius: 24, paddingVertical: 18, paddingHorizontal: 16, alignItems: "center", justifyContent: "center", marginTop: 14 },
+  firstPlayGuideButtonText: { fontSize: 20, color: "#ffffff", fontWeight: "900" },
   parentMissionHeroCard: { backgroundColor: "#fff7ed", borderRadius: 28, padding: 18, marginTop: 14, marginBottom: 16, marginHorizontal: 10, borderWidth: 2, borderColor: "#fb923c", shadowColor: "#f97316", shadowOpacity: 0.12, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
   parentHeroKicker: { fontSize: 12, color: "#c2410c", fontWeight: "900", letterSpacing: 1.1 },
   parentHeroTitle: { fontSize: 24, color: "#7c2d12", fontWeight: "900", lineHeight: 30, marginTop: 6 },
   parentHeroMission: { fontSize: 19, color: "#0f172a", fontWeight: "900", lineHeight: 26, marginTop: 8 },
   parentHeroImageFrame: { backgroundColor: "#ffffff", borderRadius: 24, padding: 8, marginTop: 14, borderWidth: 1, borderColor: "#fed7aa" },
   parentHeroImage: { width: "100%", height: 390, borderRadius: 20, backgroundColor: "#ffffff" },
+  parentScriptCard: { backgroundColor: "#111827", borderRadius: 22, padding: 16, marginTop: 12 },
+  parentScriptKicker: { fontSize: 12, color: "#fed7aa", fontWeight: "900", letterSpacing: 0.6 },
+  parentScriptText: { fontSize: 20, color: "#ffffff", fontWeight: "900", lineHeight: 29, marginTop: 8 },
   parentCardHowToUseBox: { backgroundColor: "#ffffff", borderRadius: 22, padding: 14, marginTop: 12, borderWidth: 1.5, borderColor: "#fdba74" },
   parentCardHowToUseKicker: { fontSize: 13, color: "#c2410c", fontWeight: "900", letterSpacing: 0.5, marginBottom: 10 },
   parentCardUseStep: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 8 },
