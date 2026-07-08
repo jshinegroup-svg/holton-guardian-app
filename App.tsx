@@ -5576,7 +5576,7 @@ export default function App() {
         </View>
       ) : (
       <ScrollView ref={mainScrollRef} style={styles.mainScroll} contentContainerStyle={[styles.container, { width: mainContentWidth }]}> 
-        <Text style={styles.title}>Holton Hero Trial v0.93</Text>
+        <Text style={styles.title}>Holton Hero Trial v0.94</Text>
         <Text style={styles.subtitle}>手機試玩版：孩子端與家長端都改成大卡片操作。孩子玩任務，家長用三鍵接住卡點。</Text>
         <View style={styles.trialBanner}>
           <Text style={styles.trialBannerKicker}>TRIAL FLOW</Text>
@@ -8903,9 +8903,9 @@ const styles = StyleSheet.create({
   pillActive: { backgroundColor: "#111827", borderColor: "#111827" },
   pillText: { fontSize: 14, color: "#334155", fontWeight: "700", letterSpacing: 0.2 },
   pillTextActive: { color: "#fff" },
-  quickCard: { width: 330, backgroundColor: "#f8fafc", borderRadius: 22, padding: 18, marginRight: 14, borderWidth: 1, borderColor: "#e2e8f0" },
+  quickCard: { width: 360, backgroundColor: "#f8fafc", borderRadius: 24, padding: 18, marginRight: 14, borderWidth: 1, borderColor: "#e2e8f0" },
   quickCardRecommended: { borderWidth: 1.5, borderColor: "#7c3aed", backgroundColor: "#f5f3ff", shadowColor: "#7c3aed", shadowOpacity: 0.10, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
-  quickCardImage: { width: "100%", height: 230, marginBottom: 10 },
+  quickCardImage: { width: "100%", height: 340, marginBottom: 12 },
   quickCardTitle: { fontSize: 18, fontWeight: "800", color: "#0f172a", marginBottom: 6 },
   quickCardText: { fontSize: 16, color: "#475569", lineHeight: 24 },
   quickCardHint: { fontSize: 14, color: "#64748b", marginTop: 8, lineHeight: 20 },
@@ -8938,7 +8938,7 @@ const styles = StyleSheet.create({
   missionSopShowcaseCardPhone: { flexDirection: "column" },
   missionSopShowcaseMediaColumn: { width: "42%", minWidth: 118, gap: 8 },
   missionSopShowcaseMediaColumnPhone: { width: "100%", minWidth: 0 },
-  missionSopShowcaseMediaFrame: { flex: 1, minHeight: 240, backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#e2e8f0", overflow: "hidden", alignItems: "center", justifyContent: "center", padding: 6 },
+  missionSopShowcaseMediaFrame: { flex: 1, minHeight: 320, backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#e2e8f0", overflow: "hidden", alignItems: "center", justifyContent: "center", padding: 6 },
   missionSopShowcaseImage: { width: "100%", height: "100%", borderRadius: 10, backgroundColor: "#ffffff" },
   missionSopShowcaseContentColumn: { flex: 1, gap: 6 },
   missionSopShowcaseTitle: { fontSize: 16, color: "#0f172a", fontWeight: "800", lineHeight: 21 },
@@ -8992,9 +8992,9 @@ const styles = StyleSheet.create({
   missionSopFlowIndexCurrent: { color: "#c4b5fd" },
   missionSopFlowImageWrap: { width: "100%", height: 42, borderRadius: 8, backgroundColor: "#fcfcfc", marginTop: 1, marginBottom: 1, padding: 3, borderWidth: 1, borderColor: "#f1f5f9", overflow: "hidden", opacity: 0.86 },
   missionSopFlowImage: { width: "100%", height: "100%", borderRadius: 6, backgroundColor: "#fcfcfc" },
-  missionSopFlowThumbWrap: { width: 108, borderRadius: 12, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e2e8f0", overflow: "hidden", alignItems: "center", justifyContent: "center", padding: 5 },
+  missionSopFlowThumbWrap: { width: 140, borderRadius: 12, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e2e8f0", overflow: "hidden", alignItems: "center", justifyContent: "center", padding: 5 },
   missionSopFlowThumbWrapPhone: { width: "100%" },
-  missionSopFlowThumb: { width: "100%", height: 102, borderRadius: 10, backgroundColor: "#ffffff" },
+  missionSopFlowThumb: { width: "100%", height: 190, borderRadius: 10, backgroundColor: "#ffffff" },
   missionSopFlowMiniContent: { flex: 1 },
   missionSopFlowTitle: { fontSize: 12, color: "#0f172a", fontWeight: "700", marginTop: 1, lineHeight: 15 },
   missionSopFlowText: { fontSize: 11, color: "#475569", lineHeight: 15, marginTop: 2 },
@@ -9057,7 +9057,7 @@ const styles = StyleSheet.create({
   secondaryButtonText: { color: "#3730a3", fontSize: 18, fontWeight: "800", letterSpacing: 0.2 },
   stepRail: { gap: 14 },
   stepCard: { backgroundColor: "#f8fafc", borderRadius: 24, padding: 20, borderWidth: 1, borderColor: "#e2e8f0" },
-  stepCardImage: { width: "100%", height: 260, marginBottom: 12 },
+  stepCardImage: { width: "100%", height: 360, marginBottom: 12 },
   stepCardActive: { borderWidth: 2, borderColor: "#6366f1", backgroundColor: "#eef2ff", shadowColor: "#6366f1", shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
   stepCardPast: { opacity: 0.5, backgroundColor: "#f1f5f9", borderColor: "#e2e8f0" },
   stepCardRecommended: { borderWidth: 1.5, borderColor: "#c4b5fd" },
