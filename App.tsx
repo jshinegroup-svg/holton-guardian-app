@@ -5576,15 +5576,16 @@ export default function App() {
         </View>
       ) : (
       <ScrollView ref={mainScrollRef} style={styles.mainScroll} contentContainerStyle={[styles.container, { width: mainContentWidth }]}> 
-        <Text style={styles.title}>Holton Hero Trial v0.91</Text>
-        <Text style={styles.subtitle}>手機試玩版：先讓 Holton 一眼知道下一個按鈕在哪裡。孩子端只留主線，家長細節放後面。</Text>
+        <Text style={styles.title}>Holton Hero Trial v0.92</Text>
+        <Text style={styles.subtitle}>手機試玩版：把真正會用的功能縮成大卡片。孩子只看：換卡、開始、完成、求救。</Text>
         <View style={styles.trialBanner}>
           <Text style={styles.trialBannerKicker}>TRIAL FLOW</Text>
           <Text style={styles.trialBannerTitle}>{isChildMode ? "小朋友只要找最大顆按鈕" : "家長先看接法，不用先開系統面板"}</Text>
           <View style={styles.trialStepRow}>
-            <Text style={styles.trialStepChip}>1 選卡</Text>
-            <Text style={styles.trialStepChip}>2 開始</Text>
-            <Text style={styles.trialStepChip}>3 完成 / 求救</Text>
+            <Text style={styles.trialStepChip}>換卡</Text>
+            <Text style={styles.trialStepChip}>開始</Text>
+            <Text style={styles.trialStepChip}>完成</Text>
+            <Text style={styles.trialStepChip}>求救</Text>
           </View>
         </View>
         <View style={styles.orbScoreHeroCard}>
@@ -5837,14 +5838,15 @@ export default function App() {
               <View style={styles.childQuestStep}><Text style={styles.childQuestStepNo}>3</Text><Text style={styles.childQuestStepText}>完成</Text></View>
             </View>
             <Text style={styles.sopJourneyText}>{challengeSelectionConfirmed ? "準備好了就按最大顆按鈕。" : "換到喜歡的卡，再按下面最大顆按鈕。"}</Text>
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.secondaryButton} onPress={() => selectAdjacentReadyChallenge(-1)}><Text style={styles.secondaryButtonText}>上一張</Text></Pressable>
-              <Pressable style={styles.secondaryButton} onPress={() => selectAdjacentReadyChallenge(1)}><Text style={styles.secondaryButtonText}>下一張</Text></Pressable>
+            <View style={styles.childCardControlRow}>
+              <Pressable style={styles.childSmallActionButton} onPress={() => selectAdjacentReadyChallenge(-1)}><Text style={styles.childSmallActionText}>← 換卡</Text></Pressable>
+              <Pressable style={styles.childSmallActionButton} onPress={() => selectAdjacentReadyChallenge(1)}><Text style={styles.childSmallActionText}>換卡 →</Text></Pressable>
             </View>
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.primaryButton} onPress={challengeSelectionConfirmed ? () => transitionNow(transitionCards.find((item) => item.id === "im-ready") ?? transitionCards[0]) : confirmSelectedChallengeAndFocusReadyCheck}><Text style={styles.primaryButtonText}>{challengeSelectionConfirmed ? "開始任務 🚀" : "就選這張"}</Text></Pressable>
-              {challengeSelectionConfirmed ? <Pressable style={styles.secondaryButton} onPress={() => { setChallengeSelectionConfirmed(false); setMessage("可以重新選今天的卡。換到喜歡的再按最大顆按鈕。"); }}><Text style={styles.secondaryButtonText}>換一張</Text></Pressable> : null}
-            </View>
+            <Pressable style={styles.childBigStartButton} onPress={challengeSelectionConfirmed ? () => transitionNow(transitionCards.find((item) => item.id === "im-ready") ?? transitionCards[0]) : confirmSelectedChallengeAndFocusReadyCheck}>
+              <Text style={styles.childBigStartKicker}>{challengeSelectionConfirmed ? "READY" : "CHOOSE"}</Text>
+              <Text style={styles.childBigStartText}>{challengeSelectionConfirmed ? "開始任務 🚀" : "就選這張"}</Text>
+            </Pressable>
+            {challengeSelectionConfirmed ? <Pressable style={styles.childTinyResetButton} onPress={() => { setChallengeSelectionConfirmed(false); setMessage("可以重新選今天的卡。換到喜歡的再按最大顆按鈕。"); }}><Text style={styles.childTinyResetText}>不對，換一張</Text></Pressable> : null}
           </View> : null}
 
           {isParentMode && missionPhase === "ready" && showParentHomeModules && !showParentAssist ? <View style={styles.childEntryCard}>
@@ -6683,9 +6685,16 @@ export default function App() {
                 <Text style={styles.sopJourneyLabel}>小任務</Text>
                 <Text style={styles.sopJourneyText}>{activeSopGoalLine}</Text>
               </View>
-              <View style={styles.buttonRow}>
-                <Pressable style={[styles.primaryButton, !canConfirmCurrentStep && styles.buttonDisabled]} onPress={confirmCurrentStep}><Text style={styles.primaryButtonText}>我做完了 ✅</Text></Pressable>
-                <Pressable style={styles.secondaryButton} onPress={() => { setShowParentAssist(true); setSelectedSupportScenario("stuck"); setSelectedSupportVariant("stuck_no_next_step"); setMessage(`卡住沒關係。先停一下，請爸爸媽媽幫忙看「${activeSopCard.title}」這一步。`); }}><Text style={styles.secondaryButtonText}>我需要幫忙</Text></Pressable>
+              <View style={styles.childTaskActionDock}>
+                <Pressable style={[styles.childDoneButton, !canConfirmCurrentStep && styles.buttonDisabled]} onPress={confirmCurrentStep}>
+                  <Text style={styles.childDoneKicker}>DONE</Text>
+                  <Text style={styles.childDoneText}>我做完了 ✅</Text>
+                  <Text style={styles.childDoneSubText}>拿 +{selectedChallenge.orbs} Orbs</Text>
+                </Pressable>
+                <Pressable style={styles.childHelpButton} onPress={() => { setShowParentAssist(true); setSelectedSupportScenario("stuck"); setSelectedSupportVariant("stuck_no_next_step"); setMessage(`卡住沒關係。先停一下，請爸爸媽媽幫忙看「${activeSopCard.title}」這一步。`); }}>
+                  <Text style={styles.childHelpKicker}>HELP</Text>
+                  <Text style={styles.childHelpText}>我需要幫忙</Text>
+                </Pressable>
               </View>
             </View> : null}
             {missionInProgress && isParentMode ? <View style={styles.missionSopCard}>
@@ -8693,10 +8702,26 @@ const styles = StyleSheet.create({
   childQuestStepDone: { backgroundColor: "#dcfce7", borderColor: "#86efac" },
   childQuestStepNo: { fontSize: 13, color: "#334155", fontWeight: "900" },
   childQuestStepText: { fontSize: 13, color: "#334155", fontWeight: "800", marginTop: 2 },
+  childCardControlRow: { flexDirection: "row", gap: 10, marginTop: 16 },
+  childSmallActionButton: { flex: 1, backgroundColor: "#ffffff", borderRadius: 20, paddingVertical: 14, paddingHorizontal: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#c7d2fe" },
+  childSmallActionText: { fontSize: 16, color: "#3730a3", fontWeight: "900" },
+  childBigStartButton: { backgroundColor: "#f97316", borderRadius: 28, paddingVertical: 20, paddingHorizontal: 18, alignItems: "center", justifyContent: "center", marginTop: 14, shadowColor: "#f97316", shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
+  childBigStartKicker: { fontSize: 12, color: "#ffedd5", fontWeight: "900", letterSpacing: 1.2 },
+  childBigStartText: { fontSize: 25, color: "#ffffff", fontWeight: "900", marginTop: 2 },
+  childTinyResetButton: { alignSelf: "center", marginTop: 12, paddingVertical: 8, paddingHorizontal: 12 },
+  childTinyResetText: { fontSize: 14, color: "#4338ca", fontWeight: "800" },
   missionOrbPillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10, marginBottom: 6 },
   missionOrbPill: { backgroundColor: "#fffbeb", color: "#92400e", borderRadius: 999, paddingVertical: 8, paddingHorizontal: 11, fontSize: 12, fontWeight: "900", overflow: "hidden", borderWidth: 1, borderColor: "#fcd34d" },
   missionOrbPillStrong: { backgroundColor: "#f97316", color: "#ffffff", borderRadius: 999, paddingVertical: 8, paddingHorizontal: 11, fontSize: 12, fontWeight: "900", overflow: "hidden" },
   childEntryVisualGrid: { gap: 18, marginTop: 20 },
+  childTaskActionDock: { gap: 10, marginTop: 16 },
+  childDoneButton: { backgroundColor: "#16a34a", borderRadius: 30, paddingVertical: 20, paddingHorizontal: 18, alignItems: "center", justifyContent: "center", shadowColor: "#16a34a", shadowOpacity: 0.18, shadowRadius: 12, shadowOffset: { width: 0, height: 8 }, elevation: 3 },
+  childDoneKicker: { fontSize: 12, color: "#dcfce7", fontWeight: "900", letterSpacing: 1.2 },
+  childDoneText: { fontSize: 25, color: "#ffffff", fontWeight: "900", marginTop: 2 },
+  childDoneSubText: { fontSize: 13, color: "#dcfce7", fontWeight: "800", marginTop: 4 },
+  childHelpButton: { backgroundColor: "#fff7ed", borderRadius: 24, paddingVertical: 16, paddingHorizontal: 16, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "#fdba74" },
+  childHelpKicker: { fontSize: 11, color: "#c2410c", fontWeight: "900", letterSpacing: 1.1 },
+  childHelpText: { fontSize: 19, color: "#9a3412", fontWeight: "900", marginTop: 2 },
   childEntryVisualCard: { borderRadius: 28, padding: 28, borderWidth: 1, overflow: "hidden" },
   childEntryVisualPrimary: { backgroundColor: "#ffffff", borderColor: "#bfdbfe" },
   childEntryVisualSupport: { backgroundColor: "#fff7ed", borderColor: "#fdba74" },
