@@ -42,3 +42,9 @@ Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×84
 - Completion, pending entitlement and random reveal are saved atomically to the light snapshot. Existing busy guard prevents rapid duplicate actions. Reload preserves pending and revealed rewards.
 - Passed TypeScript, component ESLint, web export, browser regression at 390×844: third/sixth rewards, daily target independent of third, simultaneous merge, goal edit guard, double clicks, refresh before/after reveal, collection and viewport overflow. Screenshots rewards.png/world-draw.png. Test harness tmp/reward-smoke.mjs uses isolated browser storage.
 - Publication verified: GitHub Pages build 28efeae succeeded; the same browser regression passed against the public URL in an isolated profile. No user browser data was accessed.
+
+## Start / finish rituals — 2026-10-18
+- User approved sequence: time card → original Task Starter-I → explicit ready/start → timed or untimed work → original Finish Line badge as cleanup card → explicit cleanup confirmation → points and world reward.
+- Added persistent preparing/finishing phases. Preparing has no deadline; finishing freezes remaining time and awards nothing until confirmation. Back controls allow reselection before start and resumption after accidental completion. Parent task edits locked throughout preparing/active/finishing. Phase transitions scroll to the task card.
+- Existing light records, balances, collection and pending draws retained without reset. Existing active tasks continue normally.
+- TypeScript, component lint, export and browser regression at 390×844 passed: preparation wait/reload, back to picker, explicit timer start, finish/reload without reward, parent edit lock, resume/help, duplicate clicks, untimed resume, third/sixth and daily draws, pending/revealed reload, no overflow. Screenshots task-starter.png and finish-line.png inspected.
