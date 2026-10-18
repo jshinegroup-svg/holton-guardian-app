@@ -15,3 +15,4 @@
 2026-10-18 actor=bot approval=user:world-exchange trigger=release-verification action=verify-pages:30a8282; pass-public-world-card-credit-receipt-and-calendar-tests
 2026-10-19 actor=bot approval=user:好的-reminder trigger=forgotten-world-exchange action=add-home-only-inline-reminder-and-taipei-day-dismissal; preserve-manual-confirmation; verify-eligible-and-excluded-states
 2026-10-19 actor=bot approval=user:reminder trigger=release-verification action=verify-pages:dca6eb9; pass-public-reminder-preview-and-dismiss-persistence-checks
+2026-10-19 actor=bot approval=user:energy-orb-art-layout trigger=wallet-visual action=reuse-original-bonus-energy-card-in-balance-panel; responsive-numeric-size; verify-320-390-and-large-balance

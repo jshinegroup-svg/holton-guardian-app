@@ -89,3 +89,8 @@ Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×84
 - No migration/reset and no automatic credit, card consumption or timer mutation. Zero/story-only and multiplier-only collections do not prompt. Preparing, active, help-paused and finishing phases never show reminder.
 - TypeScript, component lint/export and browser checks passed for eligibility, go/preview/confirm separation, daily dismissal/reload, next-day return, all excluded phases/modals, explicit exchange, daily lock, zero/multiplier-only, and 390px overflow. world-reminder.png visually inspected. Local preview server was restarted before successful browser test.
 - Public release dca6eb9 built and bundle matched. Public smoke passed: home eligibility, preview without automatic credit, later/dismiss persistence after reload and new same-day cards, next-day return, parent exclusion. Isolated test profile only.
+
+## Energy wallet artwork — 2026-10-19
+- User requested orb appearance inside the orb balance frame, leaving layout choice to implementation. Reused existing Bonus Energy original card art as left thumbnail; right large available balance and unit. Existing warm panel, task/world totals, goal and draw progress retained.
+- Visual only; no storage/reward/exchange changes. Numeric font scales with digit count because web Text auto-fit alone clipped six-digit balances.
+- TypeScript, component lint, web export passed. Browser visual checks at 390 and 320 widths: original image loaded, no page overflow, 999999 balance fits without clipping. energy-wallet-390.png inspected; screenshots use synthetic balance 28.
