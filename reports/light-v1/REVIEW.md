@@ -21,3 +21,11 @@ Status: implemented locally; not published. User selected A (retain guardian + o
 - Actual iPhone hardware not tested; public site unchanged.
 
 Screenshots: child-ready.png, child-done.png, parent.png. Example task is test data only.
+
+## Publication — 2026-10-18
+User explicitly approved 上線. Deployed to original GitHub Pages URL with base path `/holton-guardian-app`.
+- Pages commit: eab382da45a2a458637cb24e399e97b4967d6e28; GitHub status built.
+- Previous deployment d4c9f8e retained in history; old assets retained.
+- Public browser verification at 390×844: task save → start → help → resume → complete → reload; 12 imported orbs became 13 with one record, completion persisted, guardian image loaded, no horizontal overflow.
+- Automated selector for back navigation initially failed; used accessibility reference and reran complete flow successfully.
+- Test records exist only in isolated verification browser, not user's device.

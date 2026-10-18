@@ -1,1 +1,2 @@
 2026-10-18 actor=bot approval=user:A trigger=Holton-Hero-simplification action=implement-light-entry-and-component; preserve-legacy-snapshots; add-local-review-screenshots; publication=pending
+2026-10-18 actor=bot approval=user:上線 trigger=publish action=deploy-gh-pages:eab382d; verify-live-task-flow-and-persistence
