@@ -10,3 +10,4 @@
 2026-10-18 actor=bot approval=user:contextual-encouragement trigger=finish-surprise action=add-20-context-messages-and-art; preserve-round-help-and-choice; verify-stability-context-and-reward-regression; publish-original-url
 2026-10-18 actor=bot approval=user:finish-surprise trigger=release-verification action=verify-pages:3158791; pass-public-contextual-encouragement-and-reward-checks
 2026-10-18 actor=bot approval=user:original-four-help-cards trigger=help-card-picker action=connect-original-pause-rest-energy-breathe; persist-help-choice-and-rest-deadline; verify-pause-reload-rewards; publish-original-url
+2026-10-18 actor=bot approval=user:four-help-cards trigger=release-verification action=verify-pages:c3d0f16; pass-public-help-card-and-rest-expiry-regression
