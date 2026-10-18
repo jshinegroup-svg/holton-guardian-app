@@ -29,3 +29,7 @@ User explicitly approved 上線. Deployed to original GitHub Pages URL with base
 - Public browser verification at 390×844: task save → start → help → resume → complete → reload; 12 imported orbs became 13 with one record, completion persisted, guardian image loaded, no horizontal overflow.
 - Automated selector for back navigation initially failed; used accessibility reference and reran complete flow successfully.
 - Test records exist only in isolated verification browser, not user's device.
+
+## Card-first revision — 2026-10-18
+User requested original card artwork and duration selection remain visible. Added seven original time challenge cards (3/5/10/15/20/25 minutes and untimed), horizontal card picker, selected state, active-task card artwork, and optional next-round selection. Parent custom task/time remains available. Rewards remain light mode +1 per round, stated alongside cards. Optional cardId stored alongside existing state and history without resetting prior records.
+Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×844: visible card click and start uses 3 minutes; untimed selection/help/resume/reload keeps null deadline; completed history includes selected card; reward added once; no page horizontal overflow. Card screenshot inspected. Off-screen automation clicks required explicit scrollIntoView; flow passed with real clicks after scrolling.
