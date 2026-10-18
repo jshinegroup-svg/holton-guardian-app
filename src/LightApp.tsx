@@ -4,13 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loadPersistedAppState } from './lib/persistence';
 import { coreGuardianArchetypeImages, coreGuardianStageImages, timeChallenges, worldEvents, sopCards, badgeImages, guardianBeasts, supportTools, transitionCards, activeSkills } from './data/holtonCatalog';
 import { chooseFinishEncouragement, finishEncouragements, type FinishContext } from './data/finishEncouragements';
+import { planWorldRedemption, redeemWorldCards, worldExchangeDay, worldRewardLabel, type WorldDraw, type WorldRedemption } from './data/worldRedemption';
 import type { PersistedAppState } from './types/holton';
 
 const KEY = 'holton-guardian-app::light-v1';
 type RecordItem = { id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
-type WorldDraw = { id: string; reason: string; cardId?: string };
 type GuardianReceipt = { cardId: string; at: string; cost: number; source: 'legacy' | 'parent-restore' | 'sunday' };
-type State = { supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+type State = { worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
 
@@ -46,6 +46,7 @@ export default function LightApp() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [parent, setParent] = useState(false);
+  const [worldExchangeOpen, setWorldExchangeOpen] = useState(false);
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [guardianDetailId, setGuardianDetailId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
@@ -114,6 +115,14 @@ export default function LightApp() {
       return { ...s, orbs: s.orbs - card.cost, guardianCards: [...(s.guardianCards ?? []), { cardId, cost: card.cost, at: new Date().toISOString(), source: 'sunday' }] };
     });
   }
+  const exchangePlan = planWorldRedemption(state.collection ?? [], state.worldRedemptions ?? [], now);
+  const todayExchangePoints = (state.worldRedemptions ?? []).filter(item => item.day === worldExchangeDay(now)).reduce((sum, item) => sum + item.points, 0);
+  function exchangeWorldCards() {
+    void change(s => {
+      const result = redeemWorldCards(s.collection ?? [], s.worldRedemptions ?? [], Date.now());
+      return result ? { ...s, collection: result.collection, worldRedemptions: result.receipts, orbs: s.orbs + result.points } : s;
+    });
+  }
   const drawnCard = worldEvents.find(card => card.id === pending?.cardId);
   const helpCard = helpCards.find(card => card.id === state.supportCardId);
   const breakRemaining = state.breakDeadline ? Math.max(0, Math.ceil((state.breakDeadline - now) / 1000)) : 0;
@@ -168,6 +177,7 @@ export default function LightApp() {
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
     {parent ? <>
       <Text style={styles.heading}>陪他完成，不必催他加速。</Text>
+      <View style={styles.card}><Text style={styles.section}>世界卡兌換紀錄</Text><Text style={styles.body}>今天已兌換 ＋{todayExchangePoints} 點。每天最多一次，可留到明天一起換。</Text>{button('查看世界卡兌換', () => setWorldExchangeOpen(true), true)}</View>
       <View style={styles.card}><Text style={styles.section}>守護獸收藏與舊卡恢復</Text><Text style={styles.body}>目前收藏 {ownedIds.size} 張。舊版能確認的卡片會自動帶入；更換陪伴夥伴不扣點，也不改變本命獸。</Text>{button('查看守護獸收藏', () => setCollectionOpen(true), true)}
         {starterMissing.length > 0 && !state.starterRestoreAt ? <><Text style={styles.caption}>若孩子以前已兌換完五隻 Mini 初階卡，可由家長補回缺少的 {starterMissing.length} 張。只補卡，不扣點、不重複發卡。</Text>{button('補回已兌換的五隻初階卡', restoreStarters, true)}</> : <Text style={styles.caption}>初階收藏已保留，不需要重新購買。</Text>}
         <Text style={styles.caption}>星期日兌換以台北時間為準。Mini 10、Mid 20、Final 40、Legendary 60 點；每張扣完整標示點數，按階段取得，舊卡仍保留。</Text>
@@ -184,8 +194,8 @@ export default function LightApp() {
       <View style={styles.card}><Text style={styles.section}>2 · 卡住時，這樣陪他說</Text><Text style={styles.quote}>「我在這裡。我們先做最小的一步，你想自己試，還是一起做？」</Text><Text style={styles.body}>時間到了也不用扣分。先看看需要幫忙，還是多一點時間。</Text></View>
       <View style={styles.card}><Text style={styles.section}>3 · 今天完成 {today.length} 件事</Text>{today.length ? today.map(item => <View key={item.id} style={styles.record}><Text style={styles.body}>✓ {item.title}</Text><Text style={styles.caption}>{new Date(item.at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} · {durationLabel(item.minutes)}{item.cardId ? ` · ${timeChallenges.find(card => card.id === item.cardId)?.name || "任務卡"}` : ""} · ＋1 能量球{item.supportUsed?.length ? ` · ${item.supportUsed.map(id => helpCards.find(card => card.id === id)?.title).filter(Boolean).join('、')}` : item.helpUsed ? ' · 有表達求助需要' : ''}</Text></View>) : <Text style={styles.body}>今天還沒有完成紀錄，慢慢來就好。</Text>}<Text style={styles.caption}>輕量版紀錄保存在這台裝置、這個瀏覽器；舊版資料保留。</Text></View>
     </> : <>
-      <View style={styles.scorePanel} accessibilityLiveRegion="polite"><Text style={styles.section}>我的可用能量球</Text><Text style={styles.score}>✦ {state.orbs}</Text><Text style={styles.body}>今天 ＋{today.length} 顆 · 每次完成 ＋1</Text><Text style={styles.caption}>守護獸兌換已用 {(state.guardianCards ?? []).filter(item => item.source === 'sunday').reduce((sum, item) => sum + item.cost, 0)} 點</Text><Text style={styles.section}>今日任務 {today.length} / {state.dailyGoal ?? 3} {today.length >= (state.dailyGoal ?? 3) ? '✓ 全完成' : ''}</Text><Text style={styles.body}>{'● '.repeat(state.rewardProgress ?? 0)}{'○ '.repeat(3 - (state.rewardProgress ?? 0))} 再完成 {3 - (state.rewardProgress ?? 0)} 次抽世界卡</Text><Text style={styles.caption}>今天全完成也能抽卡 · 已收藏 {state.collection?.length ?? 0} 張</Text></View>
-      <View style={styles.companion}><Text style={styles.section}>{companion ? '今日守護夥伴' : '你的本命獸'}</Text><Image accessibilityLabel={companion ? `${companion.name} ${companion.label} 今日守護夥伴` : '陪伴你的本命獸'} source={companion?.image ?? guardianImage} style={companion ? styles.companionArt : styles.guardian} resizeMode="contain" /><Text style={styles.guardianName}>{companion ? `${companion.name} · ${companion.label}` : guardian.coreGuardianName || '你的本命獸'}</Text><Text style={styles.body}>我陪你，一次完成一件小事。</Text>{companion ? <Text style={styles.caption}>本命獸：{guardian.coreGuardianName || '你的本命獸'} · 身分保留</Text> : null}{button('我的守護獸收藏', () => setCollectionOpen(true), true)}</View>
+      <View style={styles.scorePanel} accessibilityLiveRegion="polite"><Text style={styles.section}>我的可用能量球</Text><Text style={styles.score}>✦ {state.orbs}</Text><Text style={styles.body}>今天任務 ＋{today.length} 顆 · 世界卡 ＋{todayExchangePoints} 顆</Text><Text style={styles.caption}>守護獸兌換已用 {(state.guardianCards ?? []).filter(item => item.source === 'sunday').reduce((sum, item) => sum + item.cost, 0)} 點</Text><Text style={styles.section}>今日任務 {today.length} / {state.dailyGoal ?? 3} {today.length >= (state.dailyGoal ?? 3) ? '✓ 全完成' : ''}</Text><Text style={styles.body}>{'● '.repeat(state.rewardProgress ?? 0)}{'○ '.repeat(3 - (state.rewardProgress ?? 0))} 再完成 {3 - (state.rewardProgress ?? 0)} 次抽世界卡</Text><Text style={styles.caption}>今天全完成也能抽卡 · 已收藏 {state.collection?.length ?? 0} 張</Text></View>
+      <View style={styles.companion}><Text style={styles.section}>{companion ? '今日守護夥伴' : '你的本命獸'}</Text><Image accessibilityLabel={companion ? `${companion.name} ${companion.label} 今日守護夥伴` : '陪伴你的本命獸'} source={companion?.image ?? guardianImage} style={companion ? styles.companionArt : styles.guardian} resizeMode="contain" /><Text style={styles.guardianName}>{companion ? `${companion.name} · ${companion.label}` : guardian.coreGuardianName || '你的本命獸'}</Text><Text style={styles.body}>我陪你，一次完成一件小事。</Text>{companion ? <Text style={styles.caption}>本命獸：{guardian.coreGuardianName || '你的本命獸'} · 身分保留</Text> : null}{button('我的守護獸收藏', () => setCollectionOpen(true), true)}{button('世界卡換點數', () => setWorldExchangeOpen(true), true)}</View>
       <View onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }} style={styles.card}><Text style={styles.caption}>{state.phase === 'ready' ? '① 選一張任務卡' : state.phase === 'preparing' ? '② 準備好再開始' : state.phase === 'active' ? '③ 一起做這件事' : state.phase === 'finishing' ? '④ 把任務收好' : '⑤ 完成了，休息一下'}</Text>{companion && ['preparing', 'active', 'finishing'].includes(state.phase) ? <View style={styles.companionRow}><Image source={companion.image} accessibilityLabel={`${companion.name} 陪你做任務`} style={styles.companionThumb} resizeMode="contain" /><Text style={styles.caption}>{companion.name} 陪你一起做</Text></View> : null}<Text style={styles.heading}>{state.phase === 'done' ? '你做到了！' : state.title || '今天想一起做什麼？'}</Text>
       {state.phase === 'ready' ? <>
         <Text style={styles.body}>{state.title ? '今天做這件事，時間由你選。' : '先想好一件小事，再選一張卡陪你完成。家長也能幫你填任務。'}</Text>
@@ -232,8 +242,25 @@ export default function LightApp() {
       </> : <><Text style={styles.section}>{finish.title}</Text><Text style={styles.quote}>你完成了，也把這一輪收好了。每一小步都值得被看見。</Text><Text style={styles.score}>＋1 ✦</Text><Text style={styles.section}>現在共有 {state.orbs} 顆能量球！</Text><Text style={styles.body}>{state.title}</Text><Text style={styles.caption}>這一輪結束了。休息一下，準備好再選卡。</Text>{button('再選一張任務卡', () => void change(s => ({ ...s, phase: 'ready', deadline: null, help: false, remaining: s.minutes * 60 })), true)}</>}
       </View>
     </>}
-      {!parent && !!state.collection?.length ? <View style={styles.card}><Text style={styles.section}>我的世界卡</Text><ScrollView horizontal contentContainerStyle={styles.deck}>{state.collection.map(item => { const card = worldEvents.find(c => c.id === item.cardId); return card ? <View key={item.id} style={styles.taskCard}><Image source={card.imageSource} accessibilityLabel={card.title} resizeMode="contain" style={styles.cardArt} /><Text style={styles.cardName}>{card.title}</Text></View> : null; })}</ScrollView></View> : null}
+      {!parent && !!state.collection?.length ? <View style={styles.card}><Text style={styles.section}>我的世界卡</Text><Text style={styles.body}>{exchangePlan.blocked ? '今天已兌換，新卡留到明天。' : `目前可換 ＋${exchangePlan.points} 能量球`}</Text>{button('查看兌換明細', () => setWorldExchangeOpen(true), true)}<ScrollView horizontal contentContainerStyle={styles.deck}>{state.collection.map(item => { const card = worldEvents.find(c => c.id === item.cardId); return card ? <View key={item.id} style={styles.taskCard}><Image source={card.imageSource} accessibilityLabel={card.title} resizeMode="contain" style={styles.cardArt} /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{item.redeemedAt ? '✓ 已兌換 · 保留收藏' : worldRewardLabel(item.cardId)}</Text></View> : null; })}</ScrollView></View> : null}
   </ScrollView>
+    <Modal visible={worldExchangeOpen && !pending} animationType="slide" onRequestClose={() => setWorldExchangeOpen(false)}><SafeAreaView style={styles.root}><ScrollView contentContainerStyle={styles.page}>
+      <Text style={styles.heading}>世界卡換點數</Text><Text style={styles.section}>✦ 可用能量球 {state.orbs}</Text>{button('回到任務', () => setWorldExchangeOpen(false), true)}
+      {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+      <View style={styles.card}><Text style={styles.section}>{exchangePlan.blocked ? '今天已兌換完成' : '這次可兌換'}</Text>
+        <Text style={styles.score}>＋{exchangePlan.blocked ? todayExchangePoints : exchangePlan.points} ✦</Text>
+        <Text style={styles.body}>{exchangePlan.blocked ? `今天世界卡已換得 ${todayExchangePoints} 點。新卡保留到明天再換，不會消失。` : `${exchangePlan.basePoints} 基本點數 × ${exchangePlan.multiplier} ＝ ${exchangePlan.points} 能量球`}</Text>
+        {exchangePlan.points === 0 && !exchangePlan.blocked ? <Text style={styles.body}>{exchangePlan.doublesWaiting ? '目前只有雙倍卡，等抽到點數卡再一起換；現在不會消耗它。' : '這批暫時沒有點數獎勵，也沒關係，故事卡仍然留在收藏裡。'}</Text> : null}
+        {exchangePlan.bases.map(item => <View key={item.id} style={styles.record}><Text style={styles.body}>{worldEvents.find(card => card.id === item.cardId)?.title}</Text><Text style={styles.caption}>{worldRewardLabel(item.cardId)}</Text></View>)}
+        {exchangePlan.double ? <Text style={styles.body}>使用 1 張 Double Mission：本批點數 ×2（加上 {exchangePlan.basePoints} 點）</Text> : null}
+        {exchangePlan.doublesWaiting ? <Text style={styles.caption}>另有 {exchangePlan.doublesWaiting} 張雙倍卡留下來，等下次有點數卡再用。</Text> : null}
+        <Text style={styles.caption}>故事卡 {exchangePlan.storyCount} 張：無點數、不扣分，留在收藏。兌換只使用上面列出的點數卡與至多一張雙倍卡。</Text>
+        {button(exchangePlan.blocked ? '今天已換過，明天再來' : `確認兌換 · ＋${exchangePlan.points} 點`, exchangeWorldCards, false, exchangePlan.blocked || exchangePlan.points === 0)}
+        <Text style={styles.caption}>台北時間每天最多一次；可以累積兩天再換，不過期。確認後加入同一個能量球餘額，星期日也能用來兌換守護獸。</Text>
+      </View>
+      <View style={styles.card}><Text style={styles.section}>世界卡點數規則</Text>{['Bonus Energy 能量卡：＋1', 'Surprise Gift 驚喜禮物：＋2', 'Future Signal 未來訊號：＋1', 'Double Mission 雙倍卡：本批點數 ×2', '其餘世界卡：故事收藏，沒有點數'].map(line => <Text key={line} style={styles.body}>{line}</Text>)}<Text style={styles.caption}>以上為本版固定兌換規則。雙倍只加倍這批點數卡，不加倍手上餘額或任務點數；每批最多一張，不連乘。兌換後卡圖仍保留，但同一張不能再次領點。</Text></View>
+      <View style={styles.card}><Text style={styles.section}>最近兌換紀錄</Text>{state.worldRedemptions?.length ? [...state.worldRedemptions].reverse().slice(0, 10).map(receipt => <View key={receipt.id} style={styles.record}><Text style={styles.section}>{receipt.day} · ＋{receipt.points} 點</Text><Text style={styles.caption}>{receipt.drawIds.length} 張卡 · {receipt.basePoints} × {receipt.multiplier}</Text>{receipt.lines.map(line => <Text key={line.drawId} style={styles.caption}>{worldEvents.find(card => card.id === line.cardId)?.title ?? '世界卡'} · ＋{line.points}</Text>)}</View>) : <Text style={styles.body}>還沒有兌換紀錄，卡片可以先慢慢累積。</Text>}</View>
+    </ScrollView></SafeAreaView></Modal>
     <Modal visible={collectionOpen && !pending} animationType="slide" onRequestClose={() => { if (guardianDetailId) setGuardianDetailId(null); else setCollectionOpen(false); }}><SafeAreaView style={styles.root}><ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.heading}>我的守護獸收藏</Text><Text style={styles.section}>✦ 可用能量球 {state.orbs}</Text>
       {button('回到任務', () => { setCollectionOpen(false); setGuardianDetailId(null); }, true)}
@@ -252,7 +279,7 @@ export default function LightApp() {
     <Modal visible={!!pending} transparent animationType="fade" onRequestClose={() => {}}><View style={styles.overlay}><ScrollView contentContainerStyle={styles.modalScroll}><View style={styles.card}>
       <Text style={styles.heading}>{drawnCard ? '你的世界卡！' : '可以抽世界卡了！'}</Text><Text style={styles.body}>{pending?.reason}</Text>
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
-      {drawnCard ? <><Image source={drawnCard.imageSource} accessibilityLabel={drawnCard.title} resizeMode="contain" style={styles.rewardArt} /><Text style={styles.section}>{drawnCard.title}</Text><Text style={styles.body}>{drawnCard.desc}</Text><Text style={styles.caption}>收藏紀念卡，不扣能量球。卡面舊版技能不影響輕量版點數。</Text>{button('收下世界卡', () => void change(s => ({ ...s, draws: (s.draws ?? []).slice(1) })))}</> : <><Text style={styles.score}>✦ ? ✦</Text><Text style={styles.body}>你的努力，帶來一張新的世界卡。</Text>{button('抽一張世界卡', () => void change(s => {
+      {drawnCard ? <><Image source={drawnCard.imageSource} accessibilityLabel={drawnCard.title} resizeMode="contain" style={styles.rewardArt} /><Text style={styles.section}>{drawnCard.title}</Text><Text style={styles.body}>{drawnCard.desc}</Text><Text style={styles.caption}>{worldRewardLabel(drawnCard.id)}。先收下，再到「世界卡換點數」結算；抽卡本身不會立刻加點。</Text>{button('收下世界卡', () => void change(s => ({ ...s, draws: (s.draws ?? []).slice(1) })))}</> : <><Text style={styles.score}>✦ ? ✦</Text><Text style={styles.body}>你的努力，帶來一張新的世界卡。</Text>{button('抽一張世界卡', () => void change(s => {
         const first = s.draws?.[0];
         if (!first || first.cardId) return s;
         const cardId = worldEvents[Math.floor(Math.random() * worldEvents.length)].id;
