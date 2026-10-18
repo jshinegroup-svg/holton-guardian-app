@@ -95,3 +95,8 @@ Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×84
 - Visual only; no storage/reward/exchange changes. Numeric font scales with digit count because web Text auto-fit alone clipped six-digit balances.
 - TypeScript, component lint, web export passed. Browser visual checks at 390 and 320 widths: original image loaded, no page overflow, 999999 balance fits without clipping. energy-wallet-390.png inspected; screenshots use synthetic balance 28.
 - Public release a66d1b5 built and bundle matched; public browser verified original image loading, 390/320 widths and six-digit balance fit using isolated synthetic data.
+
+## 2026-10-19 Energy arithmetic cards
+- User clarified supplied +5 blue / +20 gold cards represent balance addends, not changed rewards. Added read-only EnergyMath: tens plus remainder, small totals split evenly; zero/one/large totals stay exact. Native framed fallback supports arbitrary values without showing an incorrect printed denomination.
+- Added original supplied cards and built-in image_gen +6/+7/+8/+9 variants in assets/cards/energy-math/. Verified all generated numerals visually. Full generation prompt: Edit target attached blue ENERGY BOOST card; single standalone portrait 2:3; match cream paper, blue rounded border/header, glowing blue orb and typography; change ONLY bottom +5 to +N (N=6,7,8,9); keep ENERGY BOOST, artwork/layout unchanged; full uncropped counting card. Original built-in outputs retained.
+- Existing actual wallet, task rewards, world exchange multipliers and guardian prices unchanged. No quiz gate. Typecheck, component ESLint and web export passed.
