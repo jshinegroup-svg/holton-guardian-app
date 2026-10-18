@@ -101,3 +101,8 @@ Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×84
 - Added original supplied cards and built-in image_gen +6/+7/+8/+9 variants in assets/cards/energy-math/. Verified all generated numerals visually. Full generation prompt: Edit target attached blue ENERGY BOOST card; single standalone portrait 2:3; match cream paper, blue rounded border/header, glowing blue orb and typography; change ONLY bottom +5 to +N (N=6,7,8,9); keep ENERGY BOOST, artwork/layout unchanged; full uncropped counting card. Original built-in outputs retained.
 - Existing actual wallet, task rewards, world exchange multipliers and guardian prices unchanged. No quiz gate. Typecheck, component ESLint and web export passed.
 - Published Pages 8939baf (built), bundle a56ea57760e3bc84ed42f834a71b677b. Isolated public browser verified original/generated images, 320/390 widths, totals 0/1/7/10/26/27/28/29/100/105/999999, accurate equations and no wallet mutation.
+
+## 2026-10-19 Golden 40 denomination
+- User requested missing 40 card. Built-in image_gen edit of energy-20.jpg saved as assets/cards/energy-math/energy-40.png; visually confirmed +40, golden orb, teal frame and DOUBLE ENERGY heading.
+- Prompt: Edit supplied golden DOUBLE ENERGY counting card; single portrait 2:3; change ONLY bottom +20 to +40; preserve heading, cream texture, teal frame/header, golden orb, layout, typography and colors; full uncropped card. Arithmetic denomination only, not new reward rule.
+- Registered 40 image in EnergyMath; 40–49 balances now use this card. No balance/reward/storage changes. Typecheck, component ESLint and production web export passed.
