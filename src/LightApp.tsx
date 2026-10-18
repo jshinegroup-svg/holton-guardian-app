@@ -2,15 +2,28 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loadPersistedAppState } from './lib/persistence';
-import { coreGuardianArchetypeImages, coreGuardianStageImages, timeChallenges, worldEvents, sopCards, badgeImages } from './data/holtonCatalog';
+import { coreGuardianArchetypeImages, coreGuardianStageImages, timeChallenges, worldEvents, sopCards, badgeImages, guardianBeasts } from './data/holtonCatalog';
 import type { PersistedAppState } from './types/holton';
 
 const KEY = 'holton-guardian-app::light-v1';
 type RecordItem = { id: string; title: string; at: string; minutes: number; cardId?: string };
 type WorldDraw = { id: string; reason: string; cardId?: string };
-type State = { dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+type GuardianReceipt = { cardId: string; at: string; cost: number; source: 'legacy' | 'parent-restore' | 'sunday' };
+type State = { guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
+
+const guardianCards = guardianBeasts.flatMap(beast => beast.stages.map((stage, index) => ({
+  id: `${beast.id}:${index}`, beastId: beast.id, name: beast.name, vibe: beast.vibe, index, label: stage.label, cost: stage.cost,
+  image: coreGuardianStageImages[beast.id as keyof typeof coreGuardianStageImages][(['stage1', 'stage2', 'stage3', 'stage4'] as const)[index]],
+})));
+const taipeiWeekday = (time: number) => new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', weekday: 'short' }).format(time);
+function importGuardianCards(old: Partial<PersistedAppState> | null): GuardianReceipt[] {
+  return guardianCards.filter(card => {
+    const points = old?.guardianProgress?.[card.beastId]?.orbs;
+    return (card.index === 0 && old?.guardianCatalog?.[card.beastId]?.status === 'captured') || (typeof points === 'number' && Number.isFinite(points) && points >= card.cost);
+  }).map(card => ({ cardId: card.id, at: new Date().toISOString(), cost: 0, source: 'legacy' }));
+}
 
 export default function LightApp() {
   const [state, setState] = useState<State | null>(null);
@@ -26,6 +39,8 @@ export default function LightApp() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [parent, setParent] = useState(false);
+  const [collectionOpen, setCollectionOpen] = useState(false);
+  const [guardianDetailId, setGuardianDetailId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [minutes, setMinutes] = useState('5');
   const [goal, setGoal] = useState('3');
@@ -38,7 +53,13 @@ export default function LightApp() {
         const raw = await AsyncStorage.getItem(KEY);
         const data: State = raw ? JSON.parse(raw) : initial(await loadPersistedAppState());
         if (data.version !== 1 || !Array.isArray(data.history) || !['ready', 'preparing', 'active', 'finishing', 'done'].includes(data.phase) || !Number.isFinite(data.orbs)) throw new Error('Invalid state');
-        if (!raw) await AsyncStorage.setItem(KEY, JSON.stringify(data));
+        if (!data.guardianCards) {
+          const old = await loadPersistedAppState();
+          data.guardianCards = importGuardianCards(old);
+          const companion = guardianBeasts.find(beast => old?.guardianCatalog?.[beast.id]?.companion);
+          data.companionCardId = companion ? data.guardianCards.filter(item => item.cardId.startsWith(`${companion.id}:`)).at(-1)?.cardId : undefined;
+          await AsyncStorage.setItem(KEY, JSON.stringify(data));
+        } else if (!raw) await AsyncStorage.setItem(KEY, JSON.stringify(data));
         if (live) { current.current = data; setState(data); setTitle(data.title); setMinutes(String(data.minutes)); setGoal(String(data.dailyGoal ?? 3)); }
       } catch { if (live) setError('資料暫時無法讀取，請重新整理。原有紀錄未變更。'); }
     })();
@@ -65,6 +86,27 @@ export default function LightApp() {
   const durationLabel = (n: number) => n === 0 ? '不限時' : `${n} 分鐘`;
   const today = state.history.filter(item => day(new Date(item.at)) === day(new Date(now)));
   const pending = state.draws?.[0];
+  const ownedIds = new Set((state.guardianCards ?? []).map(item => item.cardId));
+  const companion = guardianCards.find(card => card.id === state.companionCardId && ownedIds.has(card.id));
+  const detail = guardianCards.find(card => card.id === guardianDetailId);
+  const sunday = taipeiWeekday(now) === 'Sun';
+  const starterMissing = guardianCards.filter(card => card.index === 0 && !ownedIds.has(card.id));
+  function restoreStarters() {
+    void change(s => {
+      if (s.starterRestoreAt) return s;
+      const at = new Date().toISOString();
+      const existing = new Set((s.guardianCards ?? []).map(item => item.cardId));
+      return { ...s, starterRestoreAt: at, guardianCards: [...(s.guardianCards ?? []), ...guardianCards.filter(card => card.index === 0 && !existing.has(card.id)).map(card => ({ cardId: card.id, at, cost: 0, source: 'parent-restore' as const }))] };
+    });
+  }
+  function buyGuardian(cardId: string) {
+    void change(s => {
+      const card = guardianCards.find(item => item.id === cardId);
+      const owned = new Set((s.guardianCards ?? []).map(item => item.cardId));
+      if (!card || taipeiWeekday(Date.now()) !== 'Sun' || owned.has(cardId) || s.orbs < card.cost || (card.index > 0 && !owned.has(`${card.beastId}:${card.index - 1}`))) return s;
+      return { ...s, orbs: s.orbs - card.cost, guardianCards: [...(s.guardianCards ?? []), { cardId, cost: card.cost, at: new Date().toISOString(), source: 'sunday' }] };
+    });
+  }
   const drawnCard = worldEvents.find(card => card.id === pending?.cardId);
   function completeTask(s: State): State {
     if (s.phase !== 'finishing') return s;
@@ -93,6 +135,10 @@ export default function LightApp() {
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
     {parent ? <>
       <Text style={styles.heading}>陪他完成，不必催他加速。</Text>
+      <View style={styles.card}><Text style={styles.section}>守護獸收藏與舊卡恢復</Text><Text style={styles.body}>目前收藏 {ownedIds.size} 張。舊版能確認的卡片會自動帶入；更換陪伴夥伴不扣點，也不改變本命獸。</Text>{button('查看守護獸收藏', () => setCollectionOpen(true), true)}
+        {starterMissing.length > 0 && !state.starterRestoreAt ? <><Text style={styles.caption}>若孩子以前已兌換完五隻 Mini 初階卡，可由家長補回缺少的 {starterMissing.length} 張。只補卡，不扣點、不重複發卡。</Text>{button('補回已兌換的五隻初階卡', restoreStarters, true)}</> : <Text style={styles.caption}>初階收藏已保留，不需要重新購買。</Text>}
+        <Text style={styles.caption}>星期日兌換以台北時間為準。Mini 10、Mid 20、Final 40、Legendary 60 點；每張扣完整標示點數，按階段取得，舊卡仍保留。</Text>
+      </View>
       <View style={styles.card}><Text style={styles.section}>1 · 設定今天的一件事</Text><Text style={styles.body}>寫一件做得到的小事，例如「收好桌上的積木」。</Text>
         <Text style={styles.label}>任務名稱</Text><TextInput accessibilityLabel="任務名稱" value={title} onChangeText={setTitle} maxLength={80} editable={!['preparing', 'active', 'finishing'].includes(state.phase)} style={styles.input} placeholder="今天想完成的小事" />
         <Text style={styles.label}>建議時間（分鐘，0 為不限時）</Text><TextInput accessibilityLabel="陪伴時間（分鐘）" value={minutes} onChangeText={setMinutes} keyboardType="number-pad" editable={!['preparing', 'active', 'finishing'].includes(state.phase)} style={styles.input} />
@@ -105,9 +151,9 @@ export default function LightApp() {
       <View style={styles.card}><Text style={styles.section}>2 · 卡住時，這樣陪他說</Text><Text style={styles.quote}>「我在這裡。我們先做最小的一步，你想自己試，還是一起做？」</Text><Text style={styles.body}>時間到了也不用扣分。先看看需要幫忙，還是多一點時間。</Text></View>
       <View style={styles.card}><Text style={styles.section}>3 · 今天完成 {today.length} 件事</Text>{today.length ? today.map(item => <View key={item.id} style={styles.record}><Text style={styles.body}>✓ {item.title}</Text><Text style={styles.caption}>{new Date(item.at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} · {durationLabel(item.minutes)}{item.cardId ? ` · ${timeChallenges.find(card => card.id === item.cardId)?.name || "任務卡"}` : ""} · ＋1 能量球</Text></View>) : <Text style={styles.body}>今天還沒有完成紀錄，慢慢來就好。</Text>}<Text style={styles.caption}>輕量版紀錄保存在這台裝置、這個瀏覽器；舊版資料保留。</Text></View>
     </> : <>
-      <View style={styles.scorePanel} accessibilityLiveRegion="polite"><Text style={styles.section}>我的累積能量球</Text><Text style={styles.score}>✦ {state.orbs}</Text><Text style={styles.body}>今天 ＋{today.length} 顆 · 每次完成 ＋1</Text><Text style={styles.section}>今日任務 {today.length} / {state.dailyGoal ?? 3} {today.length >= (state.dailyGoal ?? 3) ? '✓ 全完成' : ''}</Text><Text style={styles.body}>{'● '.repeat(state.rewardProgress ?? 0)}{'○ '.repeat(3 - (state.rewardProgress ?? 0))} 再完成 {3 - (state.rewardProgress ?? 0)} 次抽世界卡</Text><Text style={styles.caption}>今天全完成也能抽卡 · 已收藏 {state.collection?.length ?? 0} 張</Text></View>
-      <View style={styles.companion}><Image accessibilityLabel="陪伴你的本命獸" source={guardianImage} style={styles.guardian} resizeMode="contain" /><Text style={styles.guardianName}>{guardian.coreGuardianName || '你的本命獸'}</Text><Text style={styles.body}>我陪你，一次完成一件小事。</Text></View>
-      <View onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }} style={styles.card}><Text style={styles.caption}>{state.phase === 'ready' ? '① 選一張任務卡' : state.phase === 'preparing' ? '② 準備好再開始' : state.phase === 'active' ? '③ 一起做這件事' : state.phase === 'finishing' ? '④ 把任務收好' : '⑤ 完成了，休息一下'}</Text><Text style={styles.heading}>{state.phase === 'done' ? '你做到了！' : state.title || '今天想一起做什麼？'}</Text>
+      <View style={styles.scorePanel} accessibilityLiveRegion="polite"><Text style={styles.section}>我的可用能量球</Text><Text style={styles.score}>✦ {state.orbs}</Text><Text style={styles.body}>今天 ＋{today.length} 顆 · 每次完成 ＋1</Text><Text style={styles.caption}>守護獸兌換已用 {(state.guardianCards ?? []).filter(item => item.source === 'sunday').reduce((sum, item) => sum + item.cost, 0)} 點</Text><Text style={styles.section}>今日任務 {today.length} / {state.dailyGoal ?? 3} {today.length >= (state.dailyGoal ?? 3) ? '✓ 全完成' : ''}</Text><Text style={styles.body}>{'● '.repeat(state.rewardProgress ?? 0)}{'○ '.repeat(3 - (state.rewardProgress ?? 0))} 再完成 {3 - (state.rewardProgress ?? 0)} 次抽世界卡</Text><Text style={styles.caption}>今天全完成也能抽卡 · 已收藏 {state.collection?.length ?? 0} 張</Text></View>
+      <View style={styles.companion}><Text style={styles.section}>{companion ? '今日守護夥伴' : '你的本命獸'}</Text><Image accessibilityLabel={companion ? `${companion.name} ${companion.label} 今日守護夥伴` : '陪伴你的本命獸'} source={companion?.image ?? guardianImage} style={companion ? styles.companionArt : styles.guardian} resizeMode="contain" /><Text style={styles.guardianName}>{companion ? `${companion.name} · ${companion.label}` : guardian.coreGuardianName || '你的本命獸'}</Text><Text style={styles.body}>我陪你，一次完成一件小事。</Text>{companion ? <Text style={styles.caption}>本命獸：{guardian.coreGuardianName || '你的本命獸'} · 身分保留</Text> : null}{button('我的守護獸收藏', () => setCollectionOpen(true), true)}</View>
+      <View onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }} style={styles.card}><Text style={styles.caption}>{state.phase === 'ready' ? '① 選一張任務卡' : state.phase === 'preparing' ? '② 準備好再開始' : state.phase === 'active' ? '③ 一起做這件事' : state.phase === 'finishing' ? '④ 把任務收好' : '⑤ 完成了，休息一下'}</Text>{companion && ['preparing', 'active', 'finishing'].includes(state.phase) ? <View style={styles.companionRow}><Image source={companion.image} accessibilityLabel={`${companion.name} 陪你做任務`} style={styles.companionThumb} resizeMode="contain" /><Text style={styles.caption}>{companion.name} 陪你一起做</Text></View> : null}<Text style={styles.heading}>{state.phase === 'done' ? '你做到了！' : state.title || '今天想一起做什麼？'}</Text>
       {state.phase === 'ready' ? <>
         <Text style={styles.body}>{state.title ? '今天做這件事，時間由你選。' : '先想好一件小事，再選一張卡陪你完成。家長也能幫你填任務。'}</Text>
         <Text style={styles.caption}>左右滑動選卡 · 每完成一輪 ＋1 能量球</Text>
@@ -136,11 +182,26 @@ export default function LightApp() {
         <Text style={styles.body}>{state.help ? '先停一下，我們一起來。' : state.minutes !== 0 && remaining === 0 ? '時間到了。還沒做好也沒關係，可以慢慢完成。' : '照自己的速度來。'}</Text>
         {state.help ? <><Text style={styles.quote}>「我在這裡。我們先做最小的一步，好嗎？」</Text>{button('我準備好了，繼續', () => void change(s => ({ ...s, help: false, deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000 })), true)}</> : button('我需要幫忙', () => void change(s => ({ ...s, help: true, remaining: s.deadline ? Math.max(0, Math.ceil((s.deadline - Date.now()) / 1000)) : s.remaining, deadline: null })), true)}
         {button('完成', () => void change(s => s.phase !== 'active' ? s : ({ ...s, phase: 'finishing', remaining: s.deadline ? Math.max(0, Math.ceil((s.deadline - Date.now()) / 1000)) : s.remaining, deadline: null, help: false })))}
-      </> : <><Text style={styles.quote}>你願意試、也完成了。每一小步都值得被看見。</Text><Text style={styles.score}>＋1 ✦</Text><Text style={styles.section}>累積已有 {state.orbs} 顆能量球！</Text><Text style={styles.body}>{state.title}</Text><Text style={styles.caption}>這一輪結束了。休息一下，準備好再選卡。</Text>{button('再選一張任務卡', () => void change(s => ({ ...s, phase: 'ready', deadline: null, help: false, remaining: s.minutes * 60 })), true)}</>}
+      </> : <><Text style={styles.quote}>你願意試、也完成了。每一小步都值得被看見。</Text><Text style={styles.score}>＋1 ✦</Text><Text style={styles.section}>現在共有 {state.orbs} 顆能量球！</Text><Text style={styles.body}>{state.title}</Text><Text style={styles.caption}>這一輪結束了。休息一下，準備好再選卡。</Text>{button('再選一張任務卡', () => void change(s => ({ ...s, phase: 'ready', deadline: null, help: false, remaining: s.minutes * 60 })), true)}</>}
       </View>
     </>}
       {!parent && !!state.collection?.length ? <View style={styles.card}><Text style={styles.section}>我的世界卡</Text><ScrollView horizontal contentContainerStyle={styles.deck}>{state.collection.map(item => { const card = worldEvents.find(c => c.id === item.cardId); return card ? <View key={item.id} style={styles.taskCard}><Image source={card.imageSource} accessibilityLabel={card.title} resizeMode="contain" style={styles.cardArt} /><Text style={styles.cardName}>{card.title}</Text></View> : null; })}</ScrollView></View> : null}
   </ScrollView>
+    <Modal visible={collectionOpen && !pending} animationType="slide" onRequestClose={() => { if (guardianDetailId) setGuardianDetailId(null); else setCollectionOpen(false); }}><SafeAreaView style={styles.root}><ScrollView contentContainerStyle={styles.page}>
+      <Text style={styles.heading}>我的守護獸收藏</Text><Text style={styles.section}>✦ 可用能量球 {state.orbs}</Text>
+      {button('回到任務', () => { setCollectionOpen(false); setGuardianDetailId(null); }, true)}
+      {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+      {detail ? <View style={styles.card}><Image source={detail.image} accessibilityLabel={`${detail.name} ${detail.label} 大圖`} style={styles.rewardArt} resizeMode="contain" /><Text style={styles.section}>{detail.name} · {detail.label}</Text><Text style={styles.body}>{detail.vibe}</Text>
+        {ownedIds.has(detail.id) ? <><Text style={styles.body}>✓ 已收藏 · 選出陪伴不扣點、不消耗卡片。</Text>{button(state.companionCardId === detail.id ? '正在陪伴你' : '今天陪我', () => void change(s => !(s.guardianCards ?? []).some(item => item.cardId === detail.id) ? s : ({ ...s, companionCardId: detail.id })), false, state.companionCardId === detail.id)}</> : <><Text style={styles.section}>兌換需要 {detail.cost} 點</Text><Text style={styles.body}>{!sunday ? '星期日開放兌換，平日也能欣賞卡片。' : detail.index > 0 && !ownedIds.has(`${detail.beastId}:${detail.index - 1}`) ? '先收藏上一階，再來迎接這張卡。' : state.orbs < detail.cost ? `還差 ${detail.cost - state.orbs} 點，慢慢累積就好。` : '確認兌換後會扣點，卡片永久留在收藏裡。'}</Text>{button(`確認兌換 · ${detail.cost} 點`, () => buyGuardian(detail.id), false, !sunday || state.orbs < detail.cost || (detail.index > 0 && !ownedIds.has(`${detail.beastId}:${detail.index - 1}`)))}</>}
+        {button('回到卡冊', () => setGuardianDetailId(null), true)}
+      </View> : <>
+        <Text style={styles.body}>已收藏 {ownedIds.size} 張 · 點卡片看大圖，再選「今天陪我」。</Text>
+        {ownedIds.size ? <ScrollView horizontal contentContainerStyle={styles.deck}>{guardianCards.filter(card => ownedIds.has(card.id)).map(card => <Pressable key={card.id} accessibilityRole="button" accessibilityLabel={`查看已收藏 ${card.name} ${card.label}`} onPress={() => setGuardianDetailId(card.id)} style={[styles.taskCard, state.companionCardId === card.id && styles.selectedCard]}><Image source={card.image} style={styles.cardArt} resizeMode="contain" /><Text style={styles.cardName}>{card.name}</Text><Text style={styles.section}>{card.label}</Text><Text style={styles.caption}>{state.companionCardId === card.id ? '✓ 今日守護夥伴' : '已收藏'}</Text></Pressable>)}</ScrollView> : <Text style={styles.body}>還沒有收藏。以前已兌換的五隻初階卡，可請家長到入口補回。</Text>}
+        {companion ? button('改由本命獸陪我', () => void change(s => ({ ...s, companionCardId: undefined })), true) : null}
+        <Text style={styles.section}>星期日兌換 · 尚未收藏</Text><Text style={styles.caption}>{sunday ? '今天開放兌換！點卡片查看，再確認扣點。' : '台北時間星期日開放；現在可以先看想收藏的卡。'} 每階卡片獨立收藏，依序兌換。</Text>
+        <ScrollView horizontal contentContainerStyle={styles.deck}>{guardianCards.filter(card => !ownedIds.has(card.id)).map(card => <Pressable key={card.id} accessibilityRole="button" accessibilityLabel={`查看待兌換 ${card.name} ${card.label}`} onPress={() => setGuardianDetailId(card.id)} style={styles.taskCard}><Image source={card.image} style={styles.cardArt} resizeMode="contain" /><Text style={styles.cardName}>{card.name}</Text><Text style={styles.section}>{card.label} · {card.cost} 點</Text><Text style={styles.caption}>尚未收藏</Text></Pressable>)}</ScrollView>
+      </>}
+    </ScrollView></SafeAreaView></Modal>
     <Modal visible={!!pending} transparent animationType="fade" onRequestClose={() => {}}><View style={styles.overlay}><ScrollView contentContainerStyle={styles.modalScroll}><View style={styles.card}>
       <Text style={styles.heading}>{drawnCard ? '你的世界卡！' : '可以抽世界卡了！'}</Text><Text style={styles.body}>{pending?.reason}</Text>
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
@@ -155,6 +216,7 @@ export default function LightApp() {
   </SafeAreaView>;
 }
 const styles = StyleSheet.create({
+  companionArt: { width: 180, height: 250 }, companionRow: { flexDirection: 'row', alignItems: 'center', gap: 10 }, companionThumb: { width: 48, height: 66 },
   ritualArt: { width: '100%', height: 280 },
   scorePanel: { backgroundColor: '#fff4cc', borderRadius: 24, padding: 22, gap: 8, alignItems: 'center' }, score: { fontSize: 48, fontWeight: '900', color: '#8b651d', textAlign: 'center' },
   overlay: { flex: 1, backgroundColor: 'rgba(20,40,32,0.7)', justifyContent: 'center' }, modalScroll: { flexGrow: 1, justifyContent: 'center', padding: 20, width: '100%', maxWidth: 520, alignSelf: 'center' }, rewardArt: { width: '100%', height: 300 },

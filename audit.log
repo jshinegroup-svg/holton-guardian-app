@@ -5,3 +5,4 @@
 2026-10-18 actor=bot approval=user:reward-feedback+prior-publish trigger=release-verification action=verify-public-build:28efeae; pass-live-reward-regression; archive-public-screenshots
 2026-10-18 actor=bot approval=user:按照這樣設計+prior-publish trigger=task-starter-ritual action=add-persistent-preparing-finishing-phases; use-original-card-art; verify-timer-cleanup-rewards; publish-original-url
 2026-10-18 actor=bot approval=user:ritual-design trigger=release-verification action=confirm-pages:16bcc05; pass-public-start-finish-reward-regression
+2026-10-18 actor=bot approval=user:Ok-guardian-collection+prior-publish trigger=guardian-album action=add-legacy-import-parent-starter-restore-companion-and-sunday-exchange; verify-weekday-atomic-debit-persistence-and-original-flow
