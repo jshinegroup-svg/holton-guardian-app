@@ -94,3 +94,4 @@ Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×84
 - User requested orb appearance inside the orb balance frame, leaving layout choice to implementation. Reused existing Bonus Energy original card art as left thumbnail; right large available balance and unit. Existing warm panel, task/world totals, goal and draw progress retained.
 - Visual only; no storage/reward/exchange changes. Numeric font scales with digit count because web Text auto-fit alone clipped six-digit balances.
 - TypeScript, component lint, web export passed. Browser visual checks at 390 and 320 widths: original image loaded, no page overflow, 999999 balance fits without clipping. energy-wallet-390.png inspected; screenshots use synthetic balance 28.
+- Public release a66d1b5 built and bundle matched; public browser verified original image loading, 390/320 widths and six-digit balance fit using isolated synthetic data.
