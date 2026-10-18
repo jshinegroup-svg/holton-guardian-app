@@ -1,3 +1,4 @@
 2026-10-18 actor=bot approval=user:A trigger=Holton-Hero-simplification action=implement-light-entry-and-component; preserve-legacy-snapshots; add-local-review-screenshots; publication=pending
 2026-10-18 actor=bot approval=user:上線 trigger=publish action=deploy-gh-pages:eab382d; verify-live-task-flow-and-persistence
 2026-10-18 actor=bot approval=user:restore-card-flow+prior-publish trigger=card-feedback action=restore-original-time-cards; preserve-light-state; verify-timed-and-untimed-flow
+2026-10-18 actor=bot approval=user:visible-points-world-draw+prior-publish trigger=reward-feedback action=add-visible-score-daily-goal-persistent-world-card-draw; verify-browser-regression; deploy-original-url

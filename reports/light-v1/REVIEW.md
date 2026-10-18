@@ -33,3 +33,11 @@ User explicitly approved 上線. Deployed to original GitHub Pages URL with base
 ## Card-first revision — 2026-10-18
 User requested original card artwork and duration selection remain visible. Added seven original time challenge cards (3/5/10/15/20/25 minutes and untimed), horizontal card picker, selected state, active-task card artwork, and optional next-round selection. Parent custom task/time remains available. Rewards remain light mode +1 per round, stated alongside cards. Optional cardId stored alongside existing state and history without resetting prior records.
 Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×844: visible card click and start uses 3 minutes; untimed selection/help/resume/reload keeps null deadline; completed history includes selected card; reward added once; no page horizontal overflow. Card screenshot inspected. Off-screen automation clicks required explicit scrollIntoView; flow passed with real clicks after scrolling.
+
+## Visible points + world card rewards — 2026-10-18
+- Prominent total orbs, today's earned orbs, daily task count and next-draw progress.
+- Parent daily completion target defaults to 3; configurable 1–20 alongside task settings. This is a count of completed rounds, not a named-task checklist.
+- Every three new completions (progress carries across days) or first daily target completion queues a draw. Coincident triggers merge into one draw; daily goal changes cannot claim twice on the same date.
+- Original world-card art, explicit tap to draw, persistent reveal and collection. Cards are commemorative; legacy effects are not applied. Existing orb balances/history retained; no retroactive draws for older completions.
+- Completion, pending entitlement and random reveal are saved atomically to the light snapshot. Existing busy guard prevents rapid duplicate actions. Reload preserves pending and revealed rewards.
+- Passed TypeScript, component ESLint, web export, browser regression at 390×844: third/sixth rewards, daily target independent of third, simultaneous merge, goal edit guard, double clicks, refresh before/after reveal, collection and viewport overflow. Screenshots rewards.png/world-draw.png. Test harness tmp/reward-smoke.mjs uses isolated browser storage.
