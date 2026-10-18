@@ -106,3 +106,8 @@ Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×84
 - User requested missing 40 card. Built-in image_gen edit of energy-20.jpg saved as assets/cards/energy-math/energy-40.png; visually confirmed +40, golden orb, teal frame and DOUBLE ENERGY heading.
 - Prompt: Edit supplied golden DOUBLE ENERGY counting card; single portrait 2:3; change ONLY bottom +20 to +40; preserve heading, cream texture, teal frame/header, golden orb, layout, typography and colors; full uncropped card. Arithmetic denomination only, not new reward rule.
 - Registered 40 image in EnergyMath; 40–49 balances now use this card. No balance/reward/storage changes. Typecheck, component ESLint and production web export passed.
+
+## 40 card pink correction
+- User requested pink instead of gold. Built-in image_gen edited energy-40.png, visually verified pink orb/aura/+40 and unchanged navy frame, cream background and exact heading/denomination. File: assets/cards/energy-math/energy-40.png. Original gold retained in git history and generated output.
+- Prompt: Edit exact +40 card; change only golden orb, radiant glow/lightning and +40 to luminous rose pink, soft blush aura, readable rich pink text; preserve cream background, dark teal/navy border/header, DOUBLE ENERGY, +40, layout, orb size and portrait 2:3; no yellow/gold in orb/glow; full uncropped single card.
+- Asset-only correction; arithmetic and rewards unchanged.
