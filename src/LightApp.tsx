@@ -2,15 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loadPersistedAppState } from './lib/persistence';
-import { coreGuardianArchetypeImages, coreGuardianStageImages, timeChallenges, worldEvents, sopCards, badgeImages, guardianBeasts } from './data/holtonCatalog';
+import { coreGuardianArchetypeImages, coreGuardianStageImages, timeChallenges, worldEvents, sopCards, badgeImages, guardianBeasts, supportTools, transitionCards, activeSkills } from './data/holtonCatalog';
 import { chooseFinishEncouragement, finishEncouragements, type FinishContext } from './data/finishEncouragements';
 import type { PersistedAppState } from './types/holton';
 
 const KEY = 'holton-guardian-app::light-v1';
-type RecordItem = { id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean };
+type RecordItem = { id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
 type WorldDraw = { id: string; reason: string; cardId?: string };
 type GuardianReceipt = { cardId: string; at: string; cost: number; source: 'legacy' | 'parent-restore' | 'sunday' };
-type State = { helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+type State = { supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
 
@@ -18,6 +18,12 @@ const guardianCards = guardianBeasts.flatMap(beast => beast.stages.map((stage, i
   id: `${beast.id}:${index}`, beastId: beast.id, name: beast.name, vibe: beast.vibe, index, label: stage.label, cost: stage.cost,
   image: coreGuardianStageImages[beast.id as keyof typeof coreGuardianStageImages][(['stage1', 'stage2', 'stage3', 'stage4'] as const)[index]],
 })));
+const helpCards = [
+  { id: 'pause', title: '暫停卡', line: '我想先停一下。', guide: '先停住，不用急。準備好了，再回到原本那一步。', resume: '我準備好了，繼續', image: supportTools.find(card => card.id === 'time-freeze')!.imageSource },
+  { id: 'rest', title: '休息卡', line: '我想休息一下。', guide: '休息 2 分鐘，讓自己喘口氣。時間到只提醒，你準備好再回來。', resume: '休息好了，繼續', image: transitionCards.find(card => card.id === 'break-time')!.imageSource },
+  { id: 'energy', title: '加油卡', line: '我需要補充能量。', guide: '可以喝口水、伸展一下，或請大人說一句加油。選一個適合你的方式。', resume: '補充好了，繼續', image: supportTools.find(card => card.id === 'energy-boost')!.imageSource },
+  { id: 'breathe', title: '深呼吸卡', line: '我想先慢慢呼吸。', guide: '試試 3 次舒服的慢呼吸：輕輕吸氣，慢慢吐氣，不用憋氣。不用趕，照自己的節奏。', resume: '我準備好了，繼續', image: activeSkills.find(card => card.id === 'breather-1')!.imageSource },
+];
 const taipeiWeekday = (time: number) => new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', weekday: 'short' }).format(time);
 function importGuardianCards(old: Partial<PersistedAppState> | null): GuardianReceipt[] {
   return guardianCards.filter(card => {
@@ -109,6 +115,21 @@ export default function LightApp() {
     });
   }
   const drawnCard = worldEvents.find(card => card.id === pending?.cardId);
+  const helpCard = helpCards.find(card => card.id === state.supportCardId);
+  const breakRemaining = state.breakDeadline ? Math.max(0, Math.ceil((state.breakDeadline - now) / 1000)) : 0;
+  const usedHelpNames = (state.supportUsed ?? []).map(id => helpCards.find(card => card.id === id)?.title).filter(Boolean).join('、');
+  function openHelp(s: State): State {
+    if (s.phase !== 'active' || s.help) return s;
+    return { ...s, help: true, helpUsed: true, supportCardId: undefined, breakDeadline: null, remaining: s.deadline ? Math.max(0, Math.ceil((s.deadline - Date.now()) / 1000)) : s.remaining, deadline: null };
+  }
+  function selectHelp(s: State, id: string): State {
+    if (s.phase !== 'active' || !s.help || !helpCards.some(card => card.id === id)) return s;
+    return { ...s, supportCardId: id, supportUsed: [...new Set([...(s.supportUsed ?? []), id])], breakDeadline: id === 'rest' ? Date.now() + 120000 : null };
+  }
+  function resumeHelp(s: State): State {
+    if (s.phase !== 'active' || !s.help) return s;
+    return { ...s, help: false, supportCardId: undefined, breakDeadline: null, deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000 };
+  }
   const finish = finishEncouragements.find(item => item.id === state.finishId) ?? finishEncouragements[0];
   const finishImage = finish.art === 'pack-up' || finish.art === 'finish-mode' ? sopCards.find(card => card.id === finish.art)!.imageSource : badgeImages[finish.art];
   function enterFinishing(s: State): State {
@@ -118,13 +139,13 @@ export default function LightApp() {
     const helped = !!(s.helpUsed || s.help);
     const context: FinishContext = daily ? helped ? 'daily-help' : 'daily' : helped ? 'help' : 'normal';
     const selected = chooseFinishEncouragement(context, s.history.map(item => item.finishId ?? '').filter(Boolean), s.finishId);
-    return { ...s, phase: 'finishing', finishId: selected.id, helpUsed: helped, remaining: s.deadline ? Math.max(0, Math.ceil((s.deadline - Date.now()) / 1000)) : s.remaining, deadline: null, help: false };
+    return { ...s, phase: 'finishing', finishId: selected.id, helpUsed: helped, remaining: s.deadline ? Math.max(0, Math.ceil((s.deadline - Date.now()) / 1000)) : s.remaining, deadline: null, help: false, supportCardId: undefined, breakDeadline: null };
   }
   function completeTask(s: State): State {
     if (s.phase !== 'finishing') return s;
     const at = new Date();
     const dateKey = day(at);
-    const history = [...s.history, { id: String(at.getTime()), title: s.title, at: at.toISOString(), minutes: s.minutes, cardId: s.cardId, finishId: s.finishId, helpUsed: s.helpUsed }];
+    const history = [...s.history, { id: String(at.getTime()), title: s.title, at: at.toISOString(), minutes: s.minutes, cardId: s.cardId, finishId: s.finishId, helpUsed: s.helpUsed, supportUsed: s.supportUsed }];
     const count = history.filter(item => day(new Date(item.at)) === dateKey).length;
     const progress = (s.rewardProgress ?? 0) + 1;
     const triple = progress >= 3;
@@ -161,7 +182,7 @@ export default function LightApp() {
         {state.phase === 'ready' && state.title ? <Text style={styles.caption}>目前任務：{state.title} · {durationLabel(state.minutes)}</Text> : null}
       </View>
       <View style={styles.card}><Text style={styles.section}>2 · 卡住時，這樣陪他說</Text><Text style={styles.quote}>「我在這裡。我們先做最小的一步，你想自己試，還是一起做？」</Text><Text style={styles.body}>時間到了也不用扣分。先看看需要幫忙，還是多一點時間。</Text></View>
-      <View style={styles.card}><Text style={styles.section}>3 · 今天完成 {today.length} 件事</Text>{today.length ? today.map(item => <View key={item.id} style={styles.record}><Text style={styles.body}>✓ {item.title}</Text><Text style={styles.caption}>{new Date(item.at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} · {durationLabel(item.minutes)}{item.cardId ? ` · ${timeChallenges.find(card => card.id === item.cardId)?.name || "任務卡"}` : ""} · ＋1 能量球{item.helpUsed ? ' · 有表達求助需要' : ''}</Text></View>) : <Text style={styles.body}>今天還沒有完成紀錄，慢慢來就好。</Text>}<Text style={styles.caption}>輕量版紀錄保存在這台裝置、這個瀏覽器；舊版資料保留。</Text></View>
+      <View style={styles.card}><Text style={styles.section}>3 · 今天完成 {today.length} 件事</Text>{today.length ? today.map(item => <View key={item.id} style={styles.record}><Text style={styles.body}>✓ {item.title}</Text><Text style={styles.caption}>{new Date(item.at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} · {durationLabel(item.minutes)}{item.cardId ? ` · ${timeChallenges.find(card => card.id === item.cardId)?.name || "任務卡"}` : ""} · ＋1 能量球{item.supportUsed?.length ? ` · ${item.supportUsed.map(id => helpCards.find(card => card.id === id)?.title).filter(Boolean).join('、')}` : item.helpUsed ? ' · 有表達求助需要' : ''}</Text></View>) : <Text style={styles.body}>今天還沒有完成紀錄，慢慢來就好。</Text>}<Text style={styles.caption}>輕量版紀錄保存在這台裝置、這個瀏覽器；舊版資料保留。</Text></View>
     </> : <>
       <View style={styles.scorePanel} accessibilityLiveRegion="polite"><Text style={styles.section}>我的可用能量球</Text><Text style={styles.score}>✦ {state.orbs}</Text><Text style={styles.body}>今天 ＋{today.length} 顆 · 每次完成 ＋1</Text><Text style={styles.caption}>守護獸兌換已用 {(state.guardianCards ?? []).filter(item => item.source === 'sunday').reduce((sum, item) => sum + item.cost, 0)} 點</Text><Text style={styles.section}>今日任務 {today.length} / {state.dailyGoal ?? 3} {today.length >= (state.dailyGoal ?? 3) ? '✓ 全完成' : ''}</Text><Text style={styles.body}>{'● '.repeat(state.rewardProgress ?? 0)}{'○ '.repeat(3 - (state.rewardProgress ?? 0))} 再完成 {3 - (state.rewardProgress ?? 0)} 次抽世界卡</Text><Text style={styles.caption}>今天全完成也能抽卡 · 已收藏 {state.collection?.length ?? 0} 張</Text></View>
       <View style={styles.companion}><Text style={styles.section}>{companion ? '今日守護夥伴' : '你的本命獸'}</Text><Image accessibilityLabel={companion ? `${companion.name} ${companion.label} 今日守護夥伴` : '陪伴你的本命獸'} source={companion?.image ?? guardianImage} style={companion ? styles.companionArt : styles.guardian} resizeMode="contain" /><Text style={styles.guardianName}>{companion ? `${companion.name} · ${companion.label}` : guardian.coreGuardianName || '你的本命獸'}</Text><Text style={styles.body}>我陪你，一次完成一件小事。</Text>{companion ? <Text style={styles.caption}>本命獸：{guardian.coreGuardianName || '你的本命獸'} · 身分保留</Text> : null}{button('我的守護獸收藏', () => setCollectionOpen(true), true)}</View>
@@ -177,7 +198,7 @@ export default function LightApp() {
           </Pressable>)}
         </ScrollView>
         <Text style={styles.body}>{selectedCard ? `${selectedCard.name} · ${durationLabel(state.minutes)}` : `目前設定：${durationLabel(state.minutes)}，也可以換一張卡。`}</Text>
-        {button('開始', () => void change(s => s.phase !== 'ready' ? s : ({ ...s, title: s.title || '完成一件小任務', phase: 'preparing', helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })))}
+        {button('開始', () => void change(s => s.phase !== 'ready' ? s : ({ ...s, title: s.title || '完成一件小任務', phase: 'preparing', supportCardId: undefined, supportUsed: [], breakDeadline: null, helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })))}
       </> : state.phase === 'preparing' ? <>
         <Image source={sopCards.find(card => card.id === 'task-starter')!.imageSource} accessibilityLabel="Task Starter 任務啟動卡" style={styles.ritualArt} resizeMode="contain" />
         <Text style={styles.section}>Task Starter · 任務啟動</Text><Text style={styles.quote}>先把需要的東西準備好。</Text><Text style={styles.body}>這次挑戰：{durationLabel(state.minutes)}。準備好再按，現在還沒有計時。</Text>
@@ -186,14 +207,27 @@ export default function LightApp() {
       </> : state.phase === 'finishing' ? <>
         <Image source={finishImage} accessibilityLabel={`${finish.title} 收尾鼓勵卡`} style={styles.ritualArt} resizeMode="contain" />
         <Text style={styles.caption}>{companion?.name || guardian.coreGuardianName || '守護夥伴'} 想對你說</Text>
-        <Text style={styles.section}>{finish.title}</Text><Text style={styles.quote}>{finish.line}</Text><Text style={styles.body}>{finish.reminder}</Text><Text style={styles.caption}>計時已停下。收尾後 ＋1 能量球。</Text>
+        <Text style={styles.section}>{finish.title}</Text>{usedHelpNames ? <Text style={styles.caption}>這輪你選了{usedHelpNames}，表達自己的需要也是重要的一步。</Text> : null}<Text style={styles.quote}>{finish.line}</Text><Text style={styles.body}>{finish.reminder}</Text><Text style={styles.caption}>計時已停下。收尾後 ＋1 能量球。</Text>
         {button(finish.button, () => void change(completeTask))}
         {button('還有一點，回去繼續', () => void change(s => s.phase !== 'finishing' ? s : ({ ...s, phase: 'active', deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000, help: false })), true)}
       </> : state.phase === 'active' ? <>
-        {selectedCard ? <Image source={selectedCard.imageSource} accessibilityLabel={selectedCard.name} style={styles.activeCardArt} resizeMode="contain" /> : null}
-        {state.minutes === 0 ? <Text style={styles.section}>不限時，慢慢完成就好。</Text> : <Text style={styles.timer}>{String(Math.floor(remaining / 60)).padStart(2, '0')}:{String(remaining % 60).padStart(2, '0')}</Text>}
+        {selectedCard && !state.help ? <Image source={selectedCard.imageSource} accessibilityLabel={selectedCard.name} style={styles.activeCardArt} resizeMode="contain" /> : null}
+        {state.minutes === 0 ? <Text style={styles.section}>不限時，慢慢完成就好。</Text> : <Text style={state.help ? styles.section : styles.timer}>{String(Math.floor(remaining / 60)).padStart(2, '0')}:{String(remaining % 60).padStart(2, '0')}</Text>}
         <Text style={styles.body}>{state.help ? '先停一下，我們一起來。' : state.minutes !== 0 && remaining === 0 ? '時間到了。還沒做好也沒關係，可以慢慢完成。' : '照自己的速度來。'}</Text>
-        {state.help ? <><Text style={styles.quote}>「我在這裡。我們先做最小的一步，好嗎？」</Text>{button('我準備好了，繼續', () => void change(s => ({ ...s, help: false, deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000 })), true)}</> : button('我需要幫忙', () => void change(s => ({ ...s, help: true, helpUsed: true, remaining: s.deadline ? Math.max(0, Math.ceil((s.deadline - Date.now()) / 1000)) : s.remaining, deadline: null })), true)}
+        {state.help ? <>
+          <Text style={styles.section}>{helpCard ? helpCard.title : '你現在需要哪一張卡？'}</Text><Text style={styles.caption}>任務已停表 · 不扣點、不減少獎勵</Text>
+          {helpCard ? <>
+            <Image source={helpCard.image} accessibilityLabel={helpCard.title} style={styles.ritualArt} resizeMode="contain" />
+            <Text style={styles.quote}>{helpCard.line}</Text><Text style={styles.body}>{helpCard.guide}</Text>
+            {helpCard.id === 'rest' ? <><Text style={styles.timer}>{String(Math.floor(breakRemaining / 60)).padStart(2, '0')}:{String(breakRemaining % 60).padStart(2, '0')}</Text><Text style={styles.body}>{breakRemaining === 0 ? '休息時間到了，準備好了再繼續；任務仍然暫停。' : '這是休息時間，任務時間不會減少。'}</Text></> : null}
+            {button(helpCard.resume, () => void change(resumeHelp))}
+            {button('換一張幫忙卡', () => void change(s => s.phase !== 'active' || !s.help ? s : ({ ...s, supportCardId: undefined, breakDeadline: null })), true)}
+          </> : <>
+            <View style={styles.helpGrid}>{helpCards.map(card => <Pressable key={card.id} accessibilityRole="button" accessibilityLabel={`選擇${card.title}`} disabled={saving} onPress={() => void change(s => selectHelp(s, card.id))} style={[styles.helpChoice, saving && styles.disabled]}><Image source={card.image} accessibilityLabel={card.title} style={styles.helpArt} resizeMode="contain" /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{card.line}</Text></Pressable>)}</View>
+            {button('我準備好了，繼續', () => void change(resumeHelp), true)}
+          </>}
+        </> : button('我需要幫忙', () => void change(openHelp), true)}
+
         {button('完成', () => void change(enterFinishing))}
       </> : <><Text style={styles.section}>{finish.title}</Text><Text style={styles.quote}>你完成了，也把這一輪收好了。每一小步都值得被看見。</Text><Text style={styles.score}>＋1 ✦</Text><Text style={styles.section}>現在共有 {state.orbs} 顆能量球！</Text><Text style={styles.body}>{state.title}</Text><Text style={styles.caption}>這一輪結束了。休息一下，準備好再選卡。</Text>{button('再選一張任務卡', () => void change(s => ({ ...s, phase: 'ready', deadline: null, help: false, remaining: s.minutes * 60 })), true)}</>}
       </View>
@@ -229,6 +263,7 @@ export default function LightApp() {
   </SafeAreaView>;
 }
 const styles = StyleSheet.create({
+  helpGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, helpChoice: { flexBasis: '45%', flexGrow: 1, borderRadius: 14, padding: 8, borderWidth: 1, borderColor: '#c9d9cf', alignItems: 'center', gap: 4, backgroundColor: '#f4f7f4' }, helpArt: { width: '100%', height: 155 },
   companionArt: { width: 180, height: 250 }, companionRow: { flexDirection: 'row', alignItems: 'center', gap: 10 }, companionThumb: { width: 48, height: 66 },
   ritualArt: { width: '100%', height: 280 },
   scorePanel: { backgroundColor: '#fff4cc', borderRadius: 24, padding: 22, gap: 8, alignItems: 'center' }, score: { fontSize: 48, fontWeight: '900', color: '#8b651d', textAlign: 'center' },
