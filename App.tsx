@@ -140,7 +140,9 @@ import type {
   RealTestSession,
   PersistedAppState,
 } from "./src/types/holton";
-export default function App() {
+export { default } from "./src/LightApp";
+
+export function LegacyApp() {
   const [childName, setChildName] = useState("Holton");
   const [imageAssetsReady, setImageAssetsReady] = useState(false);
   const [uiMode, setUiMode] = useState<UiMode>("child");
