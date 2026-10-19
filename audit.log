@@ -25,3 +25,4 @@
 2026-10-19 actor=bot approval=user:original-card-media trigger=energy-assets registered 10/30/50/100 original images; no points change
 2026-10-19 actor=bot approval=user:original-card-media trigger=batch received 1/2/4/5; mapped original artwork
 2026-10-19 actor=bot approval=user:original-card-media trigger=batch added original 3; completed 1-5 set
+2026-10-19 actor=bot approval=user:original-rewards trigger=reward-tiers code/history-display/check/design-doc updated

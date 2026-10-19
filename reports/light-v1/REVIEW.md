@@ -116,3 +116,9 @@ Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×84
 - User supplied four original card images: 10 purple, 30 green, 50 silver-white, 100 gold. Copied unmodified into assets/cards/energy-math/energy-{10,30,50,100}.jpg and mapped exact denominations in EnergyMath. Pink 40 retained. Arithmetic, storage and reward rules unchanged. Sky Base remains a separate static concept, not deployed.
 - Additional user originals received in same batch: blue 1, 2, 4, refreshed 5. Copied without editing and mapped exact values. No original 3 received; existing native number-card fallback retained. User originals remain distinct from generated 6–9 and pink 40.
 - User subsequently supplied original blue 3 in same batch; now all 1–5 originals mapped. Final available artwork denominations: 1–9, 10, 20, 30, 40, 50, 100. Other values retain exact dynamic fallback.
+
+## Original task reward tiers restored
+- User confirms physical challenge cards do not print reward values and approves original catalog tiers: 3/5min=1, 10=2, 15=3, 20=4, 25/untimed=5. Custom unmatched durations retain 1.
+- Snapshot reward at new-round preparation. Existing in-progress rounds without snapshot retain promised +1; historical records without explicit reward remain +1. No retroactive credit or storage migration.
+- Store actual reward per completion; parent history, daily earned total, card selection and finishing/done displays agree. World draw milestones remain based on completion count, not reward points.
+- Pure settlement regression: exact tiers, old rounds/history preserved, repeated completion no-op, 3-task draw progression unchanged, mixed-history sum. Typecheck/lint and production export checked.
