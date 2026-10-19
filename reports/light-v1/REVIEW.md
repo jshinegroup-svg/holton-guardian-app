@@ -111,3 +111,6 @@ Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×84
 - User requested pink instead of gold. Built-in image_gen edited energy-40.png, visually verified pink orb/aura/+40 and unchanged navy frame, cream background and exact heading/denomination. File: assets/cards/energy-math/energy-40.png. Original gold retained in git history and generated output.
 - Prompt: Edit exact +40 card; change only golden orb, radiant glow/lightning and +40 to luminous rose pink, soft blush aura, readable rich pink text; preserve cream background, dark teal/navy border/header, DOUBLE ENERGY, +40, layout, orb size and portrait 2:3; no yellow/gold in orb/glow; full uncropped single card.
 - Asset-only correction; arithmetic and rewards unchanged.
+
+## Original 10 / 30 / 50 / 100 cards
+- User supplied four original card images: 10 purple, 30 green, 50 silver-white, 100 gold. Copied unmodified into assets/cards/energy-math/energy-{10,30,50,100}.jpg and mapped exact denominations in EnergyMath. Pink 40 retained. Arithmetic, storage and reward rules unchanged. Sky Base remains a separate static concept, not deployed.

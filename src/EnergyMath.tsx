@@ -5,6 +5,10 @@ const blue = require('../assets/cards/energy-math/energy-5.jpg');
 const gold = require('../assets/cards/energy-math/energy-20.jpg');
 const cards: Record<number, ImageSourcePropType> = {
   5: blue, 20: gold,
+  10: require('../assets/cards/energy-math/energy-10.jpg'),
+  30: require('../assets/cards/energy-math/energy-30.jpg'),
+  50: require('../assets/cards/energy-math/energy-50.jpg'),
+  100: require('../assets/cards/energy-math/energy-100.jpg'),
   40: require('../assets/cards/energy-math/energy-40.png'),
   6: require('../assets/cards/energy-math/energy-6.png'),
   7: require('../assets/cards/energy-math/energy-7.png'),
