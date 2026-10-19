@@ -6,3 +6,5 @@ User requested a visibly larger companion and more horizontally scrollable homew
 - Homework: ten presets, visible horizontal swipe hint, selected state and Other custom entry retaining homework category.
 - Existing wallet, rewards, guardian ownership, and original images unchanged. No family auth features included.
 - Typecheck, scoped lint, web export and isolated Chrome 320/390 lifecycle checks passed. Test includes real horizontal scroll, subject persistence, custom detail and enlarged image geometry; screenshots are synthetic test data, not real iPhone hardware.
+
+Public verification: Pages 1e878b3 built successfully; public HTML matched bundle d261c1a04a4c2437bd375d61497f98bd and complete isolated browser suite passed against the original HTTPS URL. Screenshots refreshed from public site.
