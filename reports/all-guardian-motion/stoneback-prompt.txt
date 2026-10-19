@@ -1,0 +1,2 @@
+Stoneback 4x4 transparent atlas: rows Mini(image2), Mid(image1), Final(image3), Legendary(image4); walk-left alternating legs, rear/stomp, friendly bow. Preserve original stone, crystals and castle stages; remove card framing/text/backdrop.
+Built-in imagegen. Source: /Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a152fe-7e3d-7543-a1bf-2689d1fc00fd/exec-687aea69-35ab-49e6-b274-7e46c28b1fb1.png

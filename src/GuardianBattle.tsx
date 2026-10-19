@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
 import GuardianFilm from './GuardianFilm';
+import { guardianFilmPath } from './lib/guardianFilms';
 
 type Fighter = { name: string; image: ImageSourcePropType | undefined };
 export type BattleProps = { guardianId?: string; hero: Fighter; guardian: Fighter; cost: number; reduced: boolean; won: boolean; preview?: boolean; saving: boolean; error: string; onWin: () => void; onClose: () => void; onCompanion: () => void };
@@ -70,6 +71,6 @@ const s = StyleSheet.create({
 });
 
 export default function GuardianBattle(props: BattleProps) {
-  return props.guardianId === 'tidefin:0' && Platform.OS === 'web'
+  return guardianFilmPath(props.guardianId) && Platform.OS === 'web'
     ? <GuardianFilm {...props} /> : <LegacyGuardianBattle {...props} />;
 }

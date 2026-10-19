@@ -111,8 +111,9 @@ export const coreGuardianStageImages = {
     stage4: require("../../assets/cards/core-guardians/tidefin/tidefin-stage4.png"),
   },
   stoneback: {
-    stage1: require("../../assets/cards/core-guardians/stoneback/stoneback-stage1.png"),
-    stage2: require("../../assets/cards/core-guardians/stoneback/stoneback-stage2.png"),
+    // Original filenames are reversed: stage2 card says Mini, stage1 says Mid.
+    stage1: require("../../assets/cards/core-guardians/stoneback/stoneback-stage2.png"),
+    stage2: require("../../assets/cards/core-guardians/stoneback/stoneback-stage1.png"),
     stage3: require("../../assets/cards/core-guardians/stoneback/stoneback-stage3.png"),
     stage4: require("../../assets/cards/core-guardians/stoneback/stoneback-stage4.png"),
   },

@@ -1,0 +1,122 @@
+[
+  {
+    "file": "bramblefang-0-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3124163,
+    "sha256": "91e073157d36f03eaacd30e928d4c8de9d4b8d550d72a882a21fbc7b9e412b16"
+  },
+  {
+    "file": "bramblefang-1-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3213201,
+    "sha256": "7e33f15b07f9da7f073ca7b8706712bc9a31faaf6cdfb4514111c9a120efe2a1"
+  },
+  {
+    "file": "bramblefang-2-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3412864,
+    "sha256": "8b46d2c0a1d1248bcae093e60796c55dfed59e315b261cd12b5fc79e6da6fd9b"
+  },
+  {
+    "file": "bramblefang-3-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3593566,
+    "sha256": "01580912d98d5c3c13d502c48791566ff75f54da152627583c817c3a0bb31b08"
+  },
+  {
+    "file": "emberwing-0-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 2929619,
+    "sha256": "d0cebb54907e3020b77cc0079218cc2571f92a6e0c65aae59da1cd288844deb6"
+  },
+  {
+    "file": "emberwing-1-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3023646,
+    "sha256": "10b1eed11a5692c793c71489498e65d316837758a47abb24b4cec4fef452a950"
+  },
+  {
+    "file": "emberwing-2-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3203557,
+    "sha256": "1e5c48d9809786f07e48fca813f54ef13aef3fc15590b062acb87d04b5eb580c"
+  },
+  {
+    "file": "emberwing-3-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3349211,
+    "sha256": "16cccfd22ae1de1cba283d1e4e9ba33d3000c786dd89bad08839cf5deab4b3d7"
+  },
+  {
+    "file": "steel-eagle-0-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3342901,
+    "sha256": "d9160eba2e1c115fe2273d9aba4f21347d8835126e420ad29a505011648154d6"
+  },
+  {
+    "file": "steel-eagle-1-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3437356,
+    "sha256": "fdaa7358343510c92108c81736ee20f6072143c6caa401fe708fe33e0793e402"
+  },
+  {
+    "file": "steel-eagle-2-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3542567,
+    "sha256": "e070c0c25782e361520ad402ad843c6dba4f3d930a89fe96aa6af2a2979a0607"
+  },
+  {
+    "file": "steel-eagle-3-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3665786,
+    "sha256": "00ec24ed85be807c349222bb43cc477c6b01cab71ebdcb42939989e938713c38"
+  },
+  {
+    "file": "stoneback-0-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3240631,
+    "sha256": "6e447c15d480b2afe15df33a4b81ae457ccd18a853d2f192c5d05dfc550b8619"
+  },
+  {
+    "file": "stoneback-1-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3367868,
+    "sha256": "9295af2f1d37a9b44bb17259b618ce356113b8aae734222d29100176563ec34b"
+  },
+  {
+    "file": "stoneback-2-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3546914,
+    "sha256": "99fc8b23bbd0ff1cd8646fcbe38d73c9ca7ea12dc23d2c06b1b35b250da0bef6"
+  },
+  {
+    "file": "stoneback-3-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3660591,
+    "sha256": "e52a6104f4e2a0307be5fd9ca88b4018193a332b60eeba26cfc97d4156f47fd5"
+  },
+  {
+    "file": "tidefin-1-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3177969,
+    "sha256": "b16f1111815a6983eee2cf29be2f373c66a54ed1ecdcc99dee5e1793dacccb8e"
+  },
+  {
+    "file": "tidefin-2-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3389205,
+    "sha256": "e584d4ff2378bdbbe9e00e665b95474d6ec97a318d036815a65805a698bb179d"
+  },
+  {
+    "file": "tidefin-3-v1.mp4",
+    "duration": "17.000000",
+    "bytes": 3667434,
+    "sha256": "09c74feabc5f86c5294c5b8ce19c8f1d6d15f4fca5bbb5ca1fa467a5f4279d45"
+  },
+  {
+    "file": "tidefin-mini-v2.mp4",
+    "duration": "17.000000",
+    "bytes": 6495860,
+    "sha256": "998da254900fe80abe6670d4dec56594cd776dfca6409dc4e1b102603a78f99f"
+  }
+]

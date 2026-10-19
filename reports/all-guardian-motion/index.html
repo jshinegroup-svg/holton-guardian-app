@@ -1,0 +1,85 @@
+<!doctype html><meta charset="utf-8"><title>Holton character animation preview</title><style>html,body{margin:0;background:#061722;height:100%;display:grid;place-items:center}canvas{max-height:100vh;max-width:100vw}</style><canvas width="960" height="1200" id="stage"></canvas>
+<script>
+const c=document.querySelector('canvas'),g=c.getContext('2d');const atlas=new Image(),bg=new Image();atlas.src='assets/robot-atlas.png';bg.src='assets/backdrop.png';
+const query=new URLSearchParams(location.search),species=query.get('species')||'stoneback',tier=Number(query.get('tier')||0);
+const beast=new Image();beast.src='assets/'+species+'.png';
+const titles={stoneback:'STONEBACK',emberwing:'EMBERWING','steel-eagle':'STEEL EAGLE',bramblefang:'BRAMBLEFANG',tidefin:'TIDEFIN'};
+const tiers=['Mini','Mid','Final','Legendary'];
+const colors={stoneback:'#efc665',emberwing:'#ff9b40','steel-eagle':'#a2dcff',bramblefang:'#adf26b',tidefin:'#8ceeff'};
+const element=colors[species];
+let beastSprites=[];
+
+const W=720,H=900,DURATION=17;
+function ease(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
+function mix(a,b,t){return a+(b-a)*ease(t)}
+function text(s,x,y,size=24,color='#fff0c9'){g.save();g.textAlign='center';g.textBaseline='middle';g.font=`700 ${size}px system-ui`;g.shadowColor='#061824';g.shadowBlur=8;g.fillStyle=color;g.fillText(s,x,y);g.restore()}
+const sprites=[];
+function unpackAtlas(){const a=document.createElement('canvas');a.width=atlas.width;a.height=atlas.height;const ctx=a.getContext('2d');ctx.drawImage(atlas,0,0);const pixels=ctx.getImageData(0,0,a.width,a.height),d=pixels.data,w=a.width,h=a.height,seen=new Uint8Array(w*h),components=[];
+ for(let k=0;k<w*h;k++){if(seen[k]||d[k*4+3]<121)continue;seen[k]=1;const stack=[k],list=[];let x0=w,y0=h,x1=0,y1=0;while(stack.length){const n=stack.pop(),x=n%w,y=(n/w)|0;list.push(n);x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);for(const z of [x?n-1:-1,x<w-1?n+1:-1,y?n-w:-1,y<h-1?n+w:-1])if(z>=0&&!seen[z]&&d[z*4+3]>120){seen[z]=1;stack.push(z)}}if(list.length>1500)components.push({x0,y0,x1,y1,list})}
+ components.sort((a,b)=>(a.y0+a.y1)-(b.y0+b.y1));for(let row=0;row<3;row++){const group=components.slice(row*4,row*4+4).sort((a,b)=>a.x0-b.x0);components.splice(row*4,4,...group)}
+ // Source atlas is unpacked at rendering time; generated master stays unchanged.
+ for(const part of components){const canvas=document.createElement('canvas');canvas.width=part.x1-part.x0+1;canvas.height=part.y1-part.y0+1;const ct=canvas.getContext('2d'),out=ct.createImageData(canvas.width,canvas.height);for(const n of part.list){const j=(((n/w)|0)-part.y0)*canvas.width+(n%w)-part.x0;for(let ch=0;ch<4;ch++)out.data[j*4+ch]=d[n*4+ch]}ct.putImageData(out,0,0);sprites.push(canvas)}
+ if(sprites.length!==12)throw Error('Expected 12 character poses');
+}
+function extractBeasts(){
+ const a=document.createElement('canvas');a.width=beast.width;a.height=beast.height;const ctx=a.getContext('2d');ctx.drawImage(beast,0,0);const p=ctx.getImageData(0,0,a.width,a.height),d=p.data,w=a.width,h=a.height,seen=new Uint8Array(w*h),parts=[];
+ for(let k=0;k<w*h;k++){if(seen[k]||d[k*4+3]<200)continue;seen[k]=1;const stack=[k],list=[];let x0=w,y0=h,x1=0,y1=0;while(stack.length){const n=stack.pop(),x=n%w,y=(n/w)|0;list.push(n);x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);for(const z of [x?n-1:-1,x<w-1?n+1:-1,y?n-w:-1,y<h-1?n+w:-1])if(z>=0&&!seen[z]&&d[z*4+3]>=200){seen[z]=1;stack.push(z)}}if(list.length>2000)parts.push({x0,y0,x1,y1,list})}
+ parts.sort((a,b)=>(a.y0+a.y1)-(b.y0+b.y1));
+ window.parts=parts.map(p=>[p.x0,p.y0,p.x1,p.y1,p.list.length]);
+ if(parts.length!==16)throw Error(species+': expected16 poses, got '+parts.length);
+ for(let row=0;row<4;row++){const group=parts.slice(row*4,row*4+4).sort((a,b)=>a.x0-b.x0);parts.splice(row*4,4,...group)}
+ for(const part of parts){const canvas=document.createElement('canvas');canvas.width=part.x1-part.x0+1;canvas.height=part.y1-part.y0+1;const ct=canvas.getContext('2d'),out=ct.createImageData(canvas.width,canvas.height);for(const n of part.list){const j=(((n/w)|0)-part.y0)*canvas.width+(n%w)-part.x0;for(let ch=0;ch<4;ch++)out.data[j*4+ch]=d[n*4+ch]}ct.putImageData(out,0,0);beastSprites.push(canvas)}
+}
+function sprite(n,x,y,size,rot=0){g.save();g.translate(x,y);g.rotate(rot);
+ if(n<8){const img=sprites[n],scale=size/(350*atlas.width/1254);g.drawImage(img,-img.width*scale/2,-img.height*scale,img.width*scale,img.height*scale)}
+ else {const img=beastSprites[tier*4+n-8],row=beastSprites.slice(tier*4,tier*4+4),largest=Math.max(...row.map(i=>Math.max(i.width,i.height))),scale=(265+tier*13)/largest;
+ const flying=species==='steel-eagle'||species==='tidefin';const bottom=flying?-105:35;
+ g.drawImage(img,-img.width*scale/2,bottom-img.height*scale,img.width*scale,img.height*scale)}
+ g.restore();
+}
+function ellipse(x,y,rx,ry,color){g.fillStyle=color;g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill()}
+function spark(x,y,age,color='#8ff6ff',power=1){if(age<0||age>1)return;g.save();g.globalAlpha=(1-age)*power;g.strokeStyle=color;g.lineWidth=4;for(let i=0;i<14;i++){const a=i*Math.PI*2/14,rr=25+age*120;g.beginPath();g.moveTo(x+Math.cos(a)*rr*.5,y+Math.sin(a)*rr*.5);g.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);g.stroke()}g.restore()}
+function beam(x,y,x2,y2,p){g.save();g.globalAlpha=p;g.lineCap='round';g.shadowBlur=25;g.shadowColor='#84ebff';g.strokeStyle='#20b6e2';g.lineWidth=24;g.beginPath();g.moveTo(x,y);g.lineTo(x2,y2);g.stroke();g.strokeStyle='#fff2bb';g.lineWidth=7;g.stroke();g.restore()}
+function glow(x,y,r,alpha=1,color='80,225,255'){g.save();g.globalAlpha=alpha;const grad=g.createRadialGradient(x,y,0,x,y,r);grad.addColorStop(0,`rgba(${color},.65)`);grad.addColorStop(.3,`rgba(${color},.25)`);grad.addColorStop(1,`rgba(${color},0)`);g.fillStyle=grad;g.fillRect(x-r,y-r,2*r,2*r);g.restore()}
+function ring(x,y,age,color='#80f7ff',rx=1){if(age<0||age>1)return;g.save();g.globalAlpha=(1-age)*.8;g.strokeStyle=color;g.shadowColor=color;g.shadowBlur=12;g.lineWidth=3*(1-age)+1;g.beginPath();g.ellipse(x,y,(18+age*115)*rx,18+age*115,0,0,Math.PI*2);g.stroke();g.restore()}
+function dust(x,y,age,color='#b4e9ee',count=20){if(age<0||age>1.3)return;g.save();g.globalAlpha=Math.max(0,1-age/1.3);g.fillStyle=color;for(let i=0;i<count;i++){const a=i*2.399,speed=30+(i%7)*12,xx=x+Math.cos(a)*speed*age,yy=y+Math.sin(a)*speed*age+60*age*age;g.beginPath();g.arc(xx,yy,1.3+(i%3),0,Math.PI*2);g.fill()}g.restore()}
+function trail(x,y,t,direction=1){g.save();g.lineCap='round';for(let i=0;i<8;i++){const yy=y-90+i*25;g.strokeStyle=`rgba(80,220,255,${.09+(i%3)*.07})`;g.lineWidth=2+(i%2);g.beginPath();g.moveTo(x+direction*30,yy);g.quadraticCurveTo(x+direction*95,yy+Math.sin(t*7+i)*13,x+direction*(130+i%3*15),yy-7);g.stroke()}g.restore()}
+function shield(x,y,t,p){g.save();g.globalAlpha=p;glow(x,y,95,.7);g.strokeStyle='#8afff4';g.lineWidth=4;g.shadowColor='#4fffe5';g.shadowBlur=15;g.beginPath();g.ellipse(x,y,34,105,0,0,Math.PI*2);g.stroke();for(let i=0;i<9;i++){const yy=y-72+i*18,xx=x+Math.cos(i)*5;g.strokeStyle='#9af8f477';g.lineWidth=1;g.beginPath();for(let j=0;j<7;j++){const a=j*Math.PI/3;const px=xx+Math.cos(a)*14,py=yy+Math.sin(a)*14;j?g.lineTo(px,py):g.moveTo(px,py)}g.stroke()}g.restore()}
+function waterOrb(x,y,t){glow(x,y,38,.9);g.save();g.shadowBlur=14;g.shadowColor='#67e5ff';g.fillStyle='#84eaff';g.beginPath();g.arc(x,y,13+Math.sin(t*12)*2,0,Math.PI*2);g.fill();g.strokeStyle='#e8ffff';g.lineWidth=2;g.beginPath();g.arc(x,y,17,t*6,t*6+4.5);g.stroke();g.restore()}
+function orb(x,y,t){
+ if(species==='tidefin'){waterOrb(x,y,t);return}
+ g.save();g.shadowColor=element;g.shadowBlur=14;g.fillStyle=element;g.strokeStyle=element;g.lineWidth=3;
+ if(species==='stoneback'){g.translate(x,y);g.rotate(t*2);g.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI/3;g.lineTo(Math.cos(a)*19,Math.sin(a)*15)}g.closePath();g.fill();g.strokeStyle='#fff4c5';g.stroke()}
+ if(species==='emberwing'){for(let i=0;i<5;i++){g.globalAlpha=1-i*.16;g.beginPath();g.ellipse(x+i*10,y+Math.sin(t*15+i)*6,17-i*2,11-i,0,0,Math.PI*2);g.fill()}glow(x,y,40,.7,'255,135,40')}
+ if(species==='steel-eagle'){g.beginPath();g.moveTo(x+35,y-18);g.lineTo(x+7,y);g.lineTo(x+21,y+8);g.lineTo(x-25,y+15);g.stroke()}
+ if(species==='bramblefang'){g.translate(x,y);g.rotate(t*6);for(let i=0;i<3;i++){g.rotate(Math.PI*2/3);g.beginPath();g.ellipse(12,0,19,6,0,0,Math.PI*2);g.fill()}}
+ g.restore();
+}
+function elementGround(t,x,y){
+ if(species==='stoneback'){for(const at of [4.9,5.7,7.25]){const a=t-at;ring(x,y,a,element,2.3);dust(x,y,a,element,20)}}
+ if(species==='bramblefang'&&t>6.4&&t<8.6){g.save();g.strokeStyle=element;g.lineWidth=4;g.beginPath();g.moveTo(550,660);g.bezierCurveTo(470,560,410,720,315,570+Math.sin(t*5)*22);g.stroke();g.restore()}
+}
+function render(t){g.setTransform(4/3,0,0,4/3,0,0);g.clearRect(0,0,W,H);const scale=Math.max(W/bg.width,H/bg.height);g.drawImage(bg,(W-bg.width*scale)/2,(H-bg.height*scale)/2,bg.width*scale,bg.height*scale);g.fillStyle='#071d3533';g.fillRect(0,0,W,H);
+ for(let i=0;i<32;i++){const x=(i*127+Math.sin(t*.4+i)*18)%720,y=(i*73-t*(8+i%5)+1000)%900;ellipse(x,y,1+i%2,1+i%2,`rgba(183,236,255,${.1+(i%5)*.04})`)}
+ g.save();let shake=0;for(const hit of [4.95,5.75,7.25,12.9]){const age=t-hit;if(age>0&&age<.3)shake+=Math.sin(age*94)*(1-age/.3)*3}g.translate(shake,0);
+ ellipse(360,657,315,75,'#153f5266');g.strokeStyle='#8edee45a';g.lineWidth=2;g.beginPath();g.ellipse(360,647,300,70,0,0,Math.PI*2);g.stroke();
+ let hx=155,hy=650,hs=310,hpose=4,hr=0,sx=565,sy=625,ss=300,spose=8+Math.floor(t*6)%2,sr=0,caption='守護試煉 · 勇氣集結';
+ if(t<2){hx=mix(110,155,t/1.5);sx=mix(615,565,t/1.5);hy+=Math.sin(t*3)*2;sy+=Math.sin(t*3)*5;glow(hx,490,140,.35);glow(sx-70,470,130,.35)}
+ else if(t<4.3){const p=(t-2)/2.3;hx=mix(155,235,p);hpose=Math.floor(t*9)%2;hy-=Math.abs(Math.sin(t*27))*7;sx=mix(565,530,p);sy+=Math.sin(t*8)*8;caption='加速出擊 · 潮汐迎戰';trail(hx-80,560,t,-1);trail(sx+30,490,t,1);for(const at of [2.2,2.65,3.1,3.55])dust(hx-50,655,t-at,'#d6c6a0',9)}
+ else if(t<6.4){hx=235;hpose=4;sx=530;spose=10;caption='潮汐連擊 · 能量護盾';shield(322,470,t,.8);for(const at of [4.45,5.25]){const p=(t-at)/.5;if(p>=0&&p<=1){orb(mix(430,325,p),mix(485,470,p),t);trail(mix(430,325,p)+25,540,t,1)}ring(325,470,(t-at-.5)*1.7);dust(325,470,(t-at-.5)*1.3)}}
+ else if(t<8.6){const p=(t-6.4)/2.2;hx=t<7.25?mix(235,220,(t-6.4)/.85):mix(220,255,(t-7.25)/1.35);hpose=4;sx=t<7.25?mix(530,450,(t-6.4)/.85):mix(450,555,(t-7.25)/1.35);spose=10;sr=t<7.25?-.06:.08;caption='正面交鋒 · 守住你的勇氣';trail(sx+10,490,t,1);shield(hx+88,470,t,.9);ring(330,470,(t-7.25)*1.2,'#b9fff7',.8);ring(330,470,(t-7.4)*1.1,'#ffe6b3');dust(330,470,(t-7.25)*1.1,'#c3ffff',30);spark(330,470,(t-7.25)*1.3)}
+ else if(t<10.8){const p=(t-8.6)/2.2;hx=mix(255,295,p);hy=650-Math.sin(p*Math.PI)*130;hpose=p<.16?2:p>.85?6:3;hr=p<.16?0:-.05;sx=555;spose=8+Math.floor(t*7)%2;caption='躍起反擊 · 穿過潮汐';trail(hx-60,hy-60,t,-1);dust(255,650,(t-8.95)*.85,'#dfd6b4',25);ring(295,650,(t-10.65)*2,'#d2efee',2.5)}
+ else if(t<12.4){hx=mix(295,220,(t-10.8)/.4);hpose=5;sx=555;spose=10;caption='匯聚努力 · 蓄能完成';const p=ease((t-10.8)/1.6);glow(360,440,35+55*p,.5);for(let i=0;i<10;i++){const a=t*3+i*Math.PI/5,r=55*(1-p)+12;ellipse(360+Math.cos(a)*r,440+Math.sin(a)*r,2,2,'#ffecc3')}ring(360,440,((t-10.8)*1.2)%1,'#8cefff');shield(460,480,t,.45)}
+ else if(t<14.3){hx=220;hpose=5;sx=555+Math.sin((t-12.9)*15)*Math.max(0,1-Math.abs(t-13.0))*9;sy=625+Math.sin(t*5)*4;spose=t<13.2?10:8;caption='夥伴之光 · 試煉突破'}
+ else{const p=(t-14.3)/1.3;hx=mix(220,230,p);hpose=7;sx=mix(555,505,p);spose=11;sy=625+Math.sin(t*3)*4;caption=t<15.3?'守護獸認可了你的勇氣':'從今天起，我們一起冒險';glow(360,470,170,.35,'255,219,140')}
+ ellipse(hx,664,82,16,'#00151e55');ellipse(sx,664,91,17,'#00151e44');if(species==='steel-eagle'){sy-=35+Math.sin(t*7)*12;if(t>6.4&&t<8.6)sy-=Math.sin((t-6.4)/2.2*Math.PI)*65;}
+ if(species==='bramblefang'&&t>6.4&&t<8.6)sy-=Math.sin((t-6.4)/2.2*Math.PI)*85;
+ if(species==='stoneback'&&t>4.3&&t<6.4)sy-=Math.abs(Math.sin(t*6))*14;
+ elementGround(t,sx-95,650);sprite(spose,sx,sy,ss,sr);sprite(hpose,hx,hy,hs,hr);
+ if(t>12.45&&t<13.8){const p=Math.min(1,(t-12.45)*6)*Math.min(1,(13.8-t)*3);beam(360,440,475,470,p);for(let i=0;i<3;i++)ring(475,470,(t-12.85-i*.14)*1.3,i%2?'#ffe9ad':'#a0f4ff');dust(475,470,t-12.85,'#c5fbff',35);glow(360,440,50,p);}
+ if(t>14.5){const p=ease((t-14.5)/1.2);g.save();g.globalAlpha=p;g.strokeStyle='#ffe2a4';g.lineWidth=2;g.beginPath();g.moveTo(280,465);g.quadraticCurveTo(360,370,440,455);g.stroke();g.restore();for(let i=0;i<16;i++){const a=i*Math.PI/8+t*.5;ellipse(360+Math.cos(a)*70,430+Math.sin(a)*45,2+i%2,2+i%2,'#fff0b4')}glow(360,430,75,p,'255,225,146');text('✦',360,420,48,'#ffe9a7');ring(360,430,Math.min(1,(t-14.5)/1.7),'#ffedbe')}
+ g.restore();text('HOLTON  ×  '+titles[species]+' · '+tiers[tier],360,72,21,element);text(t>15.3?'締結守護夥伴':'天空基地 · 勇氣試煉',360,117,34);g.fillStyle='#08283de6';g.beginPath();g.roundRect(32,743,656,74,24);g.fill();const words={stoneback:['大地','岩晶'],emberwing:['烈焰','火焰'], 'steel-eagle':['雷翼','雷光'],bramblefang:['森林','飛葉'],tidefin:['潮汐','潮汐']}[species];caption=caption.replaceAll('潮汐',words[0]);text(caption,360,781,25);text('勇氣試煉 · 一起成為夥伴',360,857,17,'#d0e3e8');
+}
+window.ready=Promise.all([atlas.decode(),bg.decode(),beast.decode()]).then(()=>{unpackAtlas();extractBeasts();render(0);window.renderFrame=render});
+window.play=()=>{const start=performance.now();const tick=now=>{render(Math.min(DURATION,(now-start)/1000));if(now-start<DURATION*1000)requestAnimationFrame(tick)};requestAnimationFrame(tick)};c.onclick=()=>window.play();
+</script>

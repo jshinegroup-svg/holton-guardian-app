@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { guardianFilmPath } from './lib/guardianFilms';
 import type { BattleProps } from './GuardianBattle';
 
 /** Presentation only: debit and ownership remain in the existing persisted transaction. */
-export default function GuardianFilm({ hero, guardian, cost, reduced, won, preview, saving, error, onWin, onClose, onCompanion }: BattleProps) {
+export default function GuardianFilm({ guardianId, hero, guardian, cost, reduced, won, preview, saving, error, onWin, onClose, onCompanion }: BattleProps) {
   const [finished, setFinished] = useState(won || reduced);
   const [failed, setFailed] = useState(false);
   const video = useRef<HTMLVideoElement>(null);
@@ -14,18 +15,18 @@ export default function GuardianFilm({ hero, guardian, cost, reduced, won, previ
   const button = (label: string, action: () => void) => <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={saving} onPress={action} style={[s.button, saving && { opacity: 0.5 }]}><Text style={s.buttonText}>{label}</Text></Pressable>;
   const skip = () => { video.current?.pause(); setFinished(true); };
   return <ScrollView contentContainerStyle={s.page} testID="guardian-battle">
-    <Text style={s.title}>{won ? '新的守護夥伴！' : finished ? '試煉成功！' : '潮汐夥伴試煉'}</Text>
+    <Text style={s.title}>{won ? '新的守護夥伴！' : finished ? '試煉成功！' : '守護夥伴試煉'}</Text>
     <Text style={s.body}>{preview ? '動畫預覽 · 不扣點／不取得卡片' : won ? '牠願意陪你一起成長。' : `已使用 ${cost} 點 · 這場試煉一定能成功`}</Text>
     {!finished && !won ? <View testID="battle-arena" style={s.arena}>
       {React.createElement('video', {
         ref: video,
-        src: `${process.env.EXPO_PUBLIC_BASE_URL || ''}/battles/tidefin-mini-v2.mp4`,
+        src: `${process.env.EXPO_PUBLIC_BASE_URL || ''}/battles/${guardianFilmPath(guardianId)}`,
         autoPlay: true, muted: true, playsInline: true, controls: true, preload: 'auto',
-        'aria-label': '17 秒 2D 機器人與 Mini 鯊魚戰鬥動畫',
+        'aria-label': `17 秒 2D 機器人與 ${guardian.name} 戰鬥動畫`,
         style: { display: 'block', width: '100%', aspectRatio: '4 / 5', background: '#071f35' },
         onEnded: () => setFinished(true), onError: () => setFailed(true),
       })}
-      <Text style={s.note}>17 秒角色演出 · Super Hero 機器人 × Tidefin Mini</Text>
+      <Text style={s.note}>17 秒角色演出 · Super Hero 機器人 × {guardian.name}</Text>
     </View> : <Image source={guardian.image} accessibilityLabel={guardian.name} style={s.card} resizeMode="contain" />}
     <Text accessibilityLabel={`出戰：${hero.name}`} style={s.note}>本次時間卡：{hero.name}。角色短片使用已完成的 Super Hero 機器人演出。</Text>
     {!finished && !won ? <Text style={s.note}>{failed ? '影片暫時無法載入，可直接查看結果；不影響已扣點數或取得夥伴。' : '預設靜音，可用影片控制列播放或開啟聲音。'}</Text> : <Text style={s.body}>「從今天起，我們一起面對挑戰。」</Text>}
