@@ -64,3 +64,5 @@ actor=bot approval=user-request trigger=compact-world-map-and-three-chapter-scen
 actor=bot approval=user-request trigger=public-deployment-watch; queued Pages release, public test pipeline scheduled after build
 actor=bot approval=explicit-user-request trigger=forest-first-route; v2 journey migration retains old access/counts; all local checks pass
 actor=bot approval=explicit-user-request trigger=first-season-brand; changed display name/header only; checks pass; critical=config-display-name-only
+
+2026-10-20 actor=codex approval=user trigger=compact-journey-panel: shrink JourneyHint to horizontal 88px panel; preserve detail/reveal and state; typecheck/eslint/build/browser passed.
