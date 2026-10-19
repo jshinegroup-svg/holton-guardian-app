@@ -21,3 +21,6 @@ Built-in image_gen created assets/worlds/journeys/{map,forest,cosmos}.png; full 
 - Isolated390/320 Chrome covers fresh map/locks, actual task/help/cleanup for all three worlds, no credit before cleanup, double-click single reward/step, write failure atomicity, reload/pending story, step5 and15, world-card draw priority, all unlocks/free revisit, history migration, active recovery, reduced and timed reveal. Landmarks confirmed loaded and screenshots visually reviewed.
 - Adapted prior wish cart/catalog suites verify entry through map, mixed checkout, custom card config/snapshots and prior data. Initial old helper accessed document.body before DOM existed; guarded body and reran. Not a product failure.
 - Tests use isolated browser storage only, not user's phone. No physical iPhone claim.
+
+## Public release
+Pages4294d83 built; source4a17fcc; bundle AppEntry-b801d1dfb98dd0e1e7310e2cf2dd91a5.js. Public browser-check suite PASSED all world-task/atomicity/locks/migration/story/mobile scenarios. SHA256 for all three public new environment images matches export. Existing battle assets retained. Public screenshots use synthetic isolated data.
