@@ -10,3 +10,5 @@ User confirmed no losing challenges. Uses original time-card robot and guardian 
 - Pure checks: guards, idempotency, reload across day, tier prices, state preservation.
 - Browser checks: full animation/preview, cancel, injected storage failure, double clicks, original hero snapshot, interrupted battle/win reload, 320/390 screenshots, skip, optional companion, second tier, reduced motion, Monday block/free preview.
 - Account/PIN changes are a separate staged family branch; not included here.
+
+Public Pages c8fda7e built successfully; full guardian browser suite passed against the original HTTPS URL. Published free preview remains available on Monday; real challenge remains Sunday-only.
