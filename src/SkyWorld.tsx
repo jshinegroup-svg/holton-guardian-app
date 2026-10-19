@@ -13,7 +13,7 @@ export function useSystemReducedMotion() {
 }
 
 export function WorldBackdrop({ scene }: { scene: 'home' | 'focus' | 'rest' }) {
-  const source = scene === 'rest' ? require('../assets/worlds/sky-base/rest.png') : scene === 'focus' ? require('../assets/worlds/sky-base/focus.png') : require('../assets/worlds/sky-base/island.png');
+  const source = scene === 'rest' ? require('../assets/worlds/sky-base/rest-v3.png') : scene === 'focus' ? require('../assets/worlds/sky-base/focus-v3.png') : require('../assets/worlds/sky-base/island-v3.png');
   return <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={`world-scene-${scene}`}><Image source={source} resizeMode="cover" accessible={false} style={{ width: '100%', height: '100%' }} /><View style={[StyleSheet.absoluteFill, { backgroundColor: scene === 'focus' ? 'rgba(9,19,45,0.2)' : 'rgba(4,28,40,0.12)' }]} /></View>;
 }
 export function SkyHero({ image, name }: { image: ImageSourcePropType; name: string }) {
