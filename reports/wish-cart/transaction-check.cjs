@@ -1,0 +1,10 @@
+const fs=require('fs'),ts=require('typescript'),vm=require('vm'),assert=require('assert/strict');
+let source=fs.readFileSync('src/RewardShop.tsx','utf8').split('export default function')[0].replace(/^import .*$/mg,'').replace(/^const wishArt:.*$/mg,'');
+const ctx={exports:{}};vm.runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,ctx);
+const redeem=ctx.exports.redeemWishes;
+const items=[{id:'a',name:'A',cost:20,enabled:true},{id:'b',name:'B',cost:30,enabled:true}];
+const state={shopEnabled:true,orbs:60,wishes:items,wishReceipts:[]};
+const result=redeem(state,items,'batch');assert.equal(result.orbs,10);assert.equal(result.wishReceipts.length,2);assert.equal(redeem(result,items,'batch'),result);
+for(const s of [{...state,orbs:40},{...state,shopEnabled:false},{...state,wishes:[items[0],{...items[1],enabled:false}]},{...state,wishes:[items[0],{...items[1],cost:31}]}])assert.equal(redeem(s,items,'x'),s);
+assert.equal(redeem(state,[items[0],items[0]],'x'),state);assert.equal(state.orbs,60);assert.equal(state.wishReceipts.length,0);
+console.log('PASS atomic all-or-none, stale price, disabled item/shop, combined funds, duplicate batch/items, immutable original');
