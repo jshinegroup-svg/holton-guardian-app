@@ -57,3 +57,4 @@
 2026-10-19 actor=bot approval=user-explicit-proceed trigger=world-map-story-trial action=implement-three-playable-world-journeys files=src/WorldJourney.tsx,src/lib/journeys.ts,src/LightApp.tsx,src/SkyWorld.tsx,assets/worlds/journeys,reports/world-journeys
 2026-10-19 actor=bot approval=user-explicit-proceed trigger=world-map-story-trial action=verify-public-4294d83 result=pass
 2026-10-19 actor=bot approval=user-explicit-proceed trigger=world-map-story-trial action=verify-loaded-public-scenery result=pass
+2026-10-19 bot | approval=user 22728 + lighting feedback | fix world order and visible persistent landmark; manual before/after reveal; verified isolated mobile web
