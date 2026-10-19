@@ -33,3 +33,4 @@
 2026-10-19 | actor=codex | approval=user22641 | implement immersive first sky world, unified settings and six-category task picker; preserve original cards/rewards/history; local tests passed.
 2026-10-19 | actor=codex | approval=user22641 | deployed b8edecf; public HTML/assets verified; both isolated browser suites passed, user device data untouched.
 2026-10-19 actor=bot approval=user-request trigger=immersive-layout-and-optional-life-rewards changed=LightApp,RewardShop,original-reward-assets,reports/immersive-v2; original Drive cards verified; local tests passed
+2026-10-19 actor=bot approval=user-request trigger=public-verification reports/immersive-v2 updated public screenshots and PASS results; gh-pages 8025d2e built
