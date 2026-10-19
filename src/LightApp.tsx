@@ -67,6 +67,7 @@ export default function LightApp() {
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [guardianDetailId, setGuardianDetailId] = useState<string | null>(null);
   const [taskPickerOpen, setTaskPickerOpen] = useState(false);
+  const [detailCustom, setDetailCustom] = useState(false);
   const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [minutes, setMinutes] = useState('5');
@@ -191,6 +192,7 @@ export default function LightApp() {
       rewardProgress: progress % 3, dailyRewardDay: allDone ? dateKey : s.dailyRewardDay,
       draws: [...(s.draws ?? []), ...(triple || allDone ? [{ id: String(at.getTime()), reason }] : [])] };
   }
+  const companionScene = (<View testID="guardian-companion" style={styles.companionRow}><Image source={companion?.image ?? guardianImage} accessibilityLabel="今日夥伴陪你做任務" style={styles.companionThumb} resizeMode="contain" /><View style={{flex: 1, gap: 8}}><Text style={styles.guardianName}>{companion?.name || guardian.coreGuardianName || '守護夥伴'}</Text><Text style={styles.body}>{state.help ? '我陪你休息，準備好再一起走。' : state.phase === 'done' ? '我們一起完成了！' : '我在這裡，陪你一起做。'}</Text>{state.phase === 'active' && selectedCard && !state.help ? <Image source={selectedCard.imageSource} accessibilityLabel={selectedCard.name} style={{width: 80, height: 112, alignSelf: 'center'}} resizeMode="contain" /> : null}</View></View>);
   async function chooseTask(nextTitle: string, category: string) {
     if (!nextTitle.trim() || nextTitle.trim().length > 80 || !current.current || !['ready', 'done'].includes(current.current.phase)) return;
     const saved = await change(s => !['ready', 'done'].includes(s.phase) ? s : ({ ...s, title: nextTitle.trim(), taskCategory: category, phase: 'ready', deadline: null, remaining: s.minutes * 60, help: false }));
@@ -236,10 +238,10 @@ export default function LightApp() {
       
       <View testID="mission-stage" onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }} style={[styles.card, styles.missionPanel]}><Text testID="mission-name" style={styles.heading}>{state.phase === 'done' ? '你做到了！' : state.title || '今天要完成什麼？'}</Text>
       {state.phase === 'ready' ? <>
-        <View style={{flexDirection: 'row', justifyContent: 'center', gap: 8, flexWrap: 'wrap'}}><Pressable accessibilityRole="button" accessibilityLabel={state.title ? '修改任務' : '選擇任務'} onPress={() => { setTaskPickerOpen(true); setTaskDetailsOpen(false); }} style={styles.smallLink}><Text style={styles.cardMinutes}>{state.title ? '✎ 換個任務' : '✎ 選擇任務'}</Text></Pressable>
+        <View style={{flexDirection: 'row', justifyContent: 'center', gap: 8, flexWrap: 'wrap'}}><Pressable accessibilityRole="button" accessibilityLabel={state.title ? '修改任務' : '選擇任務'} onPress={() => { setDetailCustom(false); setTaskPickerOpen(true); setTaskDetailsOpen(false); }} style={styles.smallLink}><Text style={styles.cardMinutes}>{state.title ? '✎ 換個任務' : '✎ 選擇任務'}</Text></Pressable>
         {activeCategory ? <>
           <Pressable accessibilityRole="button" accessibilityLabel={taskDetailsOpen ? '收起任務細項' : '選得更清楚'} onPress={() => setTaskDetailsOpen(!taskDetailsOpen)} style={styles.smallLink}><Text style={styles.cardMinutes}>{taskDetailsOpen ? '收起任務細項' : '選得更清楚 ▾'}</Text></Pressable>
-          {taskDetailsOpen ? <View style={styles.helpGrid}>{activeCategory.tasks.map(task => <Pressable key={task} accessibilityRole="button" accessibilityLabel={`細項：${task}`} disabled={saving} onPress={() => void chooseTask(task, activeCategory.id)} style={styles.detailChoice}><Text style={styles.body}>{task}</Text></Pressable>)}</View> : null}
+          {taskDetailsOpen ? <View style={{width: '100%', gap: 6}}><Text style={styles.caption}>← 左右滑動，選今天的一小步 →</Text><ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{gap: 8, paddingBottom: 10}} testID="task-detail-scroll">{activeCategory.tasks.map(task => <Pressable key={task} accessibilityRole="button" accessibilityLabel={`細項：${task}`} disabled={saving} onPress={() => void chooseTask(task, activeCategory.id)} accessibilityState={{selected: state.title === task}} style={[styles.detailChoice, state.title === task && styles.selectedCard]}><Text style={styles.body}>{task}</Text></Pressable>)}<Pressable accessibilityRole="button" accessibilityLabel="細項：其他" disabled={saving} onPress={() => { setDetailCustom(true); setTaskPickerOpen(true); }} style={styles.detailChoice}><Text style={styles.body}>✎ 其他</Text></Pressable></ScrollView></View> : null}
         </> : null}
         
         </View><View style={styles.cardStage}>
@@ -262,7 +264,7 @@ export default function LightApp() {
         {button(finish.button, () => void change(completeTask))}
         {button('還有一點，回去繼續', () => void change(s => s.phase !== 'finishing' ? s : ({ ...s, phase: 'active', deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000, help: false })), true)}
       </> : state.phase === 'active' ? <>
-        {selectedCard && !state.help ? <CardPedestal source={selectedCard.imageSource} label={selectedCard.name} /> : null}
+        {companionScene}
         {state.help ? null : state.minutes === 0 ? <Text style={styles.section}>不限時，慢慢完成就好。</Text> : <Text testID="crystal-clock" style={styles.timer}>{String(Math.floor(remaining / 60)).padStart(2, '0')}:{String(remaining % 60).padStart(2, '0')}</Text>}
         <Text style={styles.body}>{state.help ? '任務已暫停' : state.minutes !== 0 && remaining === 0 ? '時間到了。還沒做好也沒關係，可以慢慢完成。' : '照自己的速度來。'}</Text>
         {state.help ? <>
@@ -282,11 +284,12 @@ export default function LightApp() {
         {!state.help ? button('完成', () => void change(enterFinishing)) : null}
       </> : <><Text style={styles.section}>{finish.title}</Text><Text style={styles.quote}>你完成了，也把這一輪收好了。每一小步都值得被看見。</Text><RewardArrival reward={state.taskReward ?? 1} balance={state.orbs} reduced={reduceMotion} animate={celebrate.current && !pending} /><Text style={styles.body}>{state.title}</Text><Text style={styles.caption}>這一輪結束了。休息一下，準備好再選卡。</Text>{button('再選一張任務卡', () => void change(s => ({ ...s, phase: 'ready', deadline: null, help: false, remaining: s.minutes * 60 })), true)}</>}
       </View>
+      {state.phase !== 'active' ? companionScene : null}
       {homePhase ? <>
       {button(`✦ 能量球 ${state.orbs} · ${walletOpen ? '收起加法' : '看看加法'}`, () => setWalletOpen(!walletOpen), true)}
       {walletOpen ? <View style={styles.scorePanel} accessibilityLiveRegion="polite"><Text style={styles.section}>我的可用能量球</Text><EnergyMath total={state.orbs} /><Text accessibilityLabel={`可用能量球 ${state.orbs} 顆`} style={[styles.energyNumber, { fontSize: Math.min(40, 180 / String(state.orbs).length) }]}>{state.orbs} 顆</Text><Text style={styles.body}>今天任務 ＋{today.reduce((sum, item) => sum + (item.reward ?? 1), 0)} 顆 · 世界卡 ＋{todayExchangePoints} 顆</Text><Text style={styles.caption}>守護獸兌換已用 {(state.guardianCards ?? []).filter(item => item.source === 'sunday').reduce((sum, item) => sum + item.cost, 0)} 點</Text><Text style={styles.section}>今日任務 {today.length} / {state.dailyGoal ?? 3} {today.length >= (state.dailyGoal ?? 3) ? '✓ 全完成' : ''}</Text><Text style={styles.body}>{'● '.repeat(state.rewardProgress ?? 0)}{'○ '.repeat(3 - (state.rewardProgress ?? 0))} 再完成 {3 - (state.rewardProgress ?? 0)} 次抽世界卡</Text><Text style={styles.caption}>今天全完成也能抽卡 · 已收藏 {state.collection?.length ?? 0} 張</Text></View>
       : null}
-      <View style={styles.companionRow}><Image source={companion?.image ?? guardianImage} accessibilityLabel="今日夥伴陪你做任務" style={styles.companionThumb} resizeMode="contain" /><Text style={styles.caption}>{companion?.name || guardian.coreGuardianName || '守護夥伴'} 陪你一起做</Text></View><View testID="scene-footer">{button(hubOpen ? '收起基地收藏室' : '✧ 基地收藏室', () => setHubOpen(!hubOpen), true)}{state.shopEnabled ? button('✧ 心願小舖', () => setShopOpen(true), true) : button('世界卡換點數', () => setWorldExchangeOpen(true), true)}</View>
+      <View testID="scene-footer">{button(hubOpen ? '收起基地收藏室' : '✧ 基地收藏室', () => setHubOpen(!hubOpen), true)}{state.shopEnabled ? button('✧ 心願小舖', () => setShopOpen(true), true) : button('世界卡換點數', () => setWorldExchangeOpen(true), true)}</View>
       {hubOpen ? <View style={styles.card}><Text style={styles.section}>基地收藏室</Text><Text style={styles.caption}>本命獸：{guardian.coreGuardianName || '你的本命獸'} · 身分保留</Text>{button('我的守護獸收藏', () => setCollectionOpen(true), true)}{button('世界卡換點數', () => setWorldExchangeOpen(true), true)}{state.collection?.length ? button(showWorldAlbum ? '收起世界卡收藏' : '打開世界卡收藏', () => setShowWorldAlbum(!showWorldAlbum), true) : null}</View> : null}
       </> : null}
     </>}
@@ -295,7 +298,7 @@ export default function LightApp() {
   </ScrollView>
     <Modal visible={shopOpen && !!state.shopEnabled && !pending} animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => setShopOpen(false)}><SafeAreaView style={styles.root}><WorldBackdrop scene="rest" /><ScrollView contentContainerStyle={styles.page}>{button('回到天空基地', () => setShopOpen(false), true)}<RewardShop data={state} settings={false} saving={saving} change={change} />{error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}</ScrollView></SafeAreaView></Modal>
     <Modal visible={taskPickerOpen && state.phase === 'ready'} transparent animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => setTaskPickerOpen(false)}><View style={styles.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalScroll}>
-      <TaskPicker currentTitle={state.title} saving={saving} onSelect={chooseTask} onClose={() => setTaskPickerOpen(false)} />
+      <TaskPicker key={detailCustom ? 'detail' : 'category'} initialCustom={detailCustom} customCategory={detailCustom ? activeCategory?.id : undefined} currentTitle={state.title} saving={saving} onSelect={chooseTask} onClose={() => setTaskPickerOpen(false)} />
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
     </ScrollView></View></Modal>
     <Modal visible={worldExchangeOpen && !pending} animationType={reduceMotion ? 'none' : 'slide'} onRequestClose={() => setWorldExchangeOpen(false)}><SafeAreaView style={styles.root}><WorldBackdrop scene="home" /><ScrollView contentContainerStyle={styles.page}>
@@ -355,7 +358,7 @@ const styles = StyleSheet.create({
   secondarySetting: { minHeight: 52, padding: 12, backgroundColor: '#153e54', borderRadius: 14, justifyContent: 'center' },
   reminder: { backgroundColor: '#153e4b', borderColor: '#9bbdab', borderWidth: 1, borderRadius: 20, padding: 20, gap: 12 },
   helpGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, helpChoice: { flexBasis: '45%', flexGrow: 1, borderRadius: 14, padding: 8, borderWidth: 1, borderColor: '#c9d9cf', alignItems: 'center', gap: 4, backgroundColor: '#133e4b' }, helpArt: { width: '100%', height: 155 },
-  companionArt: { width: 180, height: 250 }, companionRow: { flexDirection: 'row', alignItems: 'center', gap: 10 }, companionThumb: { width: 32, height: 42 },
+  companionArt: { width: 180, height: 250 }, companionRow: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, borderRadius: 22, borderWidth: 1, borderColor: '#cbb377', backgroundColor: 'rgba(7,40,56,0.88)' }, companionThumb: { width: 136, height: 192 },
   ritualArt: { width: '100%', height: 280 },
   energyWallet: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: 'rgba(9,36,56,0.90)', borderWidth: 1, borderColor: '#e7d39e', borderRadius: 18, padding: 12 }, energyCardArt: { width: 96, height: 144, flexShrink: 0, borderRadius: 10 }, energyBalance: { flex: 1, minWidth: 0, gap: 5 }, energyNumber: { fontSize: 52, fontWeight: '900', color: '#ffe3a0', fontVariant: ['tabular-nums'] }, energyUnit: { fontSize: 17, fontWeight: '700', color: '#ffe3a0' },
   scorePanel: { backgroundColor: 'rgba(9,36,56,0.94)', borderWidth: 1, borderColor: '#bca476', borderRadius: 22, padding: 16, gap: 8, alignItems: 'center' }, score: { fontSize: 48, fontWeight: '900', color: '#ffe3a0', textAlign: 'center' },
