@@ -4,6 +4,10 @@ import { Image, StyleSheet, Text, View, type ImageSourcePropType } from 'react-n
 const blue = require('../assets/cards/energy-math/energy-5.jpg');
 const gold = require('../assets/cards/energy-math/energy-20.jpg');
 const cards: Record<number, ImageSourcePropType> = {
+  1: require('../assets/cards/energy-math/energy-1.jpg'),
+  4: require('../assets/cards/energy-math/energy-4.jpg'),
+  2: require('../assets/cards/energy-math/energy-2.jpg'),
+  3: require('../assets/cards/energy-math/energy-3.jpg'),
   5: blue, 20: gold,
   10: require('../assets/cards/energy-math/energy-10.jpg'),
   30: require('../assets/cards/energy-math/energy-30.jpg'),

@@ -114,3 +114,5 @@ Checks: typecheck and component ESLint pass; Expo export passes. Browser 390×84
 
 ## Original 10 / 30 / 50 / 100 cards
 - User supplied four original card images: 10 purple, 30 green, 50 silver-white, 100 gold. Copied unmodified into assets/cards/energy-math/energy-{10,30,50,100}.jpg and mapped exact denominations in EnergyMath. Pink 40 retained. Arithmetic, storage and reward rules unchanged. Sky Base remains a separate static concept, not deployed.
+- Additional user originals received in same batch: blue 1, 2, 4, refreshed 5. Copied without editing and mapped exact values. No original 3 received; existing native number-card fallback retained. User originals remain distinct from generated 6–9 and pink 40.
+- User subsequently supplied original blue 3 in same batch; now all 1–5 originals mapped. Final available artwork denominations: 1–9, 10, 20, 30, 40, 50, 100. Other values retain exact dynamic fallback.
