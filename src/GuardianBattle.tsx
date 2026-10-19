@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { Animated, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+
+import GuardianFilm from './GuardianFilm';
 
 type Fighter = { name: string; image: ImageSourcePropType | undefined };
-type Props = { hero: Fighter; guardian: Fighter; cost: number; reduced: boolean; won: boolean; preview?: boolean; saving: boolean; error: string; onWin: () => void; onClose: () => void; onCompanion: () => void };
+export type BattleProps = { guardianId?: string; hero: Fighter; guardian: Fighter; cost: number; reduced: boolean; won: boolean; preview?: boolean; saving: boolean; error: string; onWin: () => void; onClose: () => void; onCompanion: () => void };
 const lines = ['夥伴試煉 · 登場', '勇氣出擊！', '守護屏障！', '匯聚你的努力', '發動夥伴之光！', '試煉成功！'];
 
 /** Original-card choreography: no random outcome and no independent wallet writes. */
-export default function GuardianBattle({ hero, guardian, cost, reduced, won, preview = false, saving, error, onWin, onClose, onCompanion }: Props) {
+function LegacyGuardianBattle({ hero, guardian, cost, reduced, won, preview = false, saving, error, onWin, onClose, onCompanion }: BattleProps) {
   const [step, setStep] = useState(won ? 5 : reduced ? 3 : 0);
   const heroX = useRef(new Animated.Value(0)).current;
   const guardianX = useRef(new Animated.Value(0)).current;
@@ -66,3 +68,8 @@ const s = StyleSheet.create({
   story: { borderRadius: 18, borderWidth: 1, borderColor: '#c2ac74', backgroundColor: '#0a2b41ee', padding: 16, minHeight: 84, justifyContent: 'center' }, storyText: { color: '#fff0d3', fontSize: 18, lineHeight: 28, textAlign: 'center' },
   button: { minHeight: 52, borderRadius: 18, padding: 13, backgroundColor: '#087f91', borderWidth: 2, borderColor: '#e2c689', justifyContent: 'center' }, quiet: { backgroundColor: '#123b50' }, buttonText: { color: '#fff4db', fontWeight: '800', fontSize: 17, textAlign: 'center' }, note: { color: '#d0e3e9', fontSize: 13, lineHeight: 21, textAlign: 'center', backgroundColor: '#102e45cc', padding: 6, borderRadius: 9 }, error: { color: '#ffd2d2', backgroundColor: '#522b37', padding: 12, fontSize: 16 },
 });
+
+export default function GuardianBattle(props: BattleProps) {
+  return props.guardianId === 'tidefin:0' && Platform.OS === 'web'
+    ? <GuardianFilm {...props} /> : <LegacyGuardianBattle {...props} />;
+}
