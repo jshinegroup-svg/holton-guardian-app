@@ -3,7 +3,7 @@ const source=fs.readFileSync('src/LightApp.tsx','utf8');
 const catalog=fs.readFileSync('src/data/holtonCatalog.ts','utf8');
 const cards=[...catalog.matchAll(/minutes: (\d+), orbs: (\d+)/g)].map(m=>({minutes:+m[1],orbs:+m[2]}));
 const reward=vm.runInNewContext('(minutes)=>timeChallenges.find(card=>card.minutes===minutes)?.orbs??1',{timeChallenges:cards});
-let fn=source.slice(source.indexOf('  function completeTask('),source.indexOf('  function saveTask(')).replace('(s: State): State','(s)');
+let fn=source.slice(source.indexOf('  function completeTask('),source.indexOf('  async function chooseTask(')).replace('(s: State): State','(s)');
 const settle=vm.runInNewContext('('+fn+')',{day:d=>d.toDateString()});
 for(const [minutes,expected] of [[3,1],[5,1],[10,2],[15,3],[20,4],[25,5],[0,5],[7,1]]){
  assert.equal(reward(minutes),expected);

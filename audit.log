@@ -29,3 +29,5 @@
 2026-10-19 actor=bot approval=user:first-version-only trigger=sky-base implementation+scene+settings+verification; later-world designs deferred
 2026-10-19 actor=bot approval=user:first-version-only trigger=public-verification sky-base Pages 5f1a850 built; isolated public browser passed
 2026-10-19 actor=bot approval=user:immersive-draft trigger=visual-design created three-scene board+prompt; website unchanged
+
+2026-10-19 | actor=codex | approval=user22641 | implement immersive first sky world, unified settings and six-category task picker; preserve original cards/rewards/history; local tests passed.

@@ -51,18 +51,18 @@ export default function EnergyMath({ total }: { total: number }) {
 }
 
 const styles = StyleSheet.create({
-  panel: { width: '100%', alignItems: 'center', gap: 10, backgroundColor: '#fffaf0', borderWidth: 1, borderColor: '#e7d39e', borderRadius: 18, paddingVertical: 14, paddingHorizontal: 8 },
-  title: { color: '#174c69', fontSize: 17, fontWeight: '700' },
+  panel: { width: '100%', alignItems: 'center', gap: 10, backgroundColor: '#12374c', borderWidth: 1, borderColor: '#a78e5b', borderRadius: 18, paddingVertical: 14, paddingHorizontal: 8 },
+  title: { color: '#e6f4f7', fontSize: 17, fontWeight: '700' },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
   cardColumn: { width: 92, alignItems: 'center', gap: 4 },
   art: { width: 92, height: 138, borderRadius: 8 },
-  plus: { color: '#795616', fontSize: 24, fontWeight: '800' },
+  plus: { color: '#ffdf94', fontSize: 24, fontWeight: '800' },
   dynamicCard: { width: 92, height: 138, borderWidth: 3, borderColor: '#144c6a', borderRadius: 8, overflow: 'hidden', backgroundColor: '#ffedc7', alignItems: 'center' },
   header: { width: '100%', backgroundColor: '#215e7c', color: '#ffedc7', fontSize: 16, fontWeight: '900', textAlign: 'center', paddingVertical: 6 },
   orbWindow: { width: 80, height: 66, overflow: 'hidden' },
   orbSource: { width: 100, height: 150, position: 'absolute', top: -41, left: -10 },
   value: { color: '#144c6a', fontWeight: '900', textAlign: 'center', width: '100%' },
-  cardLabel: { color: '#174c69', fontWeight: '700', fontSize: 15 },
-  equation: { fontSize: 21, fontWeight: '800', color: '#795616', textAlign: 'center', flexWrap: 'wrap' },
-  caption: { color: '#746344', fontSize: 13, textAlign: 'center' },
+  cardLabel: { color: '#e6f4f7', fontWeight: '700', fontSize: 15 },
+  equation: { fontSize: 21, fontWeight: '800', color: '#ffdf94', textAlign: 'center', flexWrap: 'wrap' },
+  caption: { color: '#c1d9e3', fontSize: 13, textAlign: 'center' },
 });

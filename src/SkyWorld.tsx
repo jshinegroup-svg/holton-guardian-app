@@ -12,14 +12,12 @@ export function useSystemReducedMotion() {
   return reduced;
 }
 
+export function WorldBackdrop({ scene }: { scene: 'home' | 'focus' | 'rest' }) {
+  const source = scene === 'rest' ? require('../assets/worlds/sky-base/rest.png') : scene === 'focus' ? require('../assets/worlds/sky-base/focus.png') : require('../assets/worlds/sky-base/island.png');
+  return <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={`world-scene-${scene}`}><Image source={source} resizeMode="cover" accessible={false} style={{ width: '100%', height: '100%' }} /><View style={[StyleSheet.absoluteFill, { backgroundColor: scene === 'focus' ? 'rgba(9,19,45,0.2)' : 'rgba(4,28,40,0.12)' }]} /></View>;
+}
 export function SkyHero({ image, name }: { image: ImageSourcePropType; name: string }) {
-  return <View style={s.hero} testID="sky-base-hero">
-    <View style={s.landscape}><Image source={require('../assets/worlds/sky-base/island.png')} style={s.sceneImage} resizeMode="cover" accessible={false} />
-      <View style={s.heroLabel}><Text style={s.eyebrow}>浮空島 · 第一站</Text><Text style={s.title}>天空基地</Text><Text style={s.heroLine}>帶著你的卡片，一起出發。</Text></View>
-      <Image source={image} accessibilityLabel={`${name} 今日守護夥伴原卡`} style={s.guardian} resizeMode="contain" />
-    </View>
-    <View style={s.heroFooter}><Text style={s.eyebrow}>今日守護夥伴</Text><Text style={s.partnerName}>{name}</Text></View>
-  </View>;
+  return <View style={s.hero} testID="sky-base-hero"><View style={s.heroLabel}><Text style={s.eyebrow}>HOLTON HERO</Text><Text style={s.title}>天空基地</Text><Text style={s.heroLine}>帶著你的卡片，一起出發。</Text><Text style={s.partnerName}>{name}</Text></View><Image source={image} accessibilityLabel={`${name} 今日守護夥伴原卡`} style={s.guardian} resizeMode="contain" /></View>;
 }
 
 export function CardLift({ selected, reduced, children }: { selected: boolean; reduced: boolean; children: React.ReactNode }) {
@@ -69,16 +67,16 @@ export function RewardArrival({ reward, balance, reduced, animate }: { reward: n
   </View>;
 }
 const s = StyleSheet.create({
-  hero: { borderRadius: 24, borderWidth: 1, borderColor: '#cdb479', overflow: 'hidden', backgroundColor: '#fff9e9' },
+  hero: { minHeight: 180, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 12 },
   sceneImage: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
   landscape: { height: 200, justifyContent: 'space-between', padding: 14, flexDirection: 'row', alignItems: 'flex-end' },
-  heroLabel: { backgroundColor: 'rgba(255,250,234,0.96)', borderRadius: 14, padding: 12, maxWidth: '58%', gap: 3, borderWidth: 1, borderColor: '#dbc89a' },
-  title: { color: '#153f52', fontWeight: '900', fontSize: 29 }, eyebrow: { color: '#76603b', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
-  heroLine: { color: '#365d68', fontSize: 14, lineHeight: 22 }, guardian: { width: '38%', height: 158 },
-  heroFooter: { padding: 12, gap: 4 }, partnerName: { color: '#174654', fontWeight: '700', fontSize: 17, lineHeight: 25 },
-  portalRow: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, backgroundColor: '#eaf4f3', borderRadius: 18 }, portalWords: { flex: 1 },
+  heroLabel: { backgroundColor: 'rgba(8,34,54,0.88)', borderRadius: 14, padding: 12, maxWidth: '58%', gap: 3, borderWidth: 1, borderColor: '#dbc89a' },
+  title: { color: '#fff0cb', fontWeight: '900', fontSize: 29 }, eyebrow: { color: '#efd7a4', fontSize: 13, fontWeight: '700', letterSpacing: 1 },
+  heroLine: { color: '#d0e4eb', fontSize: 14, lineHeight: 22 }, guardian: { width: '38%', height: 158 },
+  heroFooter: { padding: 12, gap: 4 }, partnerName: { color: '#f8efda', fontWeight: '700', fontSize: 17, lineHeight: 25 },
+  portalRow: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, backgroundColor: '#153e52', borderRadius: 18 }, portalWords: { flex: 1 },
   portal: { width: 55, height: 72, borderTopLeftRadius: 30, borderTopRightRadius: 30, borderBottomLeftRadius: 8, borderBottomRightRadius: 8, borderWidth: 4, borderColor: '#bca571', backgroundColor: '#77cddc', alignItems: 'center', justifyContent: 'center' },
   portalGlow: { position: 'absolute', top: -4, bottom: -4, left: -4, right: -4, borderRadius: 24, backgroundColor: '#d3fffd' }, portalStar: { fontSize: 36, color: '#164c64' },
-  arrival: { padding: 16, alignItems: 'center', backgroundColor: '#edf8f8', borderRadius: 20, gap: 6 }, orbTrack: { height: 60, width: '100%', alignItems: 'center', justifyContent: 'center' },
-  orb: { width: 44, height: 44, backgroundColor: '#1789b2', borderColor: '#93e6ee', borderWidth: 3, borderRadius: 24, alignItems: 'center', justifyContent: 'center' }, orbStar: { fontSize: 27, color: '#fff6d9' }, reward: { fontSize: 42, color: '#80602d', fontWeight: '900' }, skip: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 14 },
+  arrival: { padding: 16, alignItems: 'center', backgroundColor: '#103749', borderRadius: 20, gap: 6 }, orbTrack: { height: 60, width: '100%', alignItems: 'center', justifyContent: 'center' },
+  orb: { width: 44, height: 44, backgroundColor: '#1789b2', borderColor: '#93e6ee', borderWidth: 3, borderRadius: 24, alignItems: 'center', justifyContent: 'center' }, orbStar: { fontSize: 27, color: '#fff6d9' }, reward: { fontSize: 42, color: '#ffdf92', fontWeight: '900' }, skip: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 14 },
 });

@@ -1,6 +1,6 @@
 # Immersive Sky Base — first visual draft
 
-Status: static concept board only; website unchanged. Left home / middle active timer / right rest. Generated card appearances are visual references, not pixel-exact originals; production must use original asset files as separate elements. Preserve all task/points/card rules. No new worlds. Timer background should be softened further during implementation. Two-card energy arithmetic remains in full wallet; compact 48 dock here is a composition proposal, not removal of arithmetic. No audio or looping animation implied.
+Original concept status: static concept board only; this paragraph describes the earlier concept, not the implementation below. Left home / middle active timer / right rest. Generated card appearances are visual references, not pixel-exact originals; production must use original asset files as separate elements. Preserve all task/points/card rules. No new worlds. Timer background should be softened further during implementation. Two-card energy arithmetic remains in full wallet; compact 48 dock here is a composition proposal, not removal of arithmetic. No audio or looping animation implied.
 
 Asset: reports/immersive-v1/three-scenes-concept.png
 Method: built-in image_gen. References: original Mini Fighter, original Break Time-II, production sky island.
@@ -13,3 +13,14 @@ MIDDLE ACTIVE TIMER: title 專注平台; consistent same world at calm blue-purp
 RIGHT REST: title 休息小營地; tranquil tree canopy on floating island, softly shaded teal/green forest, distant clouds. Label 任務已暫停. Exact original Break Time-II card displayed fully on a wooden/stone support, no redesign. Below rest timer 01:42, text 休息一下，準備好再回來. Primary button 休息好了，繼續; secondary 換一張幫忙卡. No automatic-resume wording. Rest is safe, no penalty, no urgent colors.
 This is a static design draft, not a deployed screenshot. Make scene art cinematic and immersive but UI orderly, readable with strong contrast and large touch targets. Preserve original cards as inserts instead of replacing them with themed new drawings.
 
+
+## Implemented first world — 2026-10-19
+Full-viewport home/focus/rest backdrops; original cards remain separate unchanged images. Unified Settings, no parent/child role entrances, no placeholder worlds. Six task categories with one-tap selection, optional detailed task chips, custom-only typing, blank validation/cancel preservation, persisted task, editing locked during a round. Existing tier rewards, card exchange, guardian collection and historical receipts preserved. Reduced-motion preference and OS setting retained; no audio or ambient loops.
+
+Validation: typecheck, scoped ESLint, reward-tier pure regression; isolated CDP browser suites at 320/390 pixels cover original cards, six choices, optional details, custom validation/cancel/save, reload, preparing/active/help/finishing locks, three backdrops, exact rewards, no duplicate settlement, milestone draws, untimed/rest timers, reduced motion and unrelated local storage. Screenshots in this directory are synthetic test data, not the user's device.
+
+### Production scene asset provenance
+Built-in imagegen generated these background-only assets; original card artwork was not generated or modified.
+- assets/worlds/sky-base/focus.png: portrait 2:3 calm blue-purple twilight floating-island focus platform; low-detail broad dark-blue center, distant castles/cloud islands at edges, stone terrace, sparse pink crystals at corners/branches; no characters, text, numbers, cards or UI; full-bleed storybook calm scenery.
+- assets/worlds/sky-base/rest.png: portrait 2:3 shaded floating forest sanctuary; canopy at sides/top, mossy stone clearing, distant blue clouds/islands, teal-green calm center, lantern at right edge and pink crystals at lower corners; no characters, text, numbers, cards or UI; quiet full-bleed storybook scenery.
+Home retains assets/worlds/sky-base/island.png. Backdrops are static; purposeful existing interaction animations respect reduced motion.
