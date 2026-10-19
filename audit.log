@@ -38,3 +38,5 @@
 2026-10-19 actor=codex approval=user-request trigger=larger-companion-more-homework changes=LightApp,TaskPicker,browser-evidence checks=typecheck,lint,export,mobile-lifecycle-pass
 
 2026-10-19 actor=codex approval=user-request trigger=public-verification changes=reports/companion-subjects checks=pages-built,public-HTML-match,public-mobile-lifecycle-pass
+
+2026-10-19 actor=codex approval=user-confirmed-no-defeat trigger=guardian-battle changes=LightApp,GuardianBattle,guardianChallenge,reports checks=typecheck,lint,model,browser
