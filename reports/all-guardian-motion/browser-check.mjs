@@ -55,7 +55,7 @@ try {
  const openCard=async(name='Tidefin Shark Mini')=>{await click('✧ 基地收藏室');await click('我的守護獸收藏');await click('查看待兌換 '+name)};
  const visible=label=>run(`[...document.querySelectorAll('[role=button]')].some(e=>e.getAttribute('aria-label')===${JSON.stringify(label)}&&e.getClientRects().length)`);
  await openCard();const before=await read();await click('預覽挑戰動畫（不扣點）');await shot('preview-390');
- for(let i=0;i<100;i++){if(await run('Number.isFinite(document.querySelector("video")?.duration)'))break;await wait(200)}check(await run('document.querySelector("video").duration > 16 && document.querySelector("video").duration < 18'),'17sec asset');check(await run('document.querySelector("video").muted && document.querySelector("video").playsInline'),'muted inline');for(let i=0;i<225;i++){if(await visible('結束預覽'))break;await wait(200)}check(await visible('結束預覽'),'natural video end');await shot('preview-victory');await click('結束預覽');check(JSON.stringify(await read())===JSON.stringify(before),'preview no wallet/card writes');
+ for(let i=0;i<450;i++){if(await run('Number.isFinite(document.querySelector("video")?.duration)'))break;await wait(200)}check(await run('document.querySelector("video").duration > 16 && document.querySelector("video").duration < 18'),'17sec asset');check(await run('document.querySelector("video").muted && document.querySelector("video").playsInline'),'muted inline');for(let i=0;i<450;i++){if(await visible('結束預覽'))break;await wait(200)}check(await visible('結束預覽'),'natural video end');await shot('preview-victory');await click('結束預覽');check(JSON.stringify(await read())===JSON.stringify(before),'preview no wallet/card writes');
  await click('挑戰守護獸 · 10 點');check((await read()).orbs===50,'confirmation not charged');await shot('confirmation');await click('先不挑戰，不扣點');check((await read()).orbs===50,'cancel not charged');
  await click('挑戰守護獸 · 10 點');
  // A failed local write must not start an animation or debit the wallet.
@@ -87,7 +87,7 @@ try {
  const label='查看待兌換 '+name+' '+stage;await click(label);await click('預覽挑戰動畫（不扣點）');
  const expected=species==='tidefin'&&tier===0?'tidefin-mini-v2.mp4':`${species}-${tier}-v1.mp4`;
  check(await run(`document.querySelector('video')?.src.endsWith(${JSON.stringify(expected)})`),'correct film '+species+':'+tier);
- for(let i=0;i<200;i++){if(await run('Number.isFinite(document.querySelector("video")?.duration)'))break;await wait(100)}
+ for(let i=0;i<900;i++){if(await run('Number.isFinite(document.querySelector("video")?.duration)'))break;await wait(100)}
  check(await run('Math.abs(document.querySelector("video").duration-17)<0.1'),'duration '+expected);
  await run('document.querySelector("video").playbackRate=8;document.querySelector("video").play()');
  for(let i=0;i<450;i++){if(await visible('結束預覽'))break;await wait(100)}check(await visible('結束預覽'),'end '+expected);

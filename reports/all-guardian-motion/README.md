@@ -16,3 +16,5 @@ Serve this folder on port 19100. Run node reports/all-guardian-motion/render.mjs
 - Isolated Chrome mobile checks recorded below; not physical iPhone certification.
 - Local Chrome 320/390: all 20 card-to-film URLs and actual ended events pass (batch films played at 8×; original first film at normal speed). Preview has no writes; cancel/write-failure preserves wallet; repeated debit/grant; reload; tier cost; reduced motion; Monday restrictions and media-error recovery pass.
 - Direct seek on a partially buffered local MP4 was flaky; batch verification instead plays through at 8× with a 45-second timeout, without synthetic ended events.
+- Public Pages deployment d2b2b7e built successfully. All 20 public MP4 SHA-256 values match local exports. Network metadata load exceeded the old 20-second test timeout on first request; public checks allow 90 seconds for metadata/playback (production UI remains skippable).
+- Public Chrome checks PASSED: all20 films play to actual ended event; isolated transactions/320/390/skip/reload/reduced-motion/error/weekday checks passed. Pages d2b2b7e, source d2f25f3. No physical-device test.
