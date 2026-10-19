@@ -28,3 +28,4 @@
 2026-10-19 actor=bot approval=user:original-rewards trigger=reward-tiers code/history-display/check/design-doc updated
 2026-10-19 actor=bot approval=user:first-version-only trigger=sky-base implementation+scene+settings+verification; later-world designs deferred
 2026-10-19 actor=bot approval=user:first-version-only trigger=public-verification sky-base Pages 5f1a850 built; isolated public browser passed
+2026-10-19 actor=bot approval=user:immersive-draft trigger=visual-design created three-scene board+prompt; website unchanged
