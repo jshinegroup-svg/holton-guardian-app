@@ -49,7 +49,7 @@ try {
  await ready();await run(`localStorage.setItem('${key}',JSON.stringify({version:1,title:'整理書包',minutes:5,cardId:'mini-fighter',orbs:48,phase:'ready',deadline:null,remaining:300,help:false,history:[],guardian:{coreGuardianId:'tidefin',coreGuardianName:'小浪'},guardianCards:[],dailyGoal:3}));localStorage.setItem('sky-test-preserve','untouched')`);await reload();
  check(await run("!!document.querySelector('[data-testid=sky-base-hero]')"),'hero present');
  check(await run("[...document.querySelectorAll('[role=button]')].filter(e=>(e.getAttribute('aria-label')||'').startsWith('選擇 ')).length===3"),'3 common time cards');
- check(await run("[...document.images].filter(i=>i.src.includes('mini-fighter')).every(i=>i.complete&&i.naturalWidth>0)"),'original time art loads');
+ await run(`new Promise((resolve,reject)=>{let tries=0;const timer=setInterval(()=>{const imgs=[...document.images].filter(i=>i.src.includes('mini-fighter'));if(imgs.length&&imgs.every(i=>i.complete&&i.naturalWidth>0)){clearInterval(timer);resolve(true)}else if(++tries>150){clearInterval(timer);reject(Error('original art load timeout'))}},100)})`);
  check(await run('document.documentElement.scrollWidth<=innerWidth'),'390 no overflow');await shot('home-390');
  await send('Emulation.setDeviceMetricsOverride',{width:320,height:740,deviceScaleFactor:1,mobile:true});await wait(250);check(await run('document.documentElement.scrollWidth<=innerWidth'),'320 no overflow');await shot('home-320');
  await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});

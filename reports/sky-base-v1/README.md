@@ -18,3 +18,8 @@ Built-in image_gen prompt: Create polished mobile home mockup for Holton Hero, T
 ## Production background provenance
 Path: assets/worlds/sky-base/island.png. Built-in image_gen from home-concept.png reference. Original generated output retained.
 Prompt: Create production BACKGROUND ART ASSET derived from floating-island scenery in app mockup, not a screenshot. Landscape 3:2. Calm magical sky sanctuary, lush floating grassy island left foreground, quiet stone portal near left center, distant floating forest islands and castle right, blue teal sky and cream clouds, subtle pink crystals. Premium detailed storybook illustration, gentle daylight matching reference. Open grassy stone platform foreground right for existing guardian card overlay. Remove ALL UI, lettering, text, numbers, panels, buttons, birds/creatures/characters. Scenery only, no card frames/interface, no particle storm or violent lightning. Full bleed no border. Visually inspected for text-free character-free scene.
+
+## Public verification
+- Pages release 5f1a8502c842281066bc427a50708d8ec3a47d1a built; HTML matches production export, island asset checksum matches.
+- Full Sky Base browser scenario passed on public URL in isolated synthetic profile, including original cards, 320/390 layouts, full task/help/finish/reload, tiered rewards, draw, reduced motion local+system and rest expiry. Public image assertion was updated to wait for actual image completion rather than checking before network load finished; no app change needed.
+- Public screenshots refreshed in this directory. Runtime animations and reduced-motion interactions were exercised; static screenshots are not animation previews.
