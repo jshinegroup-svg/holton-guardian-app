@@ -13,9 +13,9 @@ export function WorldMap({journeys,activeWorld,onEnter,onSettings,saving,error}:
  <View style={[s.regionShade,!open&&{backgroundColor:'rgba(12,15,22,.48)'}]}/>
  <View testID={`world-node-${w}`} style={[s.mapNode,open?s.available:s.locked]}>
  <Pressable accessibilityRole="button" accessibilityLabel={open?`進入${worlds[w].name}`:`尚未解鎖${worlds[w].name}`} disabled={!open||saving} onPress={()=>onEnter(w)} style={({pressed})=>[s.mapButton,pressed&&{opacity:.75},!open&&{backgroundColor:'rgba(52,55,62,.8)',borderColor:'#777c82'}]}><Text style={[s.buttonText,!open&&{color:'#b4b7bc'}]}>{open?'進入':'🔒 '}{worlds[w].name}</Text></Pressable>
- <Text style={[s.mapHint,!open&&{color:'#b4b7bc'}]}>{open?n>=15?'✓ 旅程完成 · 自由回訪':`${n}／15 步 · ${activeWorld===w?'目前所在':'已解鎖'}`:w==='forest'?'天空旅程 15 步後開放':'森林旅程 15 步後開放'}</Text>
+ <Text style={[s.mapHint,!open&&{color:'#b4b7bc'}]}>{open?n>=15?'✓ 旅程完成 · 自由回訪':`${n}／15 步 · ${activeWorld===w?'目前所在':'已解鎖'}`:w==='sky'?'森林旅程 15 步後開放':'天空旅程 15 步後開放'}</Text>
  </View></View>})}
- <View style={{padding:12,alignItems:'center'}}><Text style={s.small}>每章 5 次任務換新場景 · 進入世界不花點數</Text>{journeys.legacyCredit>0?<Text style={s.small}>天空已保留 {journeys.legacyCredit} 次既有完成紀錄</Text>:null}</View>
+ <View style={{padding:12,alignItems:'center'}}><Text style={s.small}>每章 5 次任務換新場景 · 進入世界不花點數</Text>{journeys.legacyCredit>0?<Text style={s.small}>已保留 {journeys.legacyCredit} 次既有完成紀錄</Text>:null}</View>
  </ScrollView></SafeAreaView>;
 }
 // Small vector landmarks are game-state overlays, not replacement scenery.

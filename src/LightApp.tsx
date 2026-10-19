@@ -95,9 +95,9 @@ export default function LightApp() {
           data.companionCardId = companion ? data.guardianCards.filter(item => item.cardId.startsWith(`${companion.id}:`)).at(-1)?.cardId : undefined;
           await AsyncStorage.setItem(KEY, JSON.stringify(data));
         } else if (!raw) await AsyncStorage.setItem(KEY, JSON.stringify(data));
-        const hadJourney=!!data.journeys;
+        const needsJourneyMigration=data.journeys?.version!==2;
         data=migrateJourneys(data);
-        if(!hadJourney) await AsyncStorage.setItem(KEY,JSON.stringify(data));
+        if(needsJourneyMigration) await AsyncStorage.setItem(KEY,JSON.stringify(data));
         if (live) { setMapOpen(['ready','done'].includes(data.phase)&&!data.journeys?.event); current.current = data; setState(data); setTitle(data.title); setMinutes(String(data.minutes)); setGoal(String(data.dailyGoal ?? 3)); }
       } catch { if (live) setError('資料暫時無法讀取，請重新整理。原有紀錄未變更。'); }
     })();
@@ -119,7 +119,7 @@ export default function LightApp() {
   const button = (label: string, action: () => void, secondary = false, disabled = false) => <Pressable testID={secondary ? "secondary-action" : "primary-action"} accessibilityRole="button" accessibilityLabel={label} disabled={disabled || saving} onPress={action} style={[styles.button, secondary && styles.secondary, (disabled || saving) && styles.disabled]}><Text style={[styles.buttonText, secondary && styles.secondaryText]}>{label}</Text></Pressable>;
   if (!state) return <SafeAreaView style={styles.root}><Text style={styles.body}>{error || '正在準備你的夥伴…'}</Text></SafeAreaView>;
   const journey=migrateJourneys(state).journeys;
-  const world=state.activeWorld??'sky';
+  const world=state.activeWorld??'forest';
   const goWorld=async(w:WorldId)=>{const saved=await change(s=>enterWorld(s,w));if(saved&&current.current?.activeWorld===w){setMapOpen(false);setJourneyOpen(false);setSettingsOpen(false);pageScroll.current?.scrollTo({y:0,animated:false});}};
   const dismissStory=()=>void change(s=>!s.journeys||s.journeys.event?.id!==journey.event?.id?s:({...s,journeys:{...s.journeys,event:undefined}}));
   const remaining = state.deadline ? Math.max(0, Math.ceil((state.deadline - now) / 1000)) : state.remaining;
@@ -211,13 +211,13 @@ export default function LightApp() {
     const at = new Date();
     const dateKey = day(at);
     const completionId=`${at.getTime()}-${Math.random().toString(36).slice(2,8)}`;
-    const history = [...s.history, { id: completionId, world:s.activeWorld??'sky', title: s.title, at: at.toISOString(), minutes: s.minutes, reward: s.taskReward ?? 1, cardId: s.cardId, finishId: s.finishId, helpUsed: s.helpUsed, supportUsed: s.supportUsed }];
+    const history = [...s.history, { id: completionId, world:s.activeWorld??'forest', title: s.title, at: at.toISOString(), minutes: s.minutes, reward: s.taskReward ?? 1, cardId: s.cardId, finishId: s.finishId, helpUsed: s.helpUsed, supportUsed: s.supportUsed }];
     const count = history.filter(item => day(new Date(item.at)) === dateKey).length;
     const progress = (s.rewardProgress ?? 0) + 1;
     const triple = progress >= 3;
     const allDone = count >= (s.dailyGoal ?? 3) && s.dailyRewardDay !== dateKey;
     const reason = triple && allDone ? '完成 3 次任務，而且今天任務全完成了！' : triple ? '又完成 3 次任務！' : '今天任務全完成了！';
-    return { ...s, journeys:advanceJourney(migrateJourneys(s).journeys,s.activeWorld??'sky',completionId), phase: 'done', deadline: null, help: false, orbs: s.orbs + (s.taskReward ?? 1), history,
+    return { ...s, journeys:advanceJourney(migrateJourneys(s).journeys,s.activeWorld??'forest',completionId), phase: 'done', deadline: null, help: false, orbs: s.orbs + (s.taskReward ?? 1), history,
       rewardProgress: progress % 3, dailyRewardDay: allDone ? dateKey : s.dailyRewardDay,
       draws: [...(s.draws ?? []), ...(triple || allDone ? [{ id: String(at.getTime()), reason }] : [])] };
   }

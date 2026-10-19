@@ -62,3 +62,4 @@
 
 actor=bot approval=user-request trigger=compact-world-map-and-three-chapter-scenes; additive visuals; original progress preserved; local checks pass
 actor=bot approval=user-request trigger=public-deployment-watch; queued Pages release, public test pipeline scheduled after build
+actor=bot approval=explicit-user-request trigger=forest-first-route; v2 journey migration retains old access/counts; all local checks pass

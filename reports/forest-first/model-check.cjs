@@ -1,0 +1,10 @@
+const fs=require('fs'),ts=require('typescript'),vm=require('vm'),assert=require('assert/strict');
+const ctx={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/journeys.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,ctx);const {migrateJourneys,advanceJourney,unlocked,enterWorld,worldIds}=ctx.exports;
+assert.equal(worldIds.join(','),'forest,sky,cosmos');
+let m=migrateJourneys({phase:'ready',history:[],orbs:41});let j=m.journeys;assert.equal(m.activeWorld,'forest');assert(unlocked(j,'forest'));assert(!unlocked(j,'sky'));assert(!unlocked(j,'cosmos'));
+for(const w of ['forest','sky','cosmos'])for(let n=1;n<=15;n++){let old=j;j=advanceJourney(j,w,w+n);assert.equal(j.counts[w],n);assert.equal(advanceJourney(j,w,w+n),j);if(w==='forest')assert.equal(unlocked(j,'sky'),n===15);if(w==='sky')assert.equal(unlocked(j,'cosmos'),n===15);assert.equal(old.counts[w],n-1)}
+for(const [sky,forest,cosmos] of [[0,0,0],[7,0,0],[15,0,0],[15,15,2]]){
+ const old={phase:'active',activeWorld:cosmos?'cosmos':'sky',orbs:41,history:[],journeys:{version:1,counts:{sky,forest,cosmos},legacyCredit:7,event:{id:'old',world:'sky',step:7}}};const next=migrateJourneys(old);assert.equal(JSON.stringify(next.journeys.counts),JSON.stringify(old.journeys.counts));assert.equal(next.orbs,41);assert.equal(next.activeWorld,old.activeWorld);assert(unlocked(next.journeys,'sky'));assert(unlocked(next.journeys,'forest'));assert.equal(unlocked(next.journeys,'cosmos'),sky===15&&forest===15);assert.equal(next.journeys.event,old.journeys.event);assert.equal(JSON.stringify(migrateJourneys(next)),JSON.stringify(next));assert.equal(enterWorld(next,'forest'),next);
+}
+const legacy=migrateJourneys({history:[{id:'a',at:'2026-10-19T01:00:00Z'},{id:'a',at:'2026-10-19T01:00:00Z'}],orbs:12});assert.equal(legacy.journeys.counts.forest,1);assert.equal(legacy.journeys.counts.sky,0);assert.equal(legacy.orbs,12);
+console.log('PASS forest-first 45-step route, locks, duplicate protection, v1 active/events/world access and counts retained, idempotent migration, old history credit');
