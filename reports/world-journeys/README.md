@@ -29,3 +29,4 @@ Public initial screenshots could precede background download. Added image-load w
 ## 2026-10-19 map order / visible landmark correction
 User requested sky → forest → cosmos top-to-bottom and reported lighting was not noticeable. World controls now follow unlock order. Ready/done screens show the current landmark directly (background raster remains decorative/static). Reveal no longer auto-dismisses; user can compare before/after then continue. Sky chapter step 2 adds the visible path. No progress/currency migration changes.
 Checks: typecheck, targeted eslint, export passed; isolated Chrome 390/320 checks verified order, persistent landmark, reveal remaining after 3.5 seconds, before/after and dismissal, no horizontal overflow. Screenshots use test progress.
+Public verification: gh-pages 7b2a503 built; the same visibility-check passed at the public URL (390/320), screenshots refreshed with fully loaded public images.
