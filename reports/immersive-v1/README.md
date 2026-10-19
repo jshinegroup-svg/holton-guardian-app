@@ -24,3 +24,6 @@ Built-in imagegen generated these background-only assets; original card artwork 
 - assets/worlds/sky-base/focus.png: portrait 2:3 calm blue-purple twilight floating-island focus platform; low-detail broad dark-blue center, distant castles/cloud islands at edges, stone terrace, sparse pink crystals at corners/branches; no characters, text, numbers, cards or UI; full-bleed storybook calm scenery.
 - assets/worlds/sky-base/rest.png: portrait 2:3 shaded floating forest sanctuary; canopy at sides/top, mossy stone clearing, distant blue clouds/islands, teal-green calm center, lantern at right edge and pink crystals at lower corners; no characters, text, numbers, cards or UI; quiet full-bleed storybook scenery.
 Home retains assets/worlds/sky-base/island.png. Backdrops are static; purposeful existing interaction animations respect reduced motion.
+
+## Public verification
+2026-10-19: Pages b8edecfd376539a55338179d89f5c2bd8c8233d5 built. Public HTML exactly matches export; home/focus/rest image bytes verified. Both browser-check.mjs and task-picker-check.mjs passed against https://jshinegroup-svg.github.io/holton-guardian-app/ using isolated synthetic storage. Screenshots refreshed from public site.
