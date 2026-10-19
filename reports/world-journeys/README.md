@@ -24,3 +24,4 @@ Built-in image_gen created assets/worlds/journeys/{map,forest,cosmos}.png; full 
 
 ## Public release
 Pages4294d83 built; source4a17fcc; bundle AppEntry-b801d1dfb98dd0e1e7310e2cf2dd91a5.js. Public browser-check suite PASSED all world-task/atomicity/locks/migration/story/mobile scenarios. SHA256 for all three public new environment images matches export. Existing battle assets retained. Public screenshots use synthetic isolated data.
+Public initial screenshots could precede background download. Added image-load waits; map-public-loaded.png and forest-public-loaded.png explicitly verified with all rendered image naturalWidth positive before capture.
