@@ -61,3 +61,4 @@
 2026-10-19 bot | public verification | 7b2a503 world order and visible landmark checks passed; screenshots updated
 
 actor=bot approval=user-request trigger=compact-world-map-and-three-chapter-scenes; additive visuals; original progress preserved; local checks pass
+actor=bot approval=user-request trigger=public-deployment-watch; queued Pages release, public test pipeline scheduled after build

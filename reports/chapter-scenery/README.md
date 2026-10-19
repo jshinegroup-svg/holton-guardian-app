@@ -8,4 +8,4 @@ Built-in image_gen produced three 1536x1024 triptych texture atlases; exact prom
 
 Validation: TypeScript, scoped ESLint, Expo web export, existing 45-step journey model suite. Isolated Chrome 390/320 checks: order, disabled grayscale destinations, entry width, all nine loaded images, boundaries0/4/5/9/10/15, real fifth completion, before/after, wallet unchanged except expected reward, reload no duplicate. Screenshots contain synthetic data. No physical iPhone claim.
 
-Public verification pending deployment.
+Public deployment ba70af4 submitted; GitHub Pages run 39280796463 remained queued at 15:54 UTC. Live URL still served prior bundle. A background watch runs the public browser suite after successful deployment (logs public-pipeline.log / public-check.log); do not claim public verified until PASS is recorded.
