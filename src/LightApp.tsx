@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import RewardShop, { type Wish, type WishReceipt } from './RewardShop';
+import {WorldMap, JourneyMap, JourneyReveal, JourneyHint} from './WorldJourney';
+import {migrateJourneys, advanceJourney, enterWorld, worlds, type Journeys, type WorldId} from './lib/journeys';
 import EnergyMath from './EnergyMath';
 import GuardianBattle from './GuardianBattle';
 import { beginGuardianChallenge, winGuardianChallenge, dismissGuardianChallenge, type GuardianChallenge, type GuardianReceipt } from './lib/guardianChallenge';
@@ -15,8 +17,8 @@ import { planWorldRedemption, redeemWorldCards, worldExchangeDay, worldRewardLab
 import type { PersistedAppState } from './types/holton';
 
 const KEY = 'holton-guardian-app::light-v1';
-type RecordItem = { reward?: number; id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
-type State = { guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+type RecordItem = { world?:WorldId; reward?: number; id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
+type State = { journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
 const rewardForMinutes = (minutes: number) => timeChallenges.find(card => card.minutes === minutes)?.orbs ?? 1;
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
@@ -43,6 +45,8 @@ export default function LightApp() {
   const [state, setState] = useState<State | null>(null);
   const systemReduced = useSystemReducedMotion();
   const reduceMotion = systemReduced || !!state?.reduceMotion;
+  const [mapOpen,setMapOpen]=useState(true);
+  const [journeyOpen,setJourneyOpen]=useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
   const [hubOpen, setHubOpen] = useState(false);
@@ -82,7 +86,7 @@ export default function LightApp() {
     (async () => {
       try {
         const raw = await AsyncStorage.getItem(KEY);
-        const data: State = raw ? JSON.parse(raw) : initial(await loadPersistedAppState());
+        let data: State = raw ? JSON.parse(raw) : initial(await loadPersistedAppState());
         if (data.version !== 1 || !Array.isArray(data.history) || !['ready', 'preparing', 'active', 'finishing', 'done'].includes(data.phase) || !Number.isFinite(data.orbs)) throw new Error('Invalid state');
         if (!data.guardianCards) {
           const old = await loadPersistedAppState();
@@ -91,7 +95,10 @@ export default function LightApp() {
           data.companionCardId = companion ? data.guardianCards.filter(item => item.cardId.startsWith(`${companion.id}:`)).at(-1)?.cardId : undefined;
           await AsyncStorage.setItem(KEY, JSON.stringify(data));
         } else if (!raw) await AsyncStorage.setItem(KEY, JSON.stringify(data));
-        if (live) { current.current = data; setState(data); setTitle(data.title); setMinutes(String(data.minutes)); setGoal(String(data.dailyGoal ?? 3)); }
+        const hadJourney=!!data.journeys;
+        data=migrateJourneys(data);
+        if(!hadJourney) await AsyncStorage.setItem(KEY,JSON.stringify(data));
+        if (live) { setMapOpen(['ready','done'].includes(data.phase)&&!data.journeys?.event); current.current = data; setState(data); setTitle(data.title); setMinutes(String(data.minutes)); setGoal(String(data.dailyGoal ?? 3)); }
       } catch { if (live) setError('資料暫時無法讀取，請重新整理。原有紀錄未變更。'); }
     })();
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -111,6 +118,10 @@ export default function LightApp() {
   }
   const button = (label: string, action: () => void, secondary = false, disabled = false) => <Pressable testID={secondary ? "secondary-action" : "primary-action"} accessibilityRole="button" accessibilityLabel={label} disabled={disabled || saving} onPress={action} style={[styles.button, secondary && styles.secondary, (disabled || saving) && styles.disabled]}><Text style={[styles.buttonText, secondary && styles.secondaryText]}>{label}</Text></Pressable>;
   if (!state) return <SafeAreaView style={styles.root}><Text style={styles.body}>{error || '正在準備你的夥伴…'}</Text></SafeAreaView>;
+  const journey=migrateJourneys(state).journeys;
+  const world=state.activeWorld??'sky';
+  const goWorld=async(w:WorldId)=>{const saved=await change(s=>enterWorld(s,w));if(saved&&current.current?.activeWorld===w){setMapOpen(false);setJourneyOpen(false);setSettingsOpen(false);pageScroll.current?.scrollTo({y:0,animated:false});}};
+  const dismissStory=()=>void change(s=>!s.journeys||s.journeys.event?.id!==journey.event?.id?s:({...s,journeys:{...s.journeys,event:undefined}}));
   const remaining = state.deadline ? Math.max(0, Math.ceil((state.deadline - now) / 1000)) : state.remaining;
   const guardian = state.guardian;
   const stage = (guardian.coreGuardianLevel ?? 1) >= 61 ? 'stage4' : (guardian.coreGuardianLevel ?? 1) >= 31 ? 'stage3' : (guardian.coreGuardianLevel ?? 1) >= 11 ? 'stage2' : 'stage1';
@@ -199,13 +210,14 @@ export default function LightApp() {
     if (s.phase !== 'finishing') return s;
     const at = new Date();
     const dateKey = day(at);
-    const history = [...s.history, { id: String(at.getTime()), title: s.title, at: at.toISOString(), minutes: s.minutes, reward: s.taskReward ?? 1, cardId: s.cardId, finishId: s.finishId, helpUsed: s.helpUsed, supportUsed: s.supportUsed }];
+    const completionId=`${at.getTime()}-${Math.random().toString(36).slice(2,8)}`;
+    const history = [...s.history, { id: completionId, world:s.activeWorld??'sky', title: s.title, at: at.toISOString(), minutes: s.minutes, reward: s.taskReward ?? 1, cardId: s.cardId, finishId: s.finishId, helpUsed: s.helpUsed, supportUsed: s.supportUsed }];
     const count = history.filter(item => day(new Date(item.at)) === dateKey).length;
     const progress = (s.rewardProgress ?? 0) + 1;
     const triple = progress >= 3;
     const allDone = count >= (s.dailyGoal ?? 3) && s.dailyRewardDay !== dateKey;
     const reason = triple && allDone ? '完成 3 次任務，而且今天任務全完成了！' : triple ? '又完成 3 次任務！' : '今天任務全完成了！';
-    return { ...s, phase: 'done', deadline: null, help: false, orbs: s.orbs + (s.taskReward ?? 1), history,
+    return { ...s, journeys:advanceJourney(migrateJourneys(s).journeys,s.activeWorld??'sky',completionId), phase: 'done', deadline: null, help: false, orbs: s.orbs + (s.taskReward ?? 1), history,
       rewardProgress: progress % 3, dailyRewardDay: allDone ? dateKey : s.dailyRewardDay,
       draws: [...(s.draws ?? []), ...(triple || allDone ? [{ id: String(at.getTime()), reason }] : [])] };
   }
@@ -223,13 +235,16 @@ export default function LightApp() {
     setNotice('');
     void change(s => ['preparing', 'active', 'finishing'].includes(s.phase) ? s : ({ ...s, title: title.trim(), taskCategory: undefined, dailyGoal: target, minutes: n, cardId: timeChallenges.find(card => card.minutes === n)?.id, phase: 'ready', remaining: n * 60, deadline: null, help: false }));
   }
-  return <SafeAreaView testID="immersive-world" style={styles.root}><WorldChrome /><WorldBackdrop scene={scene} /><ScrollView ref={pageScroll} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
-    <View testID="world-title" style={styles.header}><View><Text style={styles.worldName}>{scene === 'rest' ? '休息小營地' : scene === 'focus' ? '專注平台' : '天空基地'}</Text><Text style={styles.brand}>HOLTON HERO</Text></View><Pressable accessibilityRole="button" accessibilityLabel={settingsOpen ? '回到世界' : '設定'} onPress={() => { setSettingsOpen(!settingsOpen); setNotice(''); setTitle(state.title); setMinutes(String(state.minutes)); setGoal(String(state.dailyGoal ?? 3)); }}><Text style={styles.link}>{settingsOpen ? '回到世界' : '設定'}</Text></Pressable></View>
+  if(mapOpen && homePhase && !settingsOpen && !pending && !challenge) return <WorldMap journeys={journey} activeWorld={world} onEnter={w=>void goWorld(w)} onSettings={()=>{setSettingsOpen(true);setNotice('');setTitle(state.title);setMinutes(String(state.minutes));setGoal(String(state.dailyGoal??3));}} saving={saving} error={error}/>;
+  if(journeyOpen && homePhase && !settingsOpen && !pending && !challenge) return <JourneyMap journeys={journey} world={world} onClose={()=>setJourneyOpen(false)} onWorldMap={()=>{setJourneyOpen(false);setMapOpen(true);}}/>;
+  return <SafeAreaView testID="immersive-world" style={styles.root}><WorldChrome /><WorldBackdrop scene={scene} world={world} /><ScrollView ref={pageScroll} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+    <View testID="world-title" style={styles.header}><View><Text style={styles.worldName}>{scene === 'rest' ? '休息小營地' : scene === 'focus' ? `${worlds[world].name} · 專注` : worlds[world].name}</Text><Text style={styles.brand}>HOLTON HERO</Text></View><Pressable accessibilityRole="button" accessibilityLabel={settingsOpen ? '回到世界' : '設定'} onPress={() => { setSettingsOpen(!settingsOpen); setNotice(''); setTitle(state.title); setMinutes(String(state.minutes)); setGoal(String(state.dailyGoal ?? 3)); }}><Text style={styles.link}>{settingsOpen ? '回到世界' : '設定'}</Text></Pressable></View>
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+    {!settingsOpen&&homePhase?<><View style={{flexDirection:'row',justifyContent:'space-between',gap:8}}>{button('世界地圖',()=>setMapOpen(true),true)}{button('看看我的旅程',()=>setJourneyOpen(true),true)}</View>{state.phase==='ready'?<View style={{gap:8}}>{journey.counts[world]===0?<Text style={[styles.body,{padding:12,backgroundColor:'rgba(8,35,49,.7)',borderRadius:14}]}>{worlds[world].intro}</Text>:null}<JourneyHint journeys={journey} world={world} onPress={()=>setJourneyOpen(true)}/></View>:null}</>:null}
 
     {settingsOpen ? <>
       <Text style={styles.heading}>世界設定與紀錄</Text><RewardShop data={state} settings saving={saving} change={change} />
-      <View style={styles.card}><Text style={styles.section}>天空基地 · 動畫設定</Text><Text style={styles.body}>選卡、準備、完成與守護獸挑戰有短動畫。任務中場景靜止，這版不播放音效。</Text>
+      <View style={styles.card}><Text style={styles.section}>世界 · 動畫設定</Text><Text style={styles.body}>選卡、準備、完成與守護獸挑戰有短動畫。任務中場景靜止，這版不播放音效。</Text>
         <Pressable accessibilityRole="switch" accessibilityLabel="減少動畫" accessibilityState={{ checked: !!state.reduceMotion }} disabled={saving} onPress={() => void change(s => ({ ...s, reduceMotion: !s.reduceMotion }))} style={styles.secondarySetting}><Text style={styles.section}>減少動畫：{state.reduceMotion ? '開啟' : '關閉'}</Text></Pressable>
         <Text style={styles.caption}>{systemReduced ? '裝置已設定減少動態效果，這裡也會自動減少。' : '開啟後改用靜態提示，獎勵與任務流程不變。'}</Text>
         <Text style={styles.caption}>原卡獎勵：3／5 分鐘＋1、10 分鐘＋2、15 分鐘＋3、20 分鐘＋4、25 分鐘／不限時＋5。其他自訂時間＋1。休息與求助不扣獎勵。</Text>
@@ -299,7 +314,7 @@ export default function LightApp() {
         </> : button('我需要幫忙', () => void change(openHelp), true)}
 
         {!state.help ? button('完成', () => void change(enterFinishing)) : null}
-      </> : <><Text style={styles.section}>{finish.title}</Text><Text style={styles.quote}>你完成了，也把這一輪收好了。每一小步都值得被看見。</Text><RewardArrival reward={state.taskReward ?? 1} balance={state.orbs} reduced={reduceMotion} animate={celebrate.current && !pending} /><Text style={styles.body}>{state.title}</Text><Text style={styles.caption}>這一輪結束了。休息一下，準備好再選卡。</Text>{button('再選一張任務卡', () => void change(s => ({ ...s, phase: 'ready', deadline: null, help: false, remaining: s.minutes * 60 })), true)}</>}
+      </> : <><Text style={styles.section}>{finish.title}</Text><Text style={styles.quote}>你完成了，也把這一輪收好了。每一小步都值得被看見。</Text><RewardArrival reward={state.taskReward ?? 1} balance={state.orbs} reduced={reduceMotion} animate={celebrate.current && !pending} /><Text style={styles.body}>{state.title}</Text><JourneyHint journeys={journey} world={world} onPress={()=>setJourneyOpen(true)}/><Text style={styles.caption}>這一輪結束了。休息一下，準備好再選卡。</Text>{button('再選一張任務卡', () => void change(s => ({ ...s, phase: 'ready', deadline: null, help: false, remaining: s.minutes * 60 })), true)}</>}
       </View>
       {state.phase !== 'active' ? companionScene : null}
       {homePhase ? <>
@@ -313,12 +328,13 @@ export default function LightApp() {
     {showWorldReminder ? <View style={styles.reminder} accessibilityLiveRegion="polite"><Text style={styles.section}>你有世界卡可以換點數！</Text><Text style={styles.body}>目前可領 ＋{exchangePlan.points} 能量球，現在領取嗎？</Text><Text style={styles.caption}>先看明細，再確認。下次再換也不會過期。</Text>{button('去兌換', () => setWorldExchangeOpen(true))}{button('下次再說', () => void change(s => ({ ...s, worldReminderDismissedDay: worldExchangeDay(Date.now()) })), true)}</View> : null}
       {!settingsOpen && homePhase && showWorldAlbum && !!state.collection?.length ? <View style={styles.card}><Text style={styles.section}>我的世界卡</Text><Text style={styles.body}>{exchangePlan.blocked ? '今天已兌換，新卡留到明天。' : `目前可換 ＋${exchangePlan.points} 能量球`}</Text>{button('查看兌換明細', () => setWorldExchangeOpen(true), true)}<ScrollView horizontal contentContainerStyle={styles.deck}>{state.collection.map(item => { const card = worldEvents.find(c => c.id === item.cardId); return card ? <View key={item.id} style={styles.taskCard}><Image source={card.imageSource} accessibilityLabel={card.title} resizeMode="contain" style={styles.cardArt} /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{item.redeemedAt ? '✓ 已兌換 · 保留收藏' : worldRewardLabel(item.cardId)}</Text></View> : null; })}</ScrollView></View> : null}
   </ScrollView>
-    <Modal visible={shopOpen && !!state.shopEnabled && !pending} animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => setShopOpen(false)}><SafeAreaView style={styles.root}><WorldBackdrop scene="rest" /><ScrollView contentContainerStyle={styles.page}>{button('回到天空基地', () => setShopOpen(false), true)}<RewardShop data={state} settings={false} saving={saving} change={change} />{error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}</ScrollView></SafeAreaView></Modal>
+    <Modal visible={!!journey.event && !pending && !challenge && !settingsOpen && homePhase} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={dismissStory}>{journey.event?<JourneyReveal event={journey.event} reduced={reduceMotion} onDismiss={dismissStory} saving={saving}/>:null}{error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}</Modal>
+    <Modal visible={shopOpen && !!state.shopEnabled && !pending} animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => setShopOpen(false)}><SafeAreaView style={styles.root}><WorldBackdrop scene="rest" world={world} /><ScrollView contentContainerStyle={styles.page}>{button(`回到${worlds[world].name}`, () => setShopOpen(false), true)}<RewardShop data={state} settings={false} saving={saving} change={change} />{error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}</ScrollView></SafeAreaView></Modal>
     <Modal visible={taskPickerOpen && state.phase === 'ready'} transparent animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => setTaskPickerOpen(false)}><View style={styles.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalScroll}>
       <TaskPicker key={detailCustom ? 'detail' : 'category'} initialCustom={detailCustom} customCategory={detailCustom ? activeCategory?.id : undefined} currentTitle={state.title} saving={saving} onSelect={chooseTask} onClose={() => setTaskPickerOpen(false)} />
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
     </ScrollView></View></Modal>
-    <Modal visible={worldExchangeOpen && !pending} animationType={reduceMotion ? 'none' : 'slide'} onRequestClose={() => setWorldExchangeOpen(false)}><SafeAreaView style={styles.root}><WorldBackdrop scene="home" /><ScrollView contentContainerStyle={styles.page}>
+    <Modal visible={worldExchangeOpen && !pending} animationType={reduceMotion ? 'none' : 'slide'} onRequestClose={() => setWorldExchangeOpen(false)}><SafeAreaView style={styles.root}><WorldBackdrop scene="home" world={world} /><ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.heading}>世界卡換點數</Text><Text style={styles.section}>✦ 可用能量球 {state.orbs}</Text>{button('回到任務', () => setWorldExchangeOpen(false), true)}
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
       <View style={styles.card}><Text style={styles.section}>{exchangePlan.blocked ? '今天已兌換完成' : '這次可兌換'}</Text>
@@ -335,7 +351,7 @@ export default function LightApp() {
       <View style={styles.card}><Text style={styles.section}>世界卡點數規則</Text>{['Bonus Energy 能量卡：＋1', 'Surprise Gift 驚喜禮物：＋2', 'Future Signal 未來訊號：＋1', 'Double Mission 雙倍卡：本批點數 ×2', '其餘世界卡：故事收藏，沒有點數'].map(line => <Text key={line} style={styles.body}>{line}</Text>)}<Text style={styles.caption}>以上為本版固定兌換規則。雙倍只加倍這批點數卡，不加倍手上餘額或任務點數；每批最多一張，不連乘。兌換後卡圖仍保留，但同一張不能再次領點。</Text></View>
       <View style={styles.card}><Text style={styles.section}>最近兌換紀錄</Text>{state.worldRedemptions?.length ? [...state.worldRedemptions].reverse().slice(0, 10).map(receipt => <View key={receipt.id} style={styles.record}><Text style={styles.section}>{receipt.day} · ＋{receipt.points} 點</Text><Text style={styles.caption}>{receipt.drawIds.length} 張卡 · {receipt.basePoints} × {receipt.multiplier}</Text>{receipt.lines.map(line => <Text key={line.drawId} style={styles.caption}>{worldEvents.find(card => card.id === line.cardId)?.title ?? '世界卡'} · ＋{line.points}</Text>)}</View>) : <Text style={styles.body}>還沒有兌換紀錄，卡片可以先慢慢累積。</Text>}</View>
     </ScrollView></SafeAreaView></Modal>
-    <Modal visible={collectionOpen && !pending && !challenge && !battlePreviewId && !challengeConfirmId} animationType={reduceMotion ? 'none' : 'slide'} onRequestClose={() => { if (guardianDetailId) setGuardianDetailId(null); else setCollectionOpen(false); }}><SafeAreaView style={styles.root}><WorldBackdrop scene="home" /><ScrollView contentContainerStyle={styles.page}>
+    <Modal visible={collectionOpen && !pending && !challenge && !battlePreviewId && !challengeConfirmId} animationType={reduceMotion ? 'none' : 'slide'} onRequestClose={() => { if (guardianDetailId) setGuardianDetailId(null); else setCollectionOpen(false); }}><SafeAreaView style={styles.root}><WorldBackdrop scene="home" world={world} /><ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.heading}>我的守護獸收藏</Text><Text style={styles.section}>✦ 可用能量球 {state.orbs}</Text>
       {button('回到任務', () => { setCollectionOpen(false); setGuardianDetailId(null); }, true)}
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
