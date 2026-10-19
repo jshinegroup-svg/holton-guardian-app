@@ -8,7 +8,7 @@ const webBaseUrl = process.env.EXPO_PUBLIC_BASE_URL || "";
 
 /** @type {import('expo/config').ExpoConfig} */
 const expoConfig = {
-  name: "Holton Guardian",
+  name: "Holton Hero",
   slug: "holton-guardian-app",
   version: "1.0.0",
   orientation: "portrait",
@@ -16,7 +16,7 @@ const expoConfig = {
   scheme: "holtonguardian",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
-  description: "Holton Guardian companion app for family missions, hero progress, and daily guardian routines.",
+  description: "Holton Hero companion app for family missions, hero progress, and daily guardian routines.",
   primaryColor: "#1D4ED8",
   splash: {
     image: "./assets/images/splash-icon.png",
