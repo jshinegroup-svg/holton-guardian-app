@@ -50,3 +50,4 @@
 2026-10-19 actor=codex approval=user-other-characters trigger=release-verification Pages d2b2b7e built; all20 public hashes and browser playback/transaction checks passed
 2026-10-19 actor=bot approval=user-request trigger=wish-selection-feedback action=implement-test-batch-checkout files=src/RewardShop.tsx,reports/wish-cart
 2026-10-19 actor=bot approval=user-request trigger=wish-selection-feedback action=verify-public-pages-8867129 result=pass
+2026-10-19 actor=bot approval=user-request trigger=missing-wish-items action=restore-six-originals-and-three-custom-styles files=src/RewardShop.tsx,assets/cards/rewards,reports/wish-catalog
