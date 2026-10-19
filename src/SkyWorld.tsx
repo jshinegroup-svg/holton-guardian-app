@@ -61,8 +61,8 @@ export function RewardArrival({ reward, balance, reduced, animate }: { reward: n
   }, [reduced, animate, travel]);
   return <View style={s.arrival} testID="sky-reward-arrival">
     <Text style={s.eyebrow}>能量回到基地</Text>
-    <View style={s.orbTrack}><Animated.View pointerEvents="none" style={[s.orb, { transform: [{ translateX: travel.interpolate({ inputRange: [0, 1], outputRange: [-75, 0] }) }, { scale: travel.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) }] }]}><Text style={s.orbStar}>✦</Text></Animated.View></View>
-    <Text style={s.reward}>＋{reward} ✦</Text><Text style={s.partnerName}>現在共有 {balance} 顆能量球</Text>
+    <View style={s.rewardRow}><View style={s.orbTrack}><Animated.View pointerEvents="none" style={[s.orb, { transform: [{ translateX: travel.interpolate({ inputRange: [0, 1], outputRange: [-75, 0] }) }, { scale: travel.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) }] }]}><Text style={s.orbStar}>✦</Text></Animated.View></View>
+    <Text style={s.reward}>＋{reward} ✦</Text></View><Text style={s.balance}>現在共有 {balance} 顆能量球</Text>
     {playing ? <Pressable accessibilityRole="button" accessibilityLabel="略過慶祝動畫" onPress={() => { motionRef.current?.stop(); travel.setValue(1); setPlaying(false); }} style={s.skip}><Text style={s.heroLine}>略過動畫</Text></Pressable> : null}
   </View>;
 }
@@ -77,6 +77,6 @@ const s = StyleSheet.create({
   portalRow: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, backgroundColor: '#153e52', borderRadius: 18 }, portalWords: { flex: 1 },
   portal: { width: 55, height: 72, borderTopLeftRadius: 30, borderTopRightRadius: 30, borderBottomLeftRadius: 8, borderBottomRightRadius: 8, borderWidth: 4, borderColor: '#bca571', backgroundColor: '#77cddc', alignItems: 'center', justifyContent: 'center' },
   portalGlow: { position: 'absolute', top: -4, bottom: -4, left: -4, right: -4, borderRadius: 24, backgroundColor: '#d3fffd' }, portalStar: { fontSize: 36, color: '#164c64' },
-  arrival: { padding: 16, alignItems: 'center', backgroundColor: '#103749', borderRadius: 20, gap: 6 }, orbTrack: { height: 60, width: '100%', alignItems: 'center', justifyContent: 'center' },
+  arrival: { alignSelf: 'center', width: '100%', maxWidth: 300, paddingHorizontal: 14, paddingVertical: 10, alignItems: 'center', backgroundColor: 'rgba(8,35,49,0.64)', borderWidth: 1, borderColor: 'rgba(235,211,150,0.55)', borderRadius: 18, gap: 4 }, rewardRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 }, balance: { color: '#fff5dc', fontSize: 16, lineHeight: 24, fontWeight: '700', textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.75)', textShadowRadius: 3, textShadowOffset: {width:0,height:1} }, orbTrack: { height: 46, width: 46, alignItems: 'center', justifyContent: 'center' },
   orb: { width: 44, height: 44, backgroundColor: '#1789b2', borderColor: '#93e6ee', borderWidth: 3, borderRadius: 24, alignItems: 'center', justifyContent: 'center' }, orbStar: { fontSize: 27, color: '#fff6d9' }, reward: { fontSize: 42, color: '#ffdf92', fontWeight: '900' }, skip: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 14 },
 });
