@@ -14,3 +14,4 @@ Existing multiselect cart retained, one of each per batch, atomic final checkout
 
 ## Verification
 TypeScript, scoped ESLint, web export; model checks: additive idempotent migration, snapshots, stale terms, atomic checkout and duplicate guard. Isolated Chrome tests: old four-card migration to 10 + 3, preservation of custom old price and receipt, six new cards enabled, custom title/price/terms/style, 5-slot maximum, empty hidden, mixed original/custom batch debit, reload, immutable receipts, 320px layout. Prior cart tests pass. Screenshots inspected. Not physical iPhone verification; test data never touches user's device.
+\nPublic release 4939d58 built; public catalog browser suite PASS. All nine added public asset URLs return 200. Existing 20 battle assets retained. Source implementation 7ca2268; bundle AppEntry-7a3a4fadee388e49522196c258911139.js.
