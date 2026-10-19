@@ -1,3 +1,5 @@
+import {chapterScene} from './ChapterScenery';
+import {chapterSceneIndex} from './lib/journeys';
 import type {WorldId} from './lib/journeys';
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Image, Pressable, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
@@ -13,9 +15,9 @@ export function useSystemReducedMotion() {
   return reduced;
 }
 
-export function WorldBackdrop({ scene,world='sky' }: { scene: 'home' | 'focus' | 'rest';world?:WorldId }) {
-  const source = world==='forest'?require('../assets/worlds/journeys/forest.png'):world==='cosmos'?require('../assets/worlds/journeys/cosmos.png'):scene === 'rest' ? require('../assets/worlds/sky-base/rest-v3.png') : scene === 'focus' ? require('../assets/worlds/sky-base/focus-v3.png') : require('../assets/worlds/sky-base/island-v3.png');
-  return <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={`world-scene-${scene}`} accessibilityLabel={`${world} ${scene} 場景`}><Image source={source} resizeMode="cover" accessible={false} style={{ width: '100%', height: '100%' }} /><View style={[StyleSheet.absoluteFill, { backgroundColor: scene === 'focus' ? 'rgba(9,19,45,0.38)' : scene==='rest'?'rgba(4,28,40,0.22)':'rgba(4,28,40,0.12)' }]} /></View>;
+export function WorldBackdrop({ scene,world='sky',completed=0 }: { scene: 'home' | 'focus' | 'rest';world?:WorldId;completed?:number }) {
+  const source = chapterScene(world,completed);
+  return <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={`world-scene-${scene}`} accessibilityLabel={`${world} ${scene} 第${chapterSceneIndex(completed)+1}章場景`}><Image source={source} resizeMode="cover" accessible={false} style={{ width: '100%', height: '100%' }} /><View style={[StyleSheet.absoluteFill, { backgroundColor: scene === 'focus' ? 'rgba(9,19,45,0.38)' : scene==='rest'?'rgba(4,28,40,0.22)':'rgba(4,28,40,0.12)' }]} /></View>;
 }
 export function SkyHero({ image, name }: { image: ImageSourcePropType; name: string }) {
   return <View style={s.hero} testID="sky-base-hero"><View style={s.heroLabel}><Text style={s.eyebrow}>HOLTON HERO</Text><Text style={s.title}>天空基地</Text><Text style={s.heroLine}>帶著你的卡片，一起出發。</Text><Text style={s.partnerName}>{name}</Text></View><Image source={image} accessibilityLabel={`${name} 今日守護夥伴原卡`} style={s.guardian} resizeMode="contain" /></View>;

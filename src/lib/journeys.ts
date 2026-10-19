@@ -31,3 +31,6 @@ export function journeyHint(j:Journeys,w:WorldId) {
  const n=j.counts[w];
  return n>=15 ? w==='cosmos'?'三個世界的旅程已完成，隨時可以回訪。':`${worlds[w].name}旅程完成，下一個世界已開放。` : `再完成 ${5-n%5} 次，就能${worlds[w].chapters[Math.floor(n/5)]}。`;
 }
+
+// The scenery advances only at chapter boundaries; wallet/history are untouched.
+export function chapterSceneIndex(completed:number) { return Math.min(2, Math.max(0, Math.floor(completed / 5))); }
