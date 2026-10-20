@@ -21,8 +21,8 @@ export function WorldChrome() {
 [data-testid="world-title"]>div:first-child{align-items:center;width:100%}
 [data-testid="mission-stage"]{gap:7px!important;padding:0 4px!important}
 [data-testid="mission-stage"]>[data-testid="mission-name"]{align-self:center;max-width:100%;min-width:65%;border:2px solid #d5b976;border-radius:9px 9px 18px 18px;background:linear-gradient(#19536a,#092b42)!important;box-shadow:inset 0 0 0 2px #071d2f,0 3px 7px #09263399;font-size:20px!important;line-height:27px!important;padding:5px 14px!important}
-[data-testid="immersive-world"] [data-testid="primary-action"]{background:linear-gradient(#6ce4e5 0%,#10a6b6 18%,#027489 65%,#034458 100%)!important;border:3px solid #e0bf77!important;box-shadow:inset 0 0 0 2px #06445b,inset 0 3px 2px #d2ffffb0,0 4px 0 #5c5b45,0 6px 10px #092a38aa;min-height:51px!important;padding:9px 15px!important;margin:2px 3px}
-[data-testid="immersive-world"] [data-testid="secondary-action"]{background:linear-gradient(#1f536a,#082d45)!important;border:2px solid #bca775!important;box-shadow:inset 0 0 0 2px #112d3c,0 3px 5px #08243366;min-height:44px!important;padding:8px 12px!important;border-radius:12px!important}
+[data-testid="immersive-world"] [data-testid="primary-action"],[data-testid="focus-complete"]{background:linear-gradient(#6ce4e5 0%,#10a6b6 18%,#027489 65%,#034458 100%)!important;border:3px solid #e0bf77!important;box-shadow:inset 0 0 0 2px #06445b,inset 0 3px 2px #d2ffffb0,0 4px 0 #5c5b45,0 6px 10px #092a38aa;min-height:51px!important;padding:9px 15px!important;margin:2px 3px}
+[data-testid="immersive-world"] [data-testid="secondary-action"],[data-testid="focus-help"]{background:linear-gradient(#1f536a,#082d45)!important;border:2px solid #bca775!important;box-shadow:inset 0 0 0 2px #112d3c,0 3px 5px #08243366;min-height:44px!important;padding:8px 12px!important;border-radius:12px!important}
 [data-testid="immersive-world"] [data-testid="primary-action"]>div{text-shadow:0 2px 2px #094458;font-size:19px!important}
 [data-testid="immersive-world"] [data-testid="secondary-action"]>div{font-size:15px!important}
 [data-testid="crystal-clock"]{position:relative;background:radial-gradient(ellipse at 50% 12%,#25647c,#0a344c 58%,#041b30)!important;border:3px solid #d2b578!important;outline:2px solid #37bdd0;outline-offset:-7px;border-radius:50% / 38%!important;padding:24px 12px 18px!important;margin:8px 8px 3px;box-shadow:0 0 14px #28d9ea77,inset 0 0 20px #37bbd455;text-shadow:0 3px 4px #001729;font-size:51px!important}
@@ -30,6 +30,12 @@ export function WorldChrome() {
 [data-testid="scene-footer"]{flex-direction:row;gap:8px;margin-top:3px}
 [data-testid="scene-footer"]>[role="button"]{flex:1;min-width:0}
 [data-testid="original-card-pedestal"]{filter:drop-shadow(0 5px 5px #0a243d66)}
+[data-testid="immersive-world"]:has([data-testid="focus-companion-panel"]) [data-testid="world-title"] [role="button"]{padding:0 8px!important}
+[data-testid="immersive-world"]:has([data-testid="focus-companion-panel"]) [data-testid="world-title"] [role="button"]>div{padding:7px 0!important;font-size:11px!important}
+[data-testid="focus-complete"][aria-disabled="true"]{background:#46565f!important;border-color:#829399!important;box-shadow:inset 0 0 0 1px #667b83!important}
+[data-testid="mission-stage"]:has([data-testid="focus-companion-panel"])>[data-testid="mission-name"]{font-size:32px!important;line-height:42px!important;padding:9px 14px!important;width:100%}
+[data-testid="focus-time-panel"] [data-testid="crystal-clock"]{font-size:60px!important;line-height:72px!important}
+@media(max-width:350px){[data-testid="focus-world-name"]{font-size:20px!important;line-height:28px!important;letter-spacing:0!important}[data-testid="focus-time-panel"] [data-testid="crystal-clock"]{font-size:56px!important;line-height:68px!important}}
 @media(min-width:650px){[data-testid="immersive-world"]{max-width:520px;align-self:center;width:100%;box-shadow:0 0 80px #061e31}}
 @media(max-height:740px){[data-testid="world-title"]{margin-top:12px;margin-bottom:10px}[data-testid="original-card-pedestal"]{height:286px!important;width:214px!important}[data-testid="original-card-pedestal"]>div:last-child{top:43px!important;left:50px!important;width:114px!important;height:161px!important}}
 `);
