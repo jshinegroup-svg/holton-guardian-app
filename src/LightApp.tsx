@@ -391,7 +391,7 @@ export default function LightApp() {
       </> : state.phase === 'preparing' ? <>
         <PortalCue reduced={reduceMotion} />
         <Image source={sopCards.find(card => card.id === 'task-starter')!.imageSource} accessibilityLabel="Task Starter 任務啟動卡" style={styles.ritualArt} resizeMode="contain" />
-        <Text style={styles.section}>Task Starter · 任務啟動</Text><Text style={styles.quote}>拿出 Task Starter，把需要的東西準備好。</Text><Text style={styles.body}>這次挑戰：{durationLabel(state.minutes)}。準備好再按，現在還沒有計時。</Text>
+        <Text style={styles.section}>Task Starter · 任務啟動</Text><Text style={styles.body}>這次挑戰：{durationLabel(state.minutes)}。準備好再按，現在還沒有計時。</Text>
         {button('我準備好了，開始！', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'active', taskReminderShown:false, focusElapsedMs:0,focusStartedAt:Date.now(), help: false, deadline: s.minutes === 0 ? null : Date.now() + s.minutes * 60000, remaining: s.minutes * 60 })))}
         {button('回去選時間卡', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'ready', deadline: null })), true)}
       </> : state.phase === 'finishing' ? <>
