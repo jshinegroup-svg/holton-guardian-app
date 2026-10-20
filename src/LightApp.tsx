@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import RewardShop, { starterWishes, type Wish, type WishReceipt } from './RewardShop';
 import {WorldMap, JourneyMap, JourneyReveal, JourneyHint} from './WorldJourney';
 import {migrateJourneys, advanceJourney, enterWorld, worlds, type Journeys, type WorldId} from './lib/journeys';
@@ -50,6 +50,7 @@ function importGuardianCards(old: Partial<PersistedAppState> | null): GuardianRe
 }
 
 export default function LightApp() {
+  const {width: viewportWidth} = useWindowDimensions();
   const [state, setState] = useState<State | null>(null);
   const systemReduced = useSystemReducedMotion();
   const reduceMotion = systemReduced || !!state?.reduceMotion;
@@ -356,10 +357,8 @@ export default function LightApp() {
     </> : homePhase&&room==='wishes'?<><Text style={styles.body}>和大人一起約定，讓努力變成小小心願。</Text>{button('家長管理心願',()=>openParent('rewards'),true)}<RewardShop data={state} settings={false} saving={saving} change={change}/></> : homePhase&&room==='companions'?<>
       {companionScene}<View style={styles.card}><Text style={styles.section}>你的夥伴與收藏</Text><Text style={styles.body}>已收藏 {ownedIds.size} 張守護獸卡 · {state.collection?.length??0} 張世界卡</Text>{button('我的守護獸收藏',()=>setCollectionOpen(true))}{button('世界卡換點數',()=>setWorldExchangeOpen(true),true)}{button(showWorldAlbum?'收起世界卡收藏':'打開世界卡收藏',()=>setShowWorldAlbum(!showWorldAlbum),true)}{!state.collection?.length?<Text style={styles.caption}>完成任務，慢慢收集你的第一張世界卡。</Text>:null}<Text style={styles.caption}>任務時間卡上的機器人會陪你出發。守護獸可在收藏中選擇「今天陪我」；原有身分與卡片都保留。</Text></View>
     </> : taskAway&&state.phase==='active'?<View testID="task-away-panel" style={styles.card}>
-      <Text style={styles.heading}>任務繼續計時中</Text><Text style={styles.section}>{state.title}</Text>
-      <Text style={styles.body}>可以先把手機交給家長，切換到其他 App 或鎖定螢幕。回來不必重新開始。</Text>
-      <Text style={styles.caption}>這是繼續計時，不是暫停。需要休息請回任務選「我需要幫忙」。</Text>
-      <Text testID="away-clock" style={styles.timer}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text>
+      <Text style={styles.heading}>任務繼續計時中</Text><Text testID="away-task-title" style={[styles.section,{fontSize:viewportWidth<360?32:36,lineHeight:48,textAlign:'center'}]}>{state.title}</Text>
+      <Text testID="away-clock" style={[styles.timer,{fontSize:viewportWidth<360?72:88,lineHeight:112,fontWeight:'800',paddingHorizontal:4,paddingVertical:24}]}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text>
       {state.taskReminderShown?<Text testID="away-due" accessibilityLiveRegion="polite" style={styles.body}>{state.minutes===0?'已滿 10 分鐘，可以回任務確認是否完成。':'任務時間到了，可以回去確認是否完成。'}</Text>:null}
       {button('回到任務',()=>{armChime();setTaskAway(false);})}
     </View> : !inVillage ? <>
