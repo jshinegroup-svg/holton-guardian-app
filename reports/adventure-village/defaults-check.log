@@ -1,0 +1,1 @@
+PASS existing positive prices/names/closed flags preserved; zero original prices filled; custom zero stays closed; catalog idempotent; starter defaults independent.

@@ -15,3 +15,6 @@ Built-in image_gen produced `assets/worlds/village/village.png`. Exact prompt/pr
 TypeScript, scoped ESLint, web export, diff whitespace and existing atomic wish transaction checks passed.
 `browser-check.mjs` uses isolated headless Chrome profiles only: 320/390 layout and screenshots, all four destinations/returns, settings split, closed shop, zero fresh state + ready-to-use default wishes, parent price override/reload, save goal without title, task picker, unchanged navigation storage, existing cards, map lock, preparing/active/finishing reload, single reward/milestone, done restart, wish select/cancel/checkout/reload. Not tested on a physical phone.
 An initial 320px background overflow was found and fixed with explicit image dimensions; full rerun passed.
+
+## Public release complete
+Source implementation `ab82629`; Pages `42b71d999183825d1480e2ceca9775fa9f28f3ca`, run `39407529500`, built successfully. Public isolated browser suite PASS; village image SHA256 matches local export (`public-art-check.json`). Existing hashed bundles/assets retained for cached clients. Default-price invariant check also passes, including existing closed flags and custom slots.
