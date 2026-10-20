@@ -9,3 +9,5 @@ Persisted focusElapsedMs + focusStartedAt count active task time, including app 
 Backup validator accepts and validates the new optional timing fields; old backups stay compatible. No wallet/prices/reward amounts/world/companion changes.
 
 Tests: pure exact millisecond boundaries for 0/5/10/15/20/30/40/60 minutes, pause/resume, clock-backward clamp, migration, new backup roundtrip and invalid fields; existing family-backup model checks. Browser tests isolate synthetic storage, 320/390 quiet layout, real start/disabled click, reload, timed and untimed live threshold crossing/color change, help/rest, finish/return, double-click single reward, migrations, long title wrapping. No physical phone claim.
+
+Release: source c447190; Pages3a38f74, run39418748576 successful. Public bundle2556a2877c20b8f74dc9a1d9d0026c2f verified. Full focus browser suite PASS on public URL, including live timed/untimed threshold changes. Local original village/task/cart regression also PASS (test now advances eligible active time before requesting completion). All test storage is synthetic.
