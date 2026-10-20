@@ -84,6 +84,7 @@ export default function LightApp() {
   const [guardianDetailId, setGuardianDetailId] = useState<string | null>(null);
   const [taskPickerOpen, setTaskPickerOpen] = useState(false);
   const [detailCustom, setDetailCustom] = useState(false);
+  const [taskActionsOpen,setTaskActionsOpen]=useState(false);
   const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [minutes, setMinutes] = useState('5');
@@ -240,7 +241,7 @@ export default function LightApp() {
   async function chooseTask(nextTitle: string, category: string) {
     if (!nextTitle.trim() || nextTitle.trim().length > 80 || !current.current || !['ready', 'done'].includes(current.current.phase)) return;
     const saved = await change(s => !['ready', 'done'].includes(s.phase) ? s : ({ ...s, title: nextTitle.trim(), taskCategory: category, phase: 'ready', deadline: null, remaining: s.minutes * 60, help: false }));
-    if (saved) { setTitle(nextTitle.trim()); setTaskPickerOpen(false); setTaskDetailsOpen(false); }
+    if (saved) { setTitle(nextTitle.trim()); setTaskActionsOpen(false); setTaskPickerOpen(false); setTaskDetailsOpen(false); }
   }
   function navigateRoom(next:VillageRoom) { setRoom(next);setMapOpen(false);setJourneyOpen(false);setSettingsOpen(false);setShowWorldAlbum(false);pageScroll.current?.scrollTo({y:0,animated:false}); }
   function openParent(tab:typeof parentTab='tasks') {setParentGateTab(tab);}
@@ -333,15 +334,9 @@ export default function LightApp() {
     </> : !inVillage ? <>
 
       
-      <View testID="mission-stage" onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }} style={[styles.card, styles.missionPanel]}>{!quietFocus?<Text testID="mission-name" style={styles.heading}>{state.phase === 'done' ? '你做到了！' : state.title || '今天要完成什麼？'}</Text>:null}
+      <View testID="mission-stage" onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }} style={[styles.card, styles.missionPanel]}>{state.phase==='ready'?<Pressable testID="task-title-entry" accessibilityRole="button" accessibilityLabel={state.title?`修改任務：${state.title}`:'選擇任務'} accessibilityHint="點開後可換個任務或選得更清楚" disabled={saving} onPress={()=>{setTaskDetailsOpen(false);setTaskActionsOpen(true);}} style={({pressed})=>[styles.taskTitleEntry,pressed&&{opacity:.8}]}><Text testID="mission-name" style={styles.taskTitleText}>{state.title||'今天要完成什麼？'} ▾</Text><Text style={styles.taskTitleHint}>點一下選擇或調整任務</Text></Pressable>:!quietFocus?<Text testID="mission-name" style={styles.heading}>{state.phase === 'done' ? '你做到了！' : state.title || '今天要完成什麼？'}</Text>:null}
       {state.phase === 'ready' ? <>
-        <View style={{flexDirection: 'row', justifyContent: 'center', gap: 8, flexWrap: 'wrap'}}><Pressable accessibilityRole="button" accessibilityLabel={state.title ? '修改任務' : '選擇任務'} onPress={() => { setDetailCustom(false); setTaskPickerOpen(true); setTaskDetailsOpen(false); }} style={styles.smallLink}><Text style={styles.cardMinutes}>{state.title ? '✎ 換個任務' : '✎ 選擇任務'}</Text></Pressable>
-        {activeCategory ? <>
-          <Pressable accessibilityRole="button" accessibilityLabel={taskDetailsOpen ? '收起任務細項' : '選得更清楚'} onPress={() => setTaskDetailsOpen(!taskDetailsOpen)} style={styles.smallLink}><Text style={styles.cardMinutes}>{taskDetailsOpen ? '收起任務細項' : '選得更清楚 ▾'}</Text></Pressable>
-          {taskDetailsOpen ? <View style={{width: '100%', gap: 6}}><Text style={styles.caption}>← 左右滑動，選今天的一小步 →</Text><ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{gap: 8, paddingBottom: 10}} testID="task-detail-scroll">{activeCategory.tasks.map(task => <Pressable key={task} accessibilityRole="button" accessibilityLabel={`細項：${task}`} disabled={saving} onPress={() => void chooseTask(task, activeCategory.id)} accessibilityState={{selected: state.title === task}} style={[styles.detailChoice, state.title === task && styles.selectedCard]}><Text style={styles.body}>{task}</Text></Pressable>)}<Pressable accessibilityRole="button" accessibilityLabel="細項：其他" disabled={saving} onPress={() => { setDetailCustom(true); setTaskPickerOpen(true); }} style={styles.detailChoice}><Text style={styles.body}>✎ 其他</Text></Pressable></ScrollView></View> : null}
-        </> : null}
-        
-        </View><View style={styles.cardStage}>
+        <View style={styles.cardStage}>
           <Pressable accessibilityRole="button" accessibilityLabel="上一張時間卡" onPress={() => stepCard(-1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>‹</Text></Pressable>
           <CardLift selected reduced={reduceMotion}><CardPedestal source={displayCard.imageSource} label={displayCard.name} /></CardLift>
           <Pressable accessibilityRole="button" accessibilityLabel="下一張時間卡" onPress={() => stepCard(1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>›</Text></Pressable>
@@ -403,6 +398,20 @@ export default function LightApp() {
     <ParentGate visible={parentGateTab!==null} onCancel={()=>setParentGateTab(null)} onConfirm={()=>parentGateTab&&enterParent(parentGateTab)}/>
     <Modal visible={!!journey.event && !pending && !challenge && !settingsOpen && homePhase} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={dismissStory}>{journey.event?<JourneyReveal event={journey.event} reduced={reduceMotion} onDismiss={dismissStory} saving={saving}/>:null}{error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}</Modal>
 
+    <Modal visible={taskActionsOpen&&state.phase==='ready'} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={()=>setTaskActionsOpen(false)}><View style={styles.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalScroll}><View testID="task-actions-panel" style={styles.card}>
+      <Text style={styles.heading}>{taskDetailsOpen?'選得更清楚':state.title||'今天要完成什麼？'}</Text>
+      {!taskDetailsOpen?<>
+        {button('換個任務',()=>{setTaskActionsOpen(false);setDetailCustom(false);setTaskPickerOpen(true);})}
+        {button('選得更清楚',()=>{if(activeCategory)setTaskDetailsOpen(true);else{setTaskActionsOpen(false);setDetailCustom(true);setTaskPickerOpen(true);}},true)}
+      </>:<>
+        <Text style={styles.caption}>選今天要完成的一小步</Text>
+        {activeCategory?.tasks.map(task=><Pressable key={task} accessibilityRole="button" accessibilityLabel={`細項：${task}`} accessibilityState={{selected:state.title===task}} disabled={saving} onPress={()=>void chooseTask(task,activeCategory.id)} style={[styles.detailChoice,state.title===task&&styles.selectedCard]}><Text style={styles.body}>{task}</Text></Pressable>)}
+        {button('細項：其他',()=>{setTaskActionsOpen(false);setDetailCustom(true);setTaskPickerOpen(true);},true)}
+        {button('返回任務選項',()=>setTaskDetailsOpen(false),true)}
+      </>}
+      {error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}
+      {button('取消，保留原任務',()=>setTaskActionsOpen(false),true)}
+    </View></ScrollView></View></Modal>
     <Modal visible={taskPickerOpen && state.phase === 'ready'} transparent animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => setTaskPickerOpen(false)}><View style={styles.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalScroll}>
       <TaskPicker key={detailCustom ? 'detail' : 'category'} initialCustom={detailCustom} customCategory={detailCustom ? activeCategory?.id : undefined} currentTitle={state.title} saving={saving} onSelect={chooseTask} onClose={() => setTaskPickerOpen(false)} />
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
@@ -462,6 +471,9 @@ export default function LightApp() {
   </SafeAreaView>;
 }
 const styles = StyleSheet.create({
+  taskTitleEntry:{minHeight:64,paddingVertical:9,paddingHorizontal:14,alignItems:'center',justifyContent:'center',gap:2,borderWidth:2,borderColor:'#d5b976',borderRadius:18,backgroundColor:'rgba(9,43,66,.9)'},
+  taskTitleText:{fontSize:24,lineHeight:32,fontWeight:'800',color:'#fff0cf',textAlign:'center'},
+  taskTitleHint:{fontSize:12,lineHeight:18,color:'#c2d9dd',textAlign:'center'},
   focusHeader:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:8,paddingVertical:4,gap:8,borderRadius:18,backgroundColor:'rgba(9,35,40,.48)'},
   focusEyebrow:{fontSize:14,lineHeight:22,color:'#d4e5df',textAlign:'center'},
   focusTask:{minHeight:230,justifyContent:'center',gap:18,padding:22,borderRadius:24,backgroundColor:'rgba(14,48,51,.58)',borderWidth:1,borderColor:'rgba(201,227,209,.42)'},
