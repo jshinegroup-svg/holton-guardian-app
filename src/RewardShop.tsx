@@ -10,11 +10,12 @@ const extraArt: Record<string, number> = {
   'wish-8': require('../assets/cards/rewards/adventure.jpg'), 'wish-9': require('../assets/cards/rewards/game.jpg'),
 };
 const customArt: Record<string, number> = {gold:require('../assets/cards/rewards/extra.png'),scroll:require('../assets/cards/rewards/custom/scroll.png'),crystal:require('../assets/cards/rewards/custom/crystal.png')};
-export const defaultWishes: Wish[] = ['小禮物', '喜歡的飲料', '親子遊戲 15 分鐘', '一起看電影', '喜歡的點心', '自選室內活動', '自選戶外活動', '自選活動', '戶外冒險', '自選遊戲'].map((name, i) => ({ id: `wish-${i}`, name, cost: 0, enabled: false }));
 const recommendations = [100,20,20,60,20,30,30,30,60,20];
+export const defaultWishes: Wish[] = ['小禮物', '喜歡的飲料', '親子遊戲 15 分鐘', '一起看電影', '喜歡的點心', '自選室內活動', '自選戶外活動', '自選活動', '戶外冒險', '自選遊戲'].map((name, i) => ({ id: `wish-${i}`, name, cost: recommendations[i], enabled: false }));
+export const starterWishes = ():Wish[] => defaultWishes.map(w=>({...w,enabled:true}));
 export const customSlot = (n:number):Wish => ({id:`custom-${n}`,name:'',cost:0,enabled:false,custom:true,style:(['gold','scroll','crystal'] as const)[(n-1)%3],note:''});
 export function catalog(wishes?:Wish[]):Wish[] {
-  const old = (wishes??[]).map(w=>({...w}));
+  const old = (wishes??[]).map(w=>({...w,cost:w.cost>0?w.cost:defaultWishes.find(d=>d.id===w.id)?.cost??w.cost}));
   const all = [...old,...defaultWishes.filter(w=>!old.some(x=>x.id===w.id)).map(w=>({...w}))];
   for(let n=1;all.filter(w=>w.custom).length<3;n++) if(!all.some(w=>w.id===`custom-${n}`)) all.push(customSlot(n));
   return all;
@@ -68,13 +69,13 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
       else setNote('尚未完成兌換。請核對點數與品項，或稍後再試；選擇已保留。');
     } finally { submitting.current = false; }
   };
-  return <View style={s.panel}><Text style={s.title}>✧ 心願小舖</Text><Text style={s.text}>可用能量球 {data.orbs} 顆</Text>
+  return <View style={s.panel}><Text style={s.title}>✧ 心願小屋</Text><Text style={s.text}>可用能量球 {data.orbs} 顆</Text>
     {settings ? <>
       <Text style={s.text}>由大人決定是否開放。關閉不扣點、不清空餘額，也不影響守護獸收藏。這是共同設定，不是家長身分驗證。</Text>
       {action(`生活獎勵：${data.shopEnabled ? '開啟' : '關閉'}`, () => void change(s => ({ ...s, shopEnabled: !s.shopEnabled })))}
-      <Text style={s.text}>先約定內容與點數，再開放項目；未填價格的項目不能兌換。陪伴並不需要先賺點數，這裡是額外約定的活動。</Text>
+      <Text style={s.text}>原卡已預填建議點數，可直接使用；也可以修改價格或關閉項目。自訂卡請先約定內容與點數，再開放。陪伴並不需要先賺點數，這裡是額外約定的活動。</Text>
       {draft.map((w, i) => <View key={w.id} style={s.item}>
-        <Art wish={w} small/><Text style={s.text}>{w.custom?`自訂心願卡 ${w.id.split('-')[1]}`:`推薦 ${recommendations[Number(w.id.split('-')[1])]??'自訂'} 點（新建議，可自行調整）`}</Text><TextInput accessibilityLabel={`獎勵名稱 ${i + 1}`} value={w.name} onChangeText={name => setDraft(draft.map(x => x.id === w.id ? { ...x, name } : x))} maxLength={40} style={s.input} />
+        <Art wish={w} small/><Text style={s.text}>{w.custom?`自訂心願卡 ${w.id.split('-')[1]}`:`推薦 ${recommendations[Number(w.id.split('-')[1])]??'自訂'} 點（已預填，可自行調整）`}</Text><TextInput accessibilityLabel={`獎勵名稱 ${i + 1}`} value={w.name} onChangeText={name => setDraft(draft.map(x => x.id === w.id ? { ...x, name } : x))} maxLength={40} style={s.input} />
         <TextInput accessibilityLabel={`${w.name}點數`} keyboardType="number-pad" placeholder="請設定點數" placeholderTextColor="#b8ccd2" value={w.cost ? String(w.cost) : ''} onChangeText={v => setDraft(draft.map(x => x.id === w.id ? { ...x, cost: /^\d{1,6}$/.test(v) ? Number(v) : 0 } : x))} style={s.input} />
         {w.custom?<><TextInput accessibilityLabel={`小約定 ${w.id}`} value={w.note??''} onChangeText={note=>edit(w.id,{note})} maxLength={120} placeholder="小約定（選填）" placeholderTextColor="#b8ccd2" style={s.input}/><Text style={s.text}>選擇造型（不影響點數）</Text><View style={s.styleRow}>{(['gold','scroll','crystal'] as const).map((style,j)=><Pressable key={style} accessibilityRole="button" accessibilityLabel={`${w.id} ${['金色寶箱','星光卷軸','水晶寶箱'][j]}`} aria-pressed={w.style===style} onPress={()=>edit(w.id,{style})} style={[s.styleChoice,w.style===style&&s.productSelected]}><Image source={customArt[style]} style={{width:52,height:78}} resizeMode="contain"/><Text style={s.text}>{w.style===style?'✓ ':''}{['金色寶箱','星光卷軸','水晶寶箱'][j]}</Text></Pressable>)}</View></>:null}
         {action(`${w.name||w.id}：${w.enabled ? '已勾選' : '未開放'}`, () => setDraft(draft.map(x => x.id === w.id ? { ...x, enabled: !x.enabled } : x)))}
@@ -102,7 +103,7 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
         </View>;
       })}
       {!(data.wishes ?? []).some(w => w.enabled && w.cost > 0) ? <Text style={s.text}>目前還沒有開放的心願，點數會繼續累積。</Text> : null}
-      <Text style={s.text}>更多心願：10 張原卡與寶箱／卷軸自訂卡，可在「設定」填寫點數並開放。</Text>
+      <Text style={s.text}>更多心願：10 張原卡與寶箱／卷軸自訂卡，可請家長在「家長小屋 → 心願獎勵」填寫點數並開放。</Text>
       <View style={s.summary}><Text style={s.title}>最後確認 · 我的兌換清單</Text>
         {!selected.length?<Text style={s.text}>還沒選心願。先在喜歡的卡片按「我想兌換」。</Text>:<>
           {selected.map(w=><View key={w.id} style={s.item}><Text style={s.text}>{w.name} × 1 · {w.cost} 點</Text>{action(`移除${w.name}`,()=>toggle(w))}</View>)}
