@@ -86,13 +86,13 @@ export const supportToolImages = {
 };
 
 export const timeChallengeImages = {
-  miniWarrior: require("../../assets/cards/challenges/mini-warrior.png"),
-  miniFighter: require("../../assets/cards/challenges/mini-fighter.png"),
-  turboKnight: require("../../assets/cards/challenges/turbo-knight.png"),
-  powerRanger: require("../../assets/cards/challenges/power-ranger.png"),
-  superHeroMode: require("../../assets/cards/challenges/super-hero-mode.png"),
-  masterMode: require("../../assets/cards/challenges/master-mode.png"),
-  missionQuest: require("../../assets/cards/challenges/mission-quest.jpg"),
+  miniWarrior: require("../../assets/cards/challenges-mobile/mini-warrior.jpg"),
+  miniFighter: require("../../assets/cards/challenges-mobile/mini-fighter.jpg"),
+  turboKnight: require("../../assets/cards/challenges-mobile/turbo-knight.jpg"),
+  powerRanger: require("../../assets/cards/challenges-mobile/power-ranger.jpg"),
+  superHeroMode: require("../../assets/cards/challenges-mobile/super-hero-mode.jpg"),
+  masterMode: require("../../assets/cards/challenges-mobile/master-mode.jpg"),
+  missionQuest: require("../../assets/cards/challenges-mobile/mission-quest.jpg"),
 };
 
 export const guardianBeastImages = {

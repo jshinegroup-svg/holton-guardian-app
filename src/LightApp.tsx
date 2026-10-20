@@ -383,7 +383,7 @@ export default function LightApp() {
       {state.phase === 'ready' ? <>
         <View style={styles.cardStage}>
           <Pressable accessibilityRole="button" accessibilityLabel="上一張時間卡" onPress={() => stepCard(-1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>‹</Text></Pressable>
-          <CardLift selected reduced={reduceMotion}><CardPedestal source={displayCard.imageSource} label={displayCard.name} /></CardLift>
+          <CardLift selected reduced={reduceMotion}><CardPedestal source={displayCard.imageSource} label={displayCard.name} deck={timeChallenges} selectedId={displayCard.id} /></CardLift>
           <Pressable accessibilityRole="button" accessibilityLabel="下一張時間卡" onPress={() => stepCard(1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>›</Text></Pressable>
         </View>
         <Text style={styles.cardPlaque}>{durationLabel(state.minutes)} · 完成＋{rewardForMinutes(state.minutes)}</Text>

@@ -1,13 +1,19 @@
-import React from 'react';
-import { Image, Platform, StyleSheet, View, type ImageSourcePropType } from 'react-native';
+import React, {useState} from 'react';
+import { Image, Platform, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
 /** Decorative illustration only: all cards, labels and controls remain real UI. */
-export function CardPedestal({ source, label }: { source: ImageSourcePropType | undefined; label: string }) {
-  return <View style={s.stage} testID="original-card-pedestal">
-    <Image source={require('../assets/worlds/sky-base/card-pedestal.png')} accessible={false} style={[StyleSheet.absoluteFill, {width:'100%',height:'100%'}]} resizeMode="stretch" />
-    <Image source={source} accessibilityLabel={label} style={s.card} resizeMode="contain" />
-  </View>;
+type DeckCard={id:string;name:string;imageSource?:ImageSourcePropType};
+export function CardPedestal({ source, label, deck, selectedId }: { source: ImageSourcePropType | undefined; label: string; deck?:readonly DeckCard[];selectedId?:string }) {
+ const [loaded,setLoaded]=useState<Record<string,boolean>>({});
+ return <View style={s.stage} testID="original-card-pedestal">
+  <Image source={require('../assets/worlds/sky-base/card-pedestal.png')} accessible={false} style={[StyleSheet.absoluteFill, {width:'100%',height:'100%'}]} resizeMode="stretch" />
+  {deck?<View style={s.card} testID="time-card-deck">
+   {deck.map(card=><Image key={card.id} testID={`time-card-image-${card.id}`} source={card.imageSource} accessibilityLabel={card.id===selectedId?card.name:undefined} accessible={card.id===selectedId} aria-hidden={card.id!==selectedId} onLoad={()=>setLoaded(old=>old[card.id]?old:{...old,[card.id]:true})} style={[StyleSheet.absoluteFill,{width:'100%',height:'100%',opacity:card.id===selectedId?1:0}]} resizeMode="contain" fadeDuration={0}/>)}
+   {!loaded[selectedId??'']?<View pointerEvents="none" style={[StyleSheet.absoluteFill,{backgroundColor:'#103448',justifyContent:'center',padding:8}]}><Text style={{color:'#ffedbc',textAlign:'center',fontSize:13}}>{label}{'\n'}圖片載入中…</Text></View>:null}
+  </View>:<Image source={source} accessibilityLabel={label} style={s.card} resizeMode="contain" fadeDuration={0}/>}
+ </View>;
 }
+
 const s = StyleSheet.create({stage:{width:244,height:326,alignSelf:'center'},card:{position:'absolute',top:49,left:57,width:130,height:184}});
 
 export function WorldChrome() {

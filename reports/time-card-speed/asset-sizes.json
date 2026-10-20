@@ -1,0 +1,37 @@
+[
+  {
+    "name": "master-mode",
+    "original": 3021097,
+    "mobile": 158431
+  },
+  {
+    "name": "mini-fighter",
+    "original": 2895880,
+    "mobile": 139277
+  },
+  {
+    "name": "mini-warrior",
+    "original": 2967164,
+    "mobile": 149654
+  },
+  {
+    "name": "mission-quest",
+    "original": 206372,
+    "mobile": 129844
+  },
+  {
+    "name": "power-ranger",
+    "original": 2745432,
+    "mobile": 146149
+  },
+  {
+    "name": "super-hero-mode",
+    "original": 2823461,
+    "mobile": 142609
+  },
+  {
+    "name": "turbo-knight",
+    "original": 2697374,
+    "mobile": 144172
+  }
+]
