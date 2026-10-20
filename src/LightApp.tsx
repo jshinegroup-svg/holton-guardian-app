@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
+import FocusMusicSettings from './FocusMusicSettings';
+import {useFocusMusic} from './lib/focusMusic';
+import {DEFAULT_FOCUS_MUSIC,validFocusMusicId,type FocusMusicId} from './lib/focusMusicCatalog';
 import ChildProfile, {normalizeChildName} from './ChildProfile';
 import RewardShop, { starterWishes, type Wish, type WishReceipt } from './RewardShop';
 import {WorldMap, JourneyMap, JourneyReveal, JourneyHint} from './WorldJourney';
@@ -27,7 +30,7 @@ import {useTaskChime} from './lib/taskChime';
 const KEY = 'holton-guardian-app::light-v1';
 const RECOVERY_KEY = 'holton-guardian-app::before-replace-v1';
 type RecordItem = { world?:WorldId; reward?: number; id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
-type State = { childName?:string; taskSoundEnabled?:boolean;taskReminderShown?:boolean; focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+type State = { focusMusicEnabled?:boolean;focusMusicTrackId?:FocusMusicId; childName?:string; taskSoundEnabled?:boolean;taskReminderShown?:boolean; focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
 const rewardForMinutes = (minutes: number) => timeChallenges.find(card => card.minutes === minutes)?.orbs ?? 1;
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, onboardingDone:!!old, shopEnabled: true, wishes: starterWishes(), title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
@@ -57,7 +60,7 @@ export default function LightApp() {
   const reduceMotion = systemReduced || !!state?.reduceMotion;
   const [mapOpen,setMapOpen]=useState(false);
   const [room,setRoom]=useState<VillageRoom>('village');
-  const [parentTab,setParentTab]=useState<'profile'|'tasks'|'rewards'|'preferences'|'records'|'backup'>('profile');
+  const [parentTab,setParentTab]=useState<'profile'|'tasks'|'rewards'|'music'|'preferences'|'records'|'backup'>('profile');
   const [parentReturn,setParentReturn]=useState<VillageRoom>('village');
   const [journeyOpen,setJourneyOpen]=useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
@@ -99,6 +102,9 @@ export default function LightApp() {
   const [goal, setGoal] = useState('3');
   const [notice, setNotice] = useState('');
   const [now, setNow] = useState(Date.now());
+  const musicTrack=validFocusMusicId(state?.focusMusicTrackId)?state.focusMusicTrackId:DEFAULT_FOCUS_MUSIC;
+  const musicActive=state?.phase==='active'&&!state.help&&!settingsOpen&&room==='mission';
+  const music=useFocusMusic({enabled:state?.focusMusicEnabled===true,active:musicActive,trackId:musicTrack,previewAllowed:settingsOpen&&parentTab==='music'});
   useEffect(() => {
     let live = true;
     (async () => {
@@ -281,7 +287,7 @@ export default function LightApp() {
     busy.current=true;setSaving(true);setError('');
     try {
       const before=createBackup(old);
-      const resetState={...initial(null),childName:normalizeChildName(old.childName),dailyGoal:old.dailyGoal??3,shopEnabled:old.shopEnabled??true,wishes:old.wishes??starterWishes(),taskSoundEnabled:old.taskSoundEnabled!==false,reduceMotion:old.reduceMotion??false};
+      const resetState={...initial(null),childName:normalizeChildName(old.childName),focusMusicEnabled:old.focusMusicEnabled===true,focusMusicTrackId:validFocusMusicId(old.focusMusicTrackId)?old.focusMusicTrackId:DEFAULT_FOCUS_MUSIC,dailyGoal:old.dailyGoal??3,shopEnabled:old.shopEnabled??true,wishes:old.wishes??starterWishes(),taskSoundEnabled:old.taskSoundEnabled!==false,reduceMotion:old.reduceMotion??false};
       const next=migrateJourneys({...((snapshot??resetState) as State),help:false,deadline:null,onboardingDone:true});
       createBackup(next); // Revalidate before any replacement write.
       await AsyncStorage.setItem(RECOVERY_KEY,before);
@@ -308,6 +314,12 @@ export default function LightApp() {
   if(mapOpen && !settingsOpen && !pending && !challenge) return <WorldMap journeys={journey} activeWorld={world} onEnter={w=>{if(homePhase)void goWorld(w);}} canEnter={homePhase} onSettings={()=>openParent()} onBack={()=>navigateRoom('village')} saving={saving} error={error}/>;
   if(journeyOpen && homePhase && !settingsOpen && !pending && !challenge) return <JourneyMap journeys={journey} world={world} onClose={()=>setJourneyOpen(false)} onWorldMap={()=>{setJourneyOpen(false);setMapOpen(true);}}/>;
   const inVillage=room==='village'&&!settingsOpen;
+  async function toggleMusic() {
+    const enabled=current.current?.focusMusicEnabled!==true;
+    if(enabled&&musicActive)music.play(musicTrack);else music.stopPreview();
+    if(!await change(s=>({...s,focusMusicEnabled:enabled})))music.stop();
+  }
+  const musicControl=<View testID="focus-music-control" style={{alignItems:'flex-end',gap:4}}><Pressable accessibilityRole="switch" accessibilityLabel="專注音樂" accessibilityState={{checked:state.focusMusicEnabled===true}} disabled={saving} onPress={()=>void toggleMusic()} style={{padding:10,borderRadius:14,borderWidth:1,borderColor:'#a7c8cc',backgroundColor:'rgba(9,36,56,.88)'}}><Text style={{fontSize:15,color:'#fff0cf'}}>♫ 音樂：{state.focusMusicEnabled?'開':'關'}</Text></Pressable>{state.focusMusicEnabled&&(music.status==='blocked'||music.status==='error')?<Pressable accessibilityRole="button" accessibilityLabel="播放專注音樂" onPress={music.retry} style={{padding:8}}><Text style={{fontSize:14,color:'#bcecf1'}}>點此播放音樂</Text></Pressable>:null}</View>;
   const roomTitle=settingsOpen?'家長小屋':room==='wishes'?'心願小屋':room==='companions'?'夥伴小屋':inVillage?'':scene === 'rest' ? '休息小營地' : scene === 'focus' ? `${worlds[world].name} · 專注` : worlds[world].name;
   return <SafeAreaView testID="immersive-world" style={styles.root}><WorldChrome />{inVillage?<VillageBackdrop/>:<WorldBackdrop scene={scene} world={world} completed={journey.counts[world]} />}<ScrollView ref={pageScroll} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
     <View testID="world-title" style={styles.header}><View style={{flex:1}}>{roomTitle?<Text testID={focusActive?"focus-world-name":undefined} style={[styles.worldName,focusActive&&{fontSize:24,lineHeight:32,letterSpacing:1}]}>{roomTitle}</Text>:null}<Text testID="holton-brand-title" style={inVillage?[styles.brand,{fontSize:24,fontWeight:'800'}]:styles.brand}>HOLTON HERO</Text></View>{!inVillage?<Pressable accessibilityRole="button" accessibilityLabel={settingsOpen&&parentReturn==='wishes'?'回到心願小屋':settingsOpen&&parentReturn==='mission'?'回到任務':'回到村莊'} style={{padding:12}} onPress={()=>navigateRoom(settingsOpen?parentReturn:'village')}><Text style={styles.link}>{settingsOpen&&parentReturn==='wishes'?'回心願小屋':settingsOpen&&parentReturn==='mission'?'回到任務':'回到村莊'}</Text></Pressable>:null}</View>
@@ -318,8 +330,9 @@ export default function LightApp() {
 
     {settingsOpen ? <>
       <Text style={styles.body}>一起約定目標與獎勵，照孩子的步調來。</Text>
-      <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{([['profile','小朋友資料'],['tasks','任務與目標'],['rewards','心願獎勵'],['preferences','偏好與舊卡'],['records','完成紀錄'],['backup','備份與重置']] as const).map(([id,label])=><Pressable key={id} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{selected:parentTab===id}} onPress={()=>{setParentTab(id);setNotice('');}} style={[styles.smallLink,parentTab===id&&styles.selectedCard]}><Text style={styles.body}>{label}</Text></Pressable>)}</View>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{([['profile','小朋友資料'],['tasks','任務與目標'],['rewards','心願獎勵'],['music','音樂'],['preferences','偏好與舊卡'],['records','完成紀錄'],['backup','備份與重置']] as const).map(([id,label])=><Pressable key={id} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{selected:parentTab===id}} onPress={()=>{setParentTab(id);setNotice('');}} style={[styles.smallLink,parentTab===id&&styles.selectedCard]}><Text style={styles.body}>{label}</Text></Pressable>)}</View>
       {parentTab==='profile'?<ChildProfile name={normalizeChildName(state.childName)} busy={saving} onSave={name=>change(s=>({...s,childName:name}))}/>:null}
+      {parentTab==='music'?<FocusMusicSettings enabled={state.focusMusicEnabled===true} selected={musicTrack} previewId={music.previewId} busy={saving} status={music.status} onToggle={()=>void toggleMusic()} onSelect={id=>{music.stopPreview();void change(s=>({...s,focusMusicTrackId:id}));}} onPreview={music.preview} onRetry={music.retry}/>:null}
       {parentTab==='backup'?<BackupTools data={state} busy={saving} allowed={homePhase&&!challenge} onRestore={snapshot=>replaceProgress(snapshot)} onReset={()=>replaceProgress(null)} onReadRecovery={()=>AsyncStorage.getItem(RECOVERY_KEY)}/>:null}
       {parentTab==='records'?<WeeklyFootprints history={state.history} receipts={state.wishReceipts??[]} now={now}/>:null}
       {parentTab==='rewards'?<RewardShop data={state} settings saving={saving} change={change}/>:null}
@@ -360,6 +373,7 @@ export default function LightApp() {
     </> : taskAway&&state.phase==='active'?<View testID="task-away-panel" style={styles.card}>
       <Text style={styles.heading}>專注時間</Text><Text testID="away-task-title" style={[styles.section,{fontSize:viewportWidth<360?32:36,lineHeight:48,textAlign:'center'}]}>{state.title}</Text>
       <Text testID="away-clock" style={[styles.timer,{fontSize:viewportWidth<360?72:88,lineHeight:112,fontWeight:'800',paddingHorizontal:4,paddingVertical:24}]}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text>
+      {musicControl}
       {state.taskReminderShown?<Text testID="away-due" accessibilityLiveRegion="polite" style={styles.body}>{state.minutes===0?'已滿 10 分鐘，可以回任務確認是否完成。':'任務時間到了，可以回去確認是否完成。'}</Text>:null}
       {button('回到任務',()=>{armChime();setTaskAway(false);})}
     </View> : !inVillage ? <>
@@ -388,7 +402,7 @@ export default function LightApp() {
         {button('還有一點，回去繼續', () => void change(s => s.phase !== 'finishing' ? s : ({ ...s, phase: 'active', focusStartedAt:Date.now(), deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000, help: false })), true)}
       </> : state.phase === 'active' ? <>
         {companionScene}
-        {!state.help?<>{state.minutes===0?<Text style={styles.caption}>不限時 · 已進行</Text>:null}<Pressable testID="focus-time-panel" accessibilityRole="button" accessibilityLabel="進入專注介面" accessibilityHint="放大任務與時間，計時繼續" onPress={()=>{armChime();setTaskAway(true);requestAnimationFrame(()=>pageScroll.current?.scrollTo({y:0,animated:false}));}}><Text testID="crystal-clock" style={[styles.timer,{fontSize:60}]}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text></Pressable></>:null}
+        {!state.help?<>{state.minutes===0?<Text style={styles.caption}>不限時 · 已進行</Text>:null}<Pressable testID="focus-time-panel" accessibilityRole="button" accessibilityLabel="進入專注介面" accessibilityHint="放大任務與時間，計時繼續" onPress={()=>{armChime();setTaskAway(true);requestAnimationFrame(()=>pageScroll.current?.scrollTo({y:0,animated:false}));}}><Text testID="crystal-clock" style={[styles.timer,{fontSize:60}]}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text></Pressable>{musicControl}</>:null}
         <Text style={styles.body}>{state.help ? '任務已暫停' : state.minutes !== 0 && remaining === 0 ? '時間到了。還沒做好也沒關係，可以慢慢完成。' : '照自己的速度來。'}</Text>
         {state.help ? <>
           {!helpCard ? <Text style={styles.body}>拿出你的幫忙卡，再選同一張。</Text> : null}

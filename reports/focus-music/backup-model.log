@@ -1,0 +1,1 @@
+PASS roundtrip preserves all data; corrupt/version/negative/malformed/active/unknown/oversize/duplicate rejected; Taipei Monday boundary, future exclusion, dedup and help count.
