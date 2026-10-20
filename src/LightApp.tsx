@@ -4,6 +4,8 @@ import RewardShop, { starterWishes, type Wish, type WishReceipt } from './Reward
 import {WorldMap, JourneyMap, JourneyReveal, JourneyHint} from './WorldJourney';
 import {migrateJourneys, advanceJourney, enterWorld, worlds, type Journeys, type WorldId} from './lib/journeys';
 import EnergyMath from './EnergyMath';
+import {WelcomeGuide,ParentGate,WeeklyFootprints,BackupTools} from './FamilyTools';
+import {createBackup,type FamilySnapshot} from './lib/familyBackup';
 import AdventureVillage, {VillageBackdrop, type VillageRoom} from './AdventureVillage';
 import GuardianBattle from './GuardianBattle';
 import { beginGuardianChallenge, winGuardianChallenge, dismissGuardianChallenge, type GuardianChallenge, type GuardianReceipt } from './lib/guardianChallenge';
@@ -18,11 +20,12 @@ import { planWorldRedemption, redeemWorldCards, worldExchangeDay, worldRewardLab
 import type { PersistedAppState } from './types/holton';
 
 const KEY = 'holton-guardian-app::light-v1';
+const RECOVERY_KEY = 'holton-guardian-app::before-replace-v1';
 type RecordItem = { world?:WorldId; reward?: number; id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
-type State = { journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+type State = { onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
 const rewardForMinutes = (minutes: number) => timeChallenges.find(card => card.minutes === minutes)?.orbs ?? 1;
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, shopEnabled: true, wishes: starterWishes(), title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
+const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, onboardingDone:!!old, shopEnabled: true, wishes: starterWishes(), title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
 
 const guardianCards = guardianBeasts.flatMap(beast => beast.stages.map((stage, index) => ({
   id: `${beast.id}:${index}`, beastId: beast.id, name: beast.name, vibe: beast.vibe, index, label: stage.label, cost: stage.cost,
@@ -48,7 +51,7 @@ export default function LightApp() {
   const reduceMotion = systemReduced || !!state?.reduceMotion;
   const [mapOpen,setMapOpen]=useState(false);
   const [room,setRoom]=useState<VillageRoom>('village');
-  const [parentTab,setParentTab]=useState<'tasks'|'rewards'|'preferences'|'records'>('tasks');
+  const [parentTab,setParentTab]=useState<'tasks'|'rewards'|'preferences'|'records'|'backup'>('tasks');
   const [parentReturn,setParentReturn]=useState<VillageRoom>('village');
   const [journeyOpen,setJourneyOpen]=useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
@@ -70,6 +73,8 @@ export default function LightApp() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [parentGateTab,setParentGateTab]=useState<typeof parentTab|null>(null);
+  const [introReplay,setIntroReplay]=useState(false);
   const [worldExchangeOpen, setWorldExchangeOpen] = useState(false);
   const [collectionOpen, setCollectionOpen] = useState(false);
   const [challengeConfirmId, setChallengeConfirmId] = useState<string | null>(null);
@@ -230,11 +235,33 @@ export default function LightApp() {
     if (saved) { setTitle(nextTitle.trim()); setTaskPickerOpen(false); setTaskDetailsOpen(false); }
   }
   function navigateRoom(next:VillageRoom) { setRoom(next);setMapOpen(false);setJourneyOpen(false);setSettingsOpen(false);setShowWorldAlbum(false);pageScroll.current?.scrollTo({y:0,animated:false}); }
-  function openParent(tab:typeof parentTab='tasks') { setParentReturn(room);setParentTab(tab);setSettingsOpen(true);setNotice('');setTitle(state!.title);setMinutes(String(state!.minutes));setGoal(String(state!.dailyGoal??3));pageScroll.current?.scrollTo({y:0,animated:false}); }
+  function openParent(tab:typeof parentTab='tasks') {setParentGateTab(tab);}
+  function enterParent(tab:typeof parentTab) {setParentGateTab(null); setParentReturn(room);setParentTab(tab);setSettingsOpen(true);setNotice('');setTitle(state!.title);setMinutes(String(state!.minutes));setGoal(String(state!.dailyGoal??3));pageScroll.current?.scrollTo({y:0,animated:false}); }
   async function startFromVillage() {
     if(current.current?.phase==='done' && !await change(s=>({...s,phase:'ready',deadline:null,help:false,remaining:s.minutes*60}))) return;
     navigateRoom('mission');
     if(!current.current?.title) setTaskPickerOpen(true);
+  }
+  async function finishGuide(start:boolean) {
+    if(current.current?.onboardingDone===false&&!await change(s=>({...s,onboardingDone:true}))) return;
+    setIntroReplay(false);if(start)await startFromVillage();
+  }
+  async function replaceProgress(snapshot:FamilySnapshot|null):Promise<boolean> {
+    const old=current.current;
+    if(busy.current||!old||!['ready','done'].includes(old.phase)||old.guardianChallenge)return false;
+    busy.current=true;setSaving(true);setError('');
+    try {
+      const before=createBackup(old);
+      const resetState={...initial(null),dailyGoal:old.dailyGoal??3,shopEnabled:old.shopEnabled??true,wishes:old.wishes??starterWishes(),reduceMotion:old.reduceMotion??false};
+      const next=migrateJourneys({...((snapshot??resetState) as State),help:false,deadline:null,onboardingDone:true});
+      createBackup(next); // Revalidate before any replacement write.
+      await AsyncStorage.setItem(RECOVERY_KEY,before);
+      await AsyncStorage.setItem(KEY,JSON.stringify(next));
+      current.current=next;setState(next);setTitle(next.title);setMinutes(String(next.minutes));setGoal(String(next.dailyGoal??3));
+      setParentGateTab(null);setSettingsOpen(false);setMapOpen(false);setJourneyOpen(false);setRoom('village');setWorldExchangeOpen(false);setCollectionOpen(false);setGuardianDetailId(null);setBattlePreviewId(null);setChallengeConfirmId(null);setTaskPickerOpen(false);setTaskDetailsOpen(false);setShowWorldAlbum(false);setWalletOpen(false);setIntroReplay(false);celebrate.current=false;
+      pageScroll.current?.scrollTo({y:0,animated:false});return true;
+    } catch {setError('備份保留或儲存未完成，原有進度未變更。請再試一次。');return false;}
+    finally {busy.current=false;setSaving(false);}
   }
   function saveGoal() {
     const target=Number(goal);
@@ -261,9 +288,12 @@ export default function LightApp() {
 
     {settingsOpen ? <>
       <Text style={styles.body}>一起約定目標與獎勵，照孩子的步調來。</Text>
-      <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{([['tasks','任務與目標'],['rewards','心願獎勵'],['preferences','偏好與舊卡'],['records','完成紀錄']] as const).map(([id,label])=><Pressable key={id} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{selected:parentTab===id}} onPress={()=>{setParentTab(id);setNotice('');}} style={[styles.smallLink,parentTab===id&&styles.selectedCard]}><Text style={styles.body}>{label}</Text></Pressable>)}</View>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{([['tasks','任務與目標'],['rewards','心願獎勵'],['preferences','偏好與舊卡'],['records','完成紀錄'],['backup','備份與重置']] as const).map(([id,label])=><Pressable key={id} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{selected:parentTab===id}} onPress={()=>{setParentTab(id);setNotice('');}} style={[styles.smallLink,parentTab===id&&styles.selectedCard]}><Text style={styles.body}>{label}</Text></Pressable>)}</View>
+      {parentTab==='backup'?<BackupTools data={state} busy={saving} allowed={homePhase&&!challenge} onRestore={snapshot=>replaceProgress(snapshot)} onReset={()=>replaceProgress(null)} onReadRecovery={()=>AsyncStorage.getItem(RECOVERY_KEY)}/>:null}
+      {parentTab==='records'?<WeeklyFootprints history={state.history} receipts={state.wishReceipts??[]} now={now}/>:null}
       {parentTab==='rewards'?<RewardShop data={state} settings saving={saving} change={change}/>:null}
       {parentTab==='preferences'?<>
+      {button('再看新手帶領',()=>setIntroReplay(true),true,!homePhase)}
       <View style={styles.card}><Text style={styles.section}>世界 · 動畫設定</Text><Text style={styles.body}>選卡、準備、完成與守護獸挑戰有短動畫。任務中場景靜止，這版不播放音效。</Text>
         <Pressable accessibilityRole="switch" accessibilityLabel="減少動畫" accessibilityState={{ checked: !!state.reduceMotion }} disabled={saving} onPress={() => void change(s => ({ ...s, reduceMotion: !s.reduceMotion }))} style={styles.secondarySetting}><Text style={styles.section}>減少動畫：{state.reduceMotion ? '開啟' : '關閉'}</Text></Pressable>
         <Text style={styles.caption}>{systemReduced ? '裝置已設定減少動態效果，這裡也會自動減少。' : '開啟後改用靜態提示，獎勵與任務流程不變。'}</Text>
@@ -355,6 +385,8 @@ export default function LightApp() {
     {!inVillage && showWorldReminder ? <View style={styles.reminder} accessibilityLiveRegion="polite"><Text style={styles.section}>你有世界卡可以換點數！</Text><Text style={styles.body}>目前可領 ＋{exchangePlan.points} 能量球，現在領取嗎？</Text><Text style={styles.caption}>先看明細，再確認。下次再換也不會過期。</Text>{button('去兌換', () => setWorldExchangeOpen(true))}{button('下次再說', () => void change(s => ({ ...s, worldReminderDismissedDay: worldExchangeDay(Date.now()) })), true)}</View> : null}
       {!settingsOpen && homePhase && showWorldAlbum && !!state.collection?.length ? <View style={styles.card}><Text style={styles.section}>我的世界卡</Text><Text style={styles.body}>{exchangePlan.blocked ? '今天已兌換，新卡留到明天。' : `目前可換 ＋${exchangePlan.points} 能量球`}</Text>{button('查看兌換明細', () => setWorldExchangeOpen(true), true)}<ScrollView horizontal contentContainerStyle={styles.deck}>{state.collection.map(item => { const card = worldEvents.find(c => c.id === item.cardId); return card ? <View key={item.id} style={styles.taskCard}><Image source={card.imageSource} accessibilityLabel={card.title} resizeMode="contain" style={styles.cardArt} /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{item.redeemedAt ? '✓ 已兌換 · 保留收藏' : worldRewardLabel(item.cardId)}</Text></View> : null; })}</ScrollView></View> : null}
   </ScrollView>
+    <WelcomeGuide error={error} visible={(state.onboardingDone===false||introReplay)&&homePhase&&!pending&&!challenge} busy={saving} onClose={start=>void finishGuide(start)}/>
+    <ParentGate visible={parentGateTab!==null} onCancel={()=>setParentGateTab(null)} onConfirm={()=>parentGateTab&&enterParent(parentGateTab)}/>
     <Modal visible={!!journey.event && !pending && !challenge && !settingsOpen && homePhase} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={dismissStory}>{journey.event?<JourneyReveal event={journey.event} reduced={reduceMotion} onDismiss={dismissStory} saving={saving}/>:null}{error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}</Modal>
 
     <Modal visible={taskPickerOpen && state.phase === 'ready'} transparent animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => setTaskPickerOpen(false)}><View style={styles.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalScroll}>

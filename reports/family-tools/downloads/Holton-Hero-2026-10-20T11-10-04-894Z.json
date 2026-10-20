@@ -1,0 +1,67 @@
+{
+  "format": "holton-hero-family",
+  "version": 1,
+  "createdAt": "2026-10-20T11:10:04.892Z",
+  "state": {
+    "version": 1,
+    "title": "收好積木",
+    "minutes": 5,
+    "cardId": "mini-fighter",
+    "orbs": 41,
+    "phase": "ready",
+    "deadline": null,
+    "remaining": 300,
+    "history": [
+      {
+        "id": "test-done",
+        "title": "收積木",
+        "at": "2026-10-20T10:09:53.201Z",
+        "minutes": 5,
+        "helpUsed": true,
+        "supportUsed": [
+          "rest"
+        ]
+      }
+    ],
+    "guardian": {},
+    "guardianCards": [
+      {
+        "cardId": "tidefin:0",
+        "at": "2026-10-19",
+        "cost": 10,
+        "source": "sunday"
+      }
+    ],
+    "companionCardId": "tidefin:0",
+    "dailyGoal": 4,
+    "reduceMotion": true,
+    "shopEnabled": true,
+    "wishes": [
+      {
+        "id": "wish-0",
+        "name": "特別禮物",
+        "cost": 77,
+        "enabled": false
+      }
+    ],
+    "wishReceipts": [
+      {
+        "id": "pending-wish",
+        "name": "親子電影",
+        "cost": 20,
+        "at": "2026-10-20T11:09:53.201Z"
+      }
+    ],
+    "activeWorld": "forest",
+    "journeys": {
+      "version": 2,
+      "counts": {
+        "sky": 0,
+        "forest": 4,
+        "cosmos": 0
+      },
+      "legacyCredit": 0,
+      "retainedWorlds": []
+    }
+  }
+}
