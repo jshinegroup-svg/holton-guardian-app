@@ -8,3 +8,5 @@ Validation: typecheck, lint (existing warnings), web export, backup model suite 
 
 Local command: node reports/focus-music/browser-check.mjs
 Public command: SKY_TEST_URL=https://jshinegroup-svg.github.io/holton-guardian-app/ node reports/focus-music/browser-check.mjs
+
+Release: source 5e789c2, Pages 457bedd, all jobs successful in run 39448890689. Public AppEntry cff4acbadf37616a57d32cc86813e1d7 verified. Both full public music and child-name browser suites PASS.
