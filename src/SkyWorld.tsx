@@ -19,6 +19,13 @@ export function WorldBackdrop({ scene,world='sky',completed=0 }: { scene: 'home'
   const source = chapterScene(world,completed);
   return <View pointerEvents="none" style={StyleSheet.absoluteFill} testID={`world-scene-${scene}`} accessibilityLabel={`${world} ${scene} 第${chapterSceneIndex(completed)+1}章場景`}><Image source={source} resizeMode="cover" accessible={false} style={{ width: '100%', height: '100%' }} /><View style={[StyleSheet.absoluteFill, { backgroundColor: scene === 'focus' ? 'rgba(9,19,45,0.38)' : scene==='rest'?'rgba(4,28,40,0.22)':'rgba(4,28,40,0.12)' }]} /></View>;
 }
+/** Static chapter art softened behind readable translucent focus controls. */
+export function QuietFocusBackdrop({world,completed}:{world:WorldId;completed:number}) {
+ return <View testID="quiet-focus-backdrop" pointerEvents="none" style={StyleSheet.absoluteFill}>
+   <Image testID="focus-world-art" source={chapterScene(world,completed)} accessible={false} blurRadius={2} resizeMode="cover" style={{width:'100%',height:'100%'}}/>
+   <View testID="focus-world-shade" style={[StyleSheet.absoluteFill,{backgroundColor:'rgba(5,24,30,0.38)'}]}/>
+ </View>;
+}
 export function SkyHero({ image, name }: { image: ImageSourcePropType; name: string }) {
   return <View style={s.hero} testID="sky-base-hero"><View style={s.heroLabel}><Text style={s.eyebrow}>HOLTON HERO</Text><Text style={s.title}>天空基地</Text><Text style={s.heroLine}>帶著你的卡片，一起出發。</Text><Text style={s.partnerName}>{name}</Text></View><Image source={image} accessibilityLabel={`${name} 今日守護夥伴原卡`} style={s.guardian} resizeMode="contain" /></View>;
 }

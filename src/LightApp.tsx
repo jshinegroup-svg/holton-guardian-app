@@ -11,7 +11,7 @@ import GuardianBattle from './GuardianBattle';
 import { beginGuardianChallenge, winGuardianChallenge, dismissGuardianChallenge, type GuardianChallenge, type GuardianReceipt } from './lib/guardianChallenge';
 import { WorldChrome, CardPedestal } from './WorldChrome';
 import { TaskPicker, taskCategories } from './TaskPicker';
-import { WorldBackdrop, CardLift, PortalCue, RewardArrival, useSystemReducedMotion } from './SkyWorld';
+import { QuietFocusBackdrop, WorldBackdrop, CardLift, PortalCue, RewardArrival, useSystemReducedMotion } from './SkyWorld';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loadPersistedAppState } from './lib/persistence';
 import { coreGuardianArchetypeImages, coreGuardianStageImages, timeChallenges, worldEvents, sopCards, badgeImages, guardianBeasts, supportTools, transitionCards, activeSkills } from './data/holtonCatalog';
@@ -288,8 +288,8 @@ export default function LightApp() {
   if(journeyOpen && homePhase && !settingsOpen && !pending && !challenge) return <JourneyMap journeys={journey} world={world} onClose={()=>setJourneyOpen(false)} onWorldMap={()=>{setJourneyOpen(false);setMapOpen(true);}}/>;
   const inVillage=homePhase&&room==='village'&&!settingsOpen;
   const roomTitle=settingsOpen?'家長小屋':homePhase&&room==='wishes'?'心願小屋':homePhase&&room==='companions'?'夥伴小屋':inVillage?'':scene === 'rest' ? '休息小營地' : scene === 'focus' ? `${worlds[world].name} · 專注` : worlds[world].name;
-  return <SafeAreaView testID="immersive-world" style={styles.root}><WorldChrome />{inVillage?<VillageBackdrop/>:quietFocus?<View testID="quiet-focus-backdrop" pointerEvents="none" style={[StyleSheet.absoluteFillObject,{backgroundColor:'#102c39'}]}/>:<WorldBackdrop scene={scene} world={world} completed={journey.counts[world]} />}<ScrollView ref={pageScroll} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
-    <View testID={quietFocus?"focus-header":"world-title"} style={quietFocus?styles.focusHeader:styles.header}><View style={{flex:1}}>{roomTitle?<Text style={quietFocus?styles.focusEyebrow:styles.worldName}>{quietFocus?'專心做一件事':roomTitle}</Text>:null}<Text testID="holton-brand-title" style={inVillage?[styles.brand,{fontSize:24,fontWeight:'800'}]:styles.brand}>HOLTON HERO</Text></View>{!inVillage?<Pressable accessibilityRole="button" accessibilityLabel={settingsOpen&&parentReturn==='wishes'?'回到心願小屋':homePhase?'回到村莊':settingsOpen?'回到任務':'家長小屋'} style={{padding:12}} onPress={()=>{if(settingsOpen){setSettingsOpen(false);if(homePhase)navigateRoom(parentReturn==='wishes'?'wishes':'village');}else if(homePhase)navigateRoom('village');else openParent();}}><Text style={styles.link}>{settingsOpen&&parentReturn==='wishes'?'回心願小屋':homePhase?'回村莊':settingsOpen?'回到任務':'家長小屋'}</Text></Pressable>:null}</View>
+  return <SafeAreaView testID="immersive-world" style={styles.root}><WorldChrome />{inVillage?<VillageBackdrop/>:quietFocus?<QuietFocusBackdrop world={world} completed={journey.counts[world]}/>:<WorldBackdrop scene={scene} world={world} completed={journey.counts[world]} />}<ScrollView ref={pageScroll} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+    <View testID={quietFocus?"focus-header":"world-title"} style={quietFocus?styles.focusHeader:styles.header}><View style={{flex:1}}>{roomTitle?<Text style={quietFocus?styles.focusEyebrow:styles.worldName}>{quietFocus?`${worlds[world].name} · 專心做一件事`:roomTitle}</Text>:null}<Text testID="holton-brand-title" style={inVillage?[styles.brand,{fontSize:24,fontWeight:'800'}]:styles.brand}>HOLTON HERO</Text></View>{!inVillage?<Pressable accessibilityRole="button" accessibilityLabel={settingsOpen&&parentReturn==='wishes'?'回到心願小屋':homePhase?'回到村莊':settingsOpen?'回到任務':'家長小屋'} style={{padding:12}} onPress={()=>{if(settingsOpen){setSettingsOpen(false);if(homePhase)navigateRoom(parentReturn==='wishes'?'wishes':'village');}else if(homePhase)navigateRoom('village');else openParent();}}><Text style={styles.link}>{settingsOpen&&parentReturn==='wishes'?'回心願小屋':homePhase?'回村莊':settingsOpen?'回到任務':'家長小屋'}</Text></Pressable>:null}</View>
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
     {inVillage?<AdventureVillage reduced={reduceMotion} orbs={state.orbs} world={worlds[world].name} steps={journey.counts[world]} today={today.length} goal={state.dailyGoal??3} task={state.title} saving={saving} onStart={()=>void startFromVillage()} onVisit={place=>{if(place==='map')setMapOpen(true);else if(place==='parent')openParent();else navigateRoom(place);}}/>:null}
     {!settingsOpen&&homePhase&&room==='mission'?<><View style={{flexDirection:'row',justifyContent:'space-between',gap:8}}>{button('冒險地圖',()=>setMapOpen(true),true)}{button('看看我的旅程',()=>setJourneyOpen(true),true)}</View>{state.phase==='ready'?<View style={{gap:8}}>{journey.counts[world]===0?<Text style={[styles.body,{padding:12,backgroundColor:'rgba(8,35,49,.7)',borderRadius:14}]}>{worlds[world].intro}</Text>:null}<JourneyHint journeys={journey} world={world} onPress={()=>setJourneyOpen(true)}/></View>:null}</>:null}
@@ -365,7 +365,7 @@ export default function LightApp() {
           <View testID="focus-task-card" style={styles.focusTask}><Text style={styles.focusEyebrow}>現在只做這件事</Text><Text testID="focus-task-title" style={styles.focusTitle}>{state.title}</Text><Text style={styles.focusInstruction}>把需要的東西放在面前，{ '\n' }從眼前的一小步開始。</Text></View>
           <View style={styles.focusTimeRow}><Text style={styles.focusEyebrow}>{state.minutes===0?'不限時 · 已進行':'剩餘時間'}</Text><Text testID="focus-clock" style={styles.focusClock}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text></View>
         </>}
-        <Text style={styles.body}>{state.help ? '任務已暫停' : state.minutes !== 0 && remaining === 0 ? '時間到了。還沒做好也沒關係，可以慢慢完成。' : '照自己的速度來。'}</Text>
+        <Text style={quietFocus?styles.focusMessage:styles.body}>{state.help ? '任務已暫停' : state.minutes !== 0 && remaining === 0 ? '時間到了。還沒做好也沒關係，可以慢慢完成。' : '照自己的速度來。'}</Text>
         {state.help ? <>
           {!helpCard ? <Text style={styles.body}>拿出你的幫忙卡，再選同一張。</Text> : null}
           {helpCard ? <>
@@ -378,7 +378,7 @@ export default function LightApp() {
             <View style={styles.helpGrid}>{helpCards.map(card => <Pressable key={card.id} accessibilityRole="button" accessibilityLabel={`選擇${card.title}`} disabled={saving} onPress={() => void change(s => selectHelp(s, card.id))} style={[styles.helpChoice, saving && styles.disabled]}><Image source={card.image} accessibilityLabel={card.title} style={styles.helpArt} resizeMode="contain" /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{card.line}</Text></Pressable>)}</View>
             {button('我準備好了，繼續', () => void change(resumeHelp), true)}
           </>}
-        </> : button('我需要幫忙', () => void change(openHelp), true)}
+        </> : <Pressable testID="focus-help" accessibilityRole="button" accessibilityLabel="我需要幫忙" disabled={saving} onPress={()=>void change(openHelp)} style={[styles.focusHelp,saving&&styles.disabled]}><Text style={styles.focusHelpText}>我需要幫忙</Text></Pressable>}
 
         {!state.help ? <>
           <Text testID="focus-unlock-hint" style={styles.focusHint}>{focusReady?'做好了，再按完成。':`再專心 ${clockText(focusWait)}，完成鍵就會亮起。`}</Text>
@@ -462,16 +462,19 @@ export default function LightApp() {
   </SafeAreaView>;
 }
 const styles = StyleSheet.create({
-  focusHeader:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:8,paddingVertical:4,gap:8},
-  focusEyebrow:{fontSize:14,lineHeight:22,color:'#b5ced4',textAlign:'center'},
-  focusTask:{minHeight:230,justifyContent:'center',gap:18,padding:22,borderRadius:24,backgroundColor:'#183f4b',borderWidth:1,borderColor:'#49727a'},
+  focusHeader:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:8,paddingVertical:4,gap:8,borderRadius:18,backgroundColor:'rgba(9,35,40,.48)'},
+  focusEyebrow:{fontSize:14,lineHeight:22,color:'#d4e5df',textAlign:'center'},
+  focusTask:{minHeight:230,justifyContent:'center',gap:18,padding:22,borderRadius:24,backgroundColor:'rgba(14,48,51,.58)',borderWidth:1,borderColor:'rgba(201,227,209,.42)'},
   focusTitle:{fontSize:36,lineHeight:49,fontWeight:'800',color:'#fff4da',textAlign:'center'},
-  focusInstruction:{fontSize:16,lineHeight:26,color:'#c0d5d7',textAlign:'center'},
-  focusTimeRow:{flexDirection:'row',justifyContent:'center',alignItems:'center',gap:14,paddingVertical:10},
+  focusInstruction:{fontSize:16,lineHeight:26,color:'#d6e6de',textAlign:'center'},
+  focusTimeRow:{flexDirection:'row',justifyContent:'center',alignItems:'center',gap:14,paddingVertical:10,borderRadius:16,backgroundColor:'rgba(9,35,40,.46)'},
   focusClock:{fontSize:26,lineHeight:34,fontVariant:['tabular-nums'],color:'#e3eeeb',fontWeight:'600'},
-  focusHint:{fontSize:13,lineHeight:22,color:'#bdd0d4',textAlign:'center'},
-  focusComplete:{minHeight:56,padding:14,borderRadius:18,backgroundColor:'#097e86',borderWidth:2,borderColor:'#79d3cc',justifyContent:'center',alignItems:'center'},
-  focusLocked:{backgroundColor:'#46565f',borderColor:'#63717a'},
+  focusHint:{fontSize:13,lineHeight:22,color:'#d6e5df',textAlign:'center',backgroundColor:'rgba(9,35,40,.42)',borderRadius:8,paddingHorizontal:7,paddingVertical:2},
+  focusComplete:{minHeight:56,padding:14,borderRadius:18,backgroundColor:'rgba(9,126,134,.76)',borderWidth:2,borderColor:'rgba(157,226,211,.85)',justifyContent:'center',alignItems:'center'},
+  focusLocked:{backgroundColor:'rgba(70,86,95,.72)',borderColor:'rgba(169,185,186,.52)'},
+  focusMessage:{textAlign:'center',color:'#e0ece3',fontSize:16,lineHeight:26,paddingVertical:3,paddingHorizontal:10,borderRadius:10,backgroundColor:'rgba(9,35,40,.42)'},
+  focusHelp:{minHeight:46,padding:10,alignItems:'center',justifyContent:'center',borderRadius:16,borderWidth:1,borderColor:'rgba(201,227,209,.5)',backgroundColor:'rgba(16,52,58,.56)'},
+  focusHelpText:{fontSize:16,fontWeight:'600',color:'#edf5e9'},
   focusCompanion:{flexDirection:'row',gap:8,justifyContent:'center',alignItems:'center',paddingTop:8},
   worldName: {fontSize: 28, fontWeight: '900', color: '#fff1b9', letterSpacing: 3},
   smallLink: { minHeight: 44, alignSelf: 'center', paddingHorizontal: 18, justifyContent: 'center', borderRadius: 18, backgroundColor: 'rgba(8,31,49,.88)' },
