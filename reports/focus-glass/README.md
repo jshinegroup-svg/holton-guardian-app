@@ -5,3 +5,5 @@ Jerry22827 requested forest atmosphere and translucent frames to maintain the ga
 Only LightApp presentation and new QuietFocusBackdrop in SkyWorld changed. Half-duration/10min rules, help pause, persistence and reward logic untouched.
 
 Validation: typecheck/scoped lint/export, adapted existing focus browser suite plus9 unique world/chapter images and320/390 forest/sky/cosmos screenshots. Checks preserve threshold crossing, gray-to-color, disabled click, pause/reload, finishing return, single reward, legacy state and long-title wrapping. Synthetic profiles only; no physical phone claim.
+
+Release b56da44; Pages40d3ab9/run39421519513 built; public bundle ddd171729505545ce5b62890dceef7a2 confirmed. Public adapted full focus +9 chapter background suite PASS. Browser boundary wait now polls for the1second UI tick rather than assuming a fixed5second sleep always observes it; no timer implementation change. Public forest/sky/cosmos screenshots generated.
