@@ -390,7 +390,7 @@ export default function LightApp() {
         {button('準備出發', () => void change(s => s.phase !== 'ready' || !s.title.trim() ? s : ({ ...s, phase: 'preparing', taskReminderShown:false, focusElapsedMs:0,focusStartedAt:null, cardId: s.cardId ?? timeChallenges.find(c => c.minutes === s.minutes)?.id, taskReward: rewardForMinutes(s.minutes), supportCardId: undefined, supportUsed: [], breakDeadline: null, helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })), false, !state.title.trim())}
       </> : state.phase === 'preparing' ? <>
         <PortalCue reduced={reduceMotion} />
-        <Image source={sopCards.find(card => card.id === 'task-starter')!.imageSource} accessibilityLabel="Task Starter 任務啟動卡" style={styles.ritualArt} resizeMode="contain" />
+        <Image source={sopCards.find(card => card.id === 'task-starter')!.imageSource} accessibilityLabel="Task Starter 任務啟動卡" style={[styles.ritualArt,{height:252,width:'90%',alignSelf:'center'}]} resizeMode="contain" />
         <Text style={styles.section}>Task Starter · 任務啟動</Text><Text style={styles.body}>這次挑戰：{durationLabel(state.minutes)}。準備好再按，現在還沒有計時。</Text>
         {button('我準備好了，開始！', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'active', taskReminderShown:false, focusElapsedMs:0,focusStartedAt:Date.now(), help: false, deadline: s.minutes === 0 ? null : Date.now() + s.minutes * 60000, remaining: s.minutes * 60 })))}
         {button('回去選時間卡', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'ready', deadline: null })), true)}
