@@ -1,0 +1,296 @@
+[
+  {
+    "source": "assets/cards/guardians/tidefin.png",
+    "output": "assets/cards-mobile/guardians/tidefin.jpg",
+    "original": 2275840,
+    "mobile": 249072,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/guardians/stoneback.png",
+    "output": "assets/cards-mobile/guardians/stoneback.jpg",
+    "original": 2171495,
+    "mobile": 226136,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/guardians/emberwing.png",
+    "output": "assets/cards-mobile/guardians/emberwing.jpg",
+    "original": 2315761,
+    "mobile": 223114,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/guardians/steel-eagle.png",
+    "output": "assets/cards-mobile/guardians/steel-eagle.jpg",
+    "original": 2330347,
+    "mobile": 244472,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/guardians/bramblefang.png",
+    "output": "assets/cards-mobile/guardians/bramblefang.jpg",
+    "original": 2161717,
+    "mobile": 231751,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/tidefin/tidefin-stage1.png",
+    "output": "assets/cards-mobile/core-guardians/tidefin/tidefin-stage1.jpg",
+    "original": 2302916,
+    "mobile": 224421,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/tidefin/tidefin-stage2.png",
+    "output": "assets/cards-mobile/core-guardians/tidefin/tidefin-stage2.jpg",
+    "original": 2338264,
+    "mobile": 239265,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/tidefin/tidefin-stage3.png",
+    "output": "assets/cards-mobile/core-guardians/tidefin/tidefin-stage3.jpg",
+    "original": 2295483,
+    "mobile": 243727,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/tidefin/tidefin-stage4.png",
+    "output": "assets/cards-mobile/core-guardians/tidefin/tidefin-stage4.jpg",
+    "original": 2275840,
+    "mobile": 249072,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/stoneback/stoneback-stage2.png",
+    "output": "assets/cards-mobile/core-guardians/stoneback/stoneback-stage2.jpg",
+    "original": 2083442,
+    "mobile": 203831,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/stoneback/stoneback-stage1.png",
+    "output": "assets/cards-mobile/core-guardians/stoneback/stoneback-stage1.jpg",
+    "original": 2092219,
+    "mobile": 206900,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/stoneback/stoneback-stage3.png",
+    "output": "assets/cards-mobile/core-guardians/stoneback/stoneback-stage3.jpg",
+    "original": 2142410,
+    "mobile": 217338,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/stoneback/stoneback-stage4.png",
+    "output": "assets/cards-mobile/core-guardians/stoneback/stoneback-stage4.jpg",
+    "original": 2171495,
+    "mobile": 226136,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/emberwing/emberwing-stage1.png",
+    "output": "assets/cards-mobile/core-guardians/emberwing/emberwing-stage1.jpg",
+    "original": 2045659,
+    "mobile": 198211,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/emberwing/emberwing-stage2.png",
+    "output": "assets/cards-mobile/core-guardians/emberwing/emberwing-stage2.jpg",
+    "original": 2008014,
+    "mobile": 204287,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/emberwing/emberwing-stage3.png",
+    "output": "assets/cards-mobile/core-guardians/emberwing/emberwing-stage3.jpg",
+    "original": 2213247,
+    "mobile": 216873,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/emberwing/emberwing-stage4.png",
+    "output": "assets/cards-mobile/core-guardians/emberwing/emberwing-stage4.jpg",
+    "original": 2315761,
+    "mobile": 223114,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/steel-eagle/steel-eagle-stage1.png",
+    "output": "assets/cards-mobile/core-guardians/steel-eagle/steel-eagle-stage1.jpg",
+    "original": 2197850,
+    "mobile": 220758,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/steel-eagle/steel-eagle-stage2.png",
+    "output": "assets/cards-mobile/core-guardians/steel-eagle/steel-eagle-stage2.jpg",
+    "original": 2340287,
+    "mobile": 238368,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/steel-eagle/steel-eagle-stage3.png",
+    "output": "assets/cards-mobile/core-guardians/steel-eagle/steel-eagle-stage3.jpg",
+    "original": 2315716,
+    "mobile": 239151,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/steel-eagle/steel-eagle-stage4.png",
+    "output": "assets/cards-mobile/core-guardians/steel-eagle/steel-eagle-stage4.jpg",
+    "original": 2330347,
+    "mobile": 244472,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/bramblefang/bramblefang-stage1.png",
+    "output": "assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage1.jpg",
+    "original": 2052659,
+    "mobile": 205828,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/bramblefang/bramblefang-stage2.png",
+    "output": "assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage2.jpg",
+    "original": 2063402,
+    "mobile": 210796,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/bramblefang/bramblefang-stage3.png",
+    "output": "assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage3.jpg",
+    "original": 2079409,
+    "mobile": 212917,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/core-guardians/bramblefang/bramblefang-stage4.png",
+    "output": "assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage4.jpg",
+    "original": 2161717,
+    "mobile": 231751,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/toy.png",
+    "output": "assets/cards-mobile/rewards/toy.jpg",
+    "original": 1870875,
+    "mobile": 115452,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/drink.png",
+    "output": "assets/cards-mobile/rewards/drink.jpg",
+    "original": 1952960,
+    "mobile": 121209,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/family.png",
+    "output": "assets/cards-mobile/rewards/family.jpg",
+    "original": 2211390,
+    "mobile": 179782,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/movie.png",
+    "output": "assets/cards-mobile/rewards/movie.jpg",
+    "original": 2026611,
+    "mobile": 137748,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/snack.png",
+    "output": "assets/cards-mobile/rewards/snack.jpg",
+    "original": 1921958,
+    "mobile": 131368,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/indoor.png",
+    "output": "assets/cards-mobile/rewards/indoor.jpg",
+    "original": 2007275,
+    "mobile": 157456,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/outdoor.png",
+    "output": "assets/cards-mobile/rewards/outdoor.jpg",
+    "original": 2111943,
+    "mobile": 153457,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/activity.png",
+    "output": "assets/cards-mobile/rewards/activity.jpg",
+    "original": 2087906,
+    "mobile": 131463,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/adventure.jpg",
+    "output": "assets/cards-mobile/rewards/adventure.jpg",
+    "original": 407319,
+    "mobile": 144570,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/extra.png",
+    "output": "assets/cards-mobile/rewards/extra.jpg",
+    "original": 2448562,
+    "mobile": 209144,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/custom/scroll.png",
+    "output": "assets/cards-mobile/rewards/custom/scroll.jpg",
+    "original": 2780672,
+    "mobile": 214464,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/rewards/custom/crystal.png",
+    "output": "assets/cards-mobile/rewards/custom/crystal.jpg",
+    "original": 2620045,
+    "mobile": 224692,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/energy-math/energy-40.png",
+    "output": "assets/cards-mobile/energy-math/energy-40.jpg",
+    "original": 1763214,
+    "mobile": 92656,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/energy-math/energy-6.png",
+    "output": "assets/cards-mobile/energy-math/energy-6.jpg",
+    "original": 2045470,
+    "mobile": 87331,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/energy-math/energy-7.png",
+    "output": "assets/cards-mobile/energy-math/energy-7.jpg",
+    "original": 2134614,
+    "mobile": 86590,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/energy-math/energy-8.png",
+    "output": "assets/cards-mobile/energy-math/energy-8.jpg",
+    "original": 1846997,
+    "mobile": 85744,
+    "alpha": false
+  },
+  {
+    "source": "assets/cards/energy-math/energy-9.png",
+    "output": "assets/cards-mobile/energy-math/energy-9.jpg",
+    "original": 1912000,
+    "mobile": 86180,
+    "alpha": false
+  }
+]

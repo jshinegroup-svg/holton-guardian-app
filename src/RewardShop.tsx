@@ -1,15 +1,16 @@
+import DeferredCardImage from './DeferredCardImage';
 import React, { useRef, useState } from 'react';
-import { Image, View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 export type Wish = { id: string; name: string; cost: number; enabled: boolean; custom?: boolean; style?: 'gold'|'scroll'|'crystal'; note?: string };
 export type WishReceipt = { id: string; name: string; cost: number; at: string; fulfilled?: boolean; wishId?: string; custom?: boolean; style?: Wish['style']; note?: string; balanceBefore?: number; balanceAfter?: number; usedAt?: string };
 export type ShopData = { shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; orbs: number };
-const wishArt: Record<string, number> = { 'wish-0': require('../assets/cards/rewards/toy.png'), 'wish-1': require('../assets/cards/rewards/drink.png'), 'wish-2': require('../assets/cards/rewards/family.png'), 'wish-3': require('../assets/cards/rewards/movie.png') };
+const wishArt: Record<string, number> = { 'wish-0': require('../assets/cards-mobile/rewards/toy.jpg'), 'wish-1': require('../assets/cards-mobile/rewards/drink.jpg'), 'wish-2': require('../assets/cards-mobile/rewards/family.jpg'), 'wish-3': require('../assets/cards-mobile/rewards/movie.jpg') };
 const extraArt: Record<string, number> = {
-  'wish-4': require('../assets/cards/rewards/snack.png'), 'wish-5': require('../assets/cards/rewards/indoor.png'),
-  'wish-6': require('../assets/cards/rewards/outdoor.png'), 'wish-7': require('../assets/cards/rewards/activity.png'),
-  'wish-8': require('../assets/cards/rewards/adventure.jpg'), 'wish-9': require('../assets/cards/rewards/game.jpg'),
+  'wish-4': require('../assets/cards-mobile/rewards/snack.jpg'), 'wish-5': require('../assets/cards-mobile/rewards/indoor.jpg'),
+  'wish-6': require('../assets/cards-mobile/rewards/outdoor.jpg'), 'wish-7': require('../assets/cards-mobile/rewards/activity.jpg'),
+  'wish-8': require('../assets/cards-mobile/rewards/adventure.jpg'), 'wish-9': require('../assets/cards/rewards/game.jpg'),
 };
-const customArt: Record<string, number> = {gold:require('../assets/cards/rewards/extra.png'),scroll:require('../assets/cards/rewards/custom/scroll.png'),crystal:require('../assets/cards/rewards/custom/crystal.png')};
+const customArt: Record<string, number> = {gold:require('../assets/cards-mobile/rewards/extra.jpg'),scroll:require('../assets/cards-mobile/rewards/custom/scroll.jpg'),crystal:require('../assets/cards-mobile/rewards/custom/crystal.jpg')};
 const recommendations = [100,20,20,60,20,30,30,30,60,20];
 export const defaultWishes: Wish[] = ['小禮物', '喜歡的飲料', '親子遊戲 15 分鐘', '一起看電影', '喜歡的點心', '自選室內活動', '自選戶外活動', '自選活動', '戶外冒險', '自選遊戲'].map((name, i) => ({ id: `wish-${i}`, name, cost: recommendations[i], enabled: false }));
 export const starterWishes = ():Wish[] => defaultWishes.map(w=>({...w,enabled:true}));
@@ -23,7 +24,7 @@ export function catalog(wishes?:Wish[]):Wish[] {
 function Art({wish,small=false}:{wish:Wish|WishReceipt;small?:boolean}) {
   const id='wishId' in wish ? wish.wishId : wish.id;
   const art=wish.custom ? customArt[wish.style??'gold'] : wishArt[id??'']??extraArt[id??''];
-  return <View style={s.cardTap}><Image source={art??customArt.gold} accessibilityLabel={`${wish.name||'自訂心願'}${wish.custom?'造型':'原卡'}`} style={{width:small?120:170,height:small?180:255,alignSelf:'center'}} resizeMode="contain"/>{wish.custom?<View style={s.customCaption}><Text style={s.title}>{wish.name||'填入你的心願'}</Text><Text style={s.text}>{wish.note||'內容與點數，由你們一起約定'}</Text></View>:null}</View>;
+  return <View style={s.cardTap}><DeferredCardImage source={art??customArt.gold} accessibilityLabel={`${wish.name||'自訂心願'}${wish.custom?'造型':'原卡'}`} style={{width:small?120:170,height:small?180:255,alignSelf:'center'}} resizeMode="contain"/>{wish.custom?<View style={s.customCaption}><Text style={s.title}>{wish.name||'填入你的心願'}</Text><Text style={s.text}>{wish.note||'內容與點數，由你們一起約定'}</Text></View>:null}</View>;
 }
 export function redeemWish<T extends ShopData>(s: T, id: string, receiptId: string): T {
   const w = catalog(s.wishes).find(x => x.id === id);
@@ -77,7 +78,7 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
       {draft.map((w, i) => <View key={w.id} style={s.item}>
         <Art wish={w} small/><Text style={s.text}>{w.custom?`自訂心願卡 ${w.id.split('-')[1]}`:`推薦 ${recommendations[Number(w.id.split('-')[1])]??'自訂'} 點（已預填，可自行調整）`}</Text><TextInput accessibilityLabel={`獎勵名稱 ${i + 1}`} value={w.name} onChangeText={name => setDraft(draft.map(x => x.id === w.id ? { ...x, name } : x))} maxLength={40} style={s.input} />
         <TextInput accessibilityLabel={`${w.name}點數`} keyboardType="number-pad" placeholder="請設定點數" placeholderTextColor="#b8ccd2" value={w.cost ? String(w.cost) : ''} onChangeText={v => setDraft(draft.map(x => x.id === w.id ? { ...x, cost: /^\d{1,6}$/.test(v) ? Number(v) : 0 } : x))} style={s.input} />
-        {w.custom?<><TextInput accessibilityLabel={`小約定 ${w.id}`} value={w.note??''} onChangeText={note=>edit(w.id,{note})} maxLength={120} placeholder="小約定（選填）" placeholderTextColor="#b8ccd2" style={s.input}/><Text style={s.text}>選擇造型（不影響點數）</Text><View style={s.styleRow}>{(['gold','scroll','crystal'] as const).map((style,j)=><Pressable key={style} accessibilityRole="button" accessibilityLabel={`${w.id} ${['金色寶箱','星光卷軸','水晶寶箱'][j]}`} aria-pressed={w.style===style} onPress={()=>edit(w.id,{style})} style={[s.styleChoice,w.style===style&&s.productSelected]}><Image source={customArt[style]} style={{width:52,height:78}} resizeMode="contain"/><Text style={s.text}>{w.style===style?'✓ ':''}{['金色寶箱','星光卷軸','水晶寶箱'][j]}</Text></Pressable>)}</View></>:null}
+        {w.custom?<><TextInput accessibilityLabel={`小約定 ${w.id}`} value={w.note??''} onChangeText={note=>edit(w.id,{note})} maxLength={120} placeholder="小約定（選填）" placeholderTextColor="#b8ccd2" style={s.input}/><Text style={s.text}>選擇造型（不影響點數）</Text><View style={s.styleRow}>{(['gold','scroll','crystal'] as const).map((style,j)=><Pressable key={style} accessibilityRole="button" accessibilityLabel={`${w.id} ${['金色寶箱','星光卷軸','水晶寶箱'][j]}`} aria-pressed={w.style===style} onPress={()=>edit(w.id,{style})} style={[s.styleChoice,w.style===style&&s.productSelected]}><DeferredCardImage source={customArt[style]} style={{width:52,height:78}} resizeMode="contain"/><Text style={s.text}>{w.style===style?'✓ ':''}{['金色寶箱','星光卷軸','水晶寶箱'][j]}</Text></Pressable>)}</View></>:null}
         {action(`${w.name||w.id}：${w.enabled ? '已勾選' : '未開放'}`, () => setDraft(draft.map(x => x.id === w.id ? { ...x, enabled: !x.enabled } : x)))}
       </View>)}
       {draft.filter(w=>w.custom).length<5?action('＋新增自訂卡',()=>setDraft(old=>{if(old.filter(w=>w.custom).length>=5)return old;let n=1;while(old.some(w=>w.id===`custom-${n}`))n++;return [...old,customSlot(n)];})):null}

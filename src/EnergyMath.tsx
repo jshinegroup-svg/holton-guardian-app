@@ -13,11 +13,11 @@ const cards: Record<number, ImageSourcePropType> = {
   30: require('../assets/cards/energy-math/energy-30.jpg'),
   50: require('../assets/cards/energy-math/energy-50.jpg'),
   100: require('../assets/cards/energy-math/energy-100.jpg'),
-  40: require('../assets/cards/energy-math/energy-40.png'),
-  6: require('../assets/cards/energy-math/energy-6.png'),
-  7: require('../assets/cards/energy-math/energy-7.png'),
-  8: require('../assets/cards/energy-math/energy-8.png'),
-  9: require('../assets/cards/energy-math/energy-9.png'),
+  40: require('../assets/cards-mobile/energy-math/energy-40.jpg'),
+  6: require('../assets/cards-mobile/energy-math/energy-6.jpg'),
+  7: require('../assets/cards-mobile/energy-math/energy-7.jpg'),
+  8: require('../assets/cards-mobile/energy-math/energy-8.jpg'),
+  9: require('../assets/cards-mobile/energy-math/energy-9.jpg'),
 };
 
 // Presentation only: never round, credit, debit, or persist the actual wallet.

@@ -96,44 +96,44 @@ export const timeChallengeImages = {
 };
 
 export const guardianBeastImages = {
-  tidefin: require("../../assets/cards/guardians/tidefin.png"),
-  stoneback: require("../../assets/cards/guardians/stoneback.png"),
-  emberwing: require("../../assets/cards/guardians/emberwing.png"),
-  "steel-eagle": require("../../assets/cards/guardians/steel-eagle.png"),
-  bramblefang: require("../../assets/cards/guardians/bramblefang.png"),
+  tidefin: require("../../assets/cards-mobile/guardians/tidefin.jpg"),
+  stoneback: require("../../assets/cards-mobile/guardians/stoneback.jpg"),
+  emberwing: require("../../assets/cards-mobile/guardians/emberwing.jpg"),
+  "steel-eagle": require("../../assets/cards-mobile/guardians/steel-eagle.jpg"),
+  bramblefang: require("../../assets/cards-mobile/guardians/bramblefang.jpg"),
 };
 
 export const coreGuardianStageImages = {
   tidefin: {
-    stage1: require("../../assets/cards/core-guardians/tidefin/tidefin-stage1.png"),
-    stage2: require("../../assets/cards/core-guardians/tidefin/tidefin-stage2.png"),
-    stage3: require("../../assets/cards/core-guardians/tidefin/tidefin-stage3.png"),
-    stage4: require("../../assets/cards/core-guardians/tidefin/tidefin-stage4.png"),
+    stage1: require("../../assets/cards-mobile/core-guardians/tidefin/tidefin-stage1.jpg"),
+    stage2: require("../../assets/cards-mobile/core-guardians/tidefin/tidefin-stage2.jpg"),
+    stage3: require("../../assets/cards-mobile/core-guardians/tidefin/tidefin-stage3.jpg"),
+    stage4: require("../../assets/cards-mobile/core-guardians/tidefin/tidefin-stage4.jpg"),
   },
   stoneback: {
     // Original filenames are reversed: stage2 card says Mini, stage1 says Mid.
-    stage1: require("../../assets/cards/core-guardians/stoneback/stoneback-stage2.png"),
-    stage2: require("../../assets/cards/core-guardians/stoneback/stoneback-stage1.png"),
-    stage3: require("../../assets/cards/core-guardians/stoneback/stoneback-stage3.png"),
-    stage4: require("../../assets/cards/core-guardians/stoneback/stoneback-stage4.png"),
+    stage1: require("../../assets/cards-mobile/core-guardians/stoneback/stoneback-stage2.jpg"),
+    stage2: require("../../assets/cards-mobile/core-guardians/stoneback/stoneback-stage1.jpg"),
+    stage3: require("../../assets/cards-mobile/core-guardians/stoneback/stoneback-stage3.jpg"),
+    stage4: require("../../assets/cards-mobile/core-guardians/stoneback/stoneback-stage4.jpg"),
   },
   emberwing: {
-    stage1: require("../../assets/cards/core-guardians/emberwing/emberwing-stage1.png"),
-    stage2: require("../../assets/cards/core-guardians/emberwing/emberwing-stage2.png"),
-    stage3: require("../../assets/cards/core-guardians/emberwing/emberwing-stage3.png"),
-    stage4: require("../../assets/cards/core-guardians/emberwing/emberwing-stage4.png"),
+    stage1: require("../../assets/cards-mobile/core-guardians/emberwing/emberwing-stage1.jpg"),
+    stage2: require("../../assets/cards-mobile/core-guardians/emberwing/emberwing-stage2.jpg"),
+    stage3: require("../../assets/cards-mobile/core-guardians/emberwing/emberwing-stage3.jpg"),
+    stage4: require("../../assets/cards-mobile/core-guardians/emberwing/emberwing-stage4.jpg"),
   },
   "steel-eagle": {
-    stage1: require("../../assets/cards/core-guardians/steel-eagle/steel-eagle-stage1.png"),
-    stage2: require("../../assets/cards/core-guardians/steel-eagle/steel-eagle-stage2.png"),
-    stage3: require("../../assets/cards/core-guardians/steel-eagle/steel-eagle-stage3.png"),
-    stage4: require("../../assets/cards/core-guardians/steel-eagle/steel-eagle-stage4.png"),
+    stage1: require("../../assets/cards-mobile/core-guardians/steel-eagle/steel-eagle-stage1.jpg"),
+    stage2: require("../../assets/cards-mobile/core-guardians/steel-eagle/steel-eagle-stage2.jpg"),
+    stage3: require("../../assets/cards-mobile/core-guardians/steel-eagle/steel-eagle-stage3.jpg"),
+    stage4: require("../../assets/cards-mobile/core-guardians/steel-eagle/steel-eagle-stage4.jpg"),
   },
   bramblefang: {
-    stage1: require("../../assets/cards/core-guardians/bramblefang/bramblefang-stage1.png"),
-    stage2: require("../../assets/cards/core-guardians/bramblefang/bramblefang-stage2.png"),
-    stage3: require("../../assets/cards/core-guardians/bramblefang/bramblefang-stage3.png"),
-    stage4: require("../../assets/cards/core-guardians/bramblefang/bramblefang-stage4.png"),
+    stage1: require("../../assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage1.jpg"),
+    stage2: require("../../assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage2.jpg"),
+    stage3: require("../../assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage3.jpg"),
+    stage4: require("../../assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage4.jpg"),
   },
 } as const;
 
