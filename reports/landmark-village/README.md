@@ -7,3 +7,5 @@ Hotspots and door glows aligned to inspected output, not assumed prompt coordina
 Validation uses isolated synthetic Chrome profiles at 320/390 widths, not physical devices. Adapted existing comprehensive village regression to new roof/door geometry and current family gates.
 
 Local: typecheck, scoped ESLint, Expo web export and full browser regression PASS. Adjusted plaques below glowing doors after screenshot review. Narrowed companion hit region so central empty path does not trigger Chrome near-target touch selection. Final 320/390 screenshots inspected.
+
+Public: Pages c92307a built successfully (run39415430852). Public image SHA256 equals export; full public browser regression PASS including four aligned touch entrances, inert central path, 320/390 layout, keyboard, finite/reduced glow, unchanged navigation state, original task/reward/checkout/reload flows. No real-user storage touched.
