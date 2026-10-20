@@ -1,0 +1,11 @@
+# Temporary task exit and optional end chime
+
+Jerry requested a way to leave the task before the completion-time gate so a parent can use the phone, retaining the task timer, plus a configurable completion sound. Added an always-available (while active/non-help) temporary-exit action with confirmation and a handoff screen. It does not pause or change deadline/focus start. User can switch apps/lock screen using OS controls; returning/reloading resumes persisted time. This does not programmatically open another app or close the browser. Help/rest still pauses.
+
+Default-on task-end sound under Parent → Preferences and old cards: on/off and explicit preview. Original soft three-note C5/E5/G5 triangle chime (523.25/659.25/783.99Hz,0.28s note spacing,35ms attack,0.065 peak gain,0.4/0.4/0.75s release), about1.34s, no loop. Web Audio context unlocked by pointer/keyboard gesture; context play refuses suspended state rather than hanging. On a limited task sound occurs at FULL duration, not half-duration unlock. Unlimited task at10min. No automatic completion or points. Persisted reminder marker prevents repeat/reload replay, resets for each task. The timer remains local wall-clock, not an attention detector.
+
+Background/mobile/lockscreen audio is best effort, not a promised OS alarm. Suspension/page closure/silent mode can prevent audio. Visual due message persists and catches up upon return; blocked autoplay offers explicit play action. Unsupported native/browser audio also retains visual prompt. No notifications permission requested. Sound preference retained by restart and allowed in validated backups.
+
+Preserves user's newly requested classic focus scene: larger task/time, companion panel about25% smaller, task-title edit menu, all time/reward rules.
+
+Validation: typecheck/lint/export; model/backup tests; Chrome320/390 synthetic actual-click tests count Web Audio oscillator starts (3notes) for timed/untimed, once-only/no automatic reward, sound off and saved preference, explicit preview, autoplay rejection/manual fallback, lifecycle frozen→active catchup, help pause, leave/cancel/return/reload invariants. Focus regression includes all9scenes and threshold/reward checks. This tests browser audio scheduling, not physical iPhone audibility or guaranteed background alarms.

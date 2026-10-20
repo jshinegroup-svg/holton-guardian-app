@@ -1,0 +1,2 @@
+PASS timed and untimed exact threshold; pause/resume; negative clock delta; timed/untimed legacy migration; backup roundtrip and invalid field rejection
+PASS sound preference and reminder backup roundtrip; malformed preference rejected

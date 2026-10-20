@@ -21,10 +21,12 @@ import type { PersistedAppState } from './types/holton';
 
 import {migrateFocus,elapsedFocusMs,minimumFocusMs,canFinishFocus,pauseFocus,clockText} from './lib/focusSession';
 
+import {useTaskChime} from './lib/taskChime';
+
 const KEY = 'holton-guardian-app::light-v1';
 const RECOVERY_KEY = 'holton-guardian-app::before-replace-v1';
 type RecordItem = { world?:WorldId; reward?: number; id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
-type State = { focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+type State = { taskSoundEnabled?:boolean;taskReminderShown?:boolean; focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
 const rewardForMinutes = (minutes: number) => timeChallenges.find(card => card.minutes === minutes)?.orbs ?? 1;
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, onboardingDone:!!old, shopEnabled: true, wishes: starterWishes(), title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
@@ -72,6 +74,11 @@ export default function LightApp() {
     const first = requestAnimationFrame(() => { second = requestAnimationFrame(() => pageScroll.current?.scrollTo({ y: taskTop.current, animated: !reduceMotion })); });
     return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); };
   }, [state?.phase, reduceMotion]);
+  const [taskAway,setTaskAway]=useState(false);
+  const [leavePrompt,setLeavePrompt]=useState(false);
+  const [soundBlocked,setSoundBlocked]=useState(false);
+  const reminderBusy=useRef(false);
+  const {arm:armChime,play:playChime}=useTaskChime(state?.taskSoundEnabled!==false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -114,7 +121,9 @@ export default function LightApp() {
       } catch { if (live) setError('資料暫時無法讀取，請重新整理。原有紀錄未變更。'); }
     })();
     const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => { live = false; clearInterval(timer); };
+    const wake=()=>setNow(Date.now());
+    if(typeof document!=='undefined')document.addEventListener('visibilitychange',wake);
+    return () => { live = false; clearInterval(timer);if(typeof document!=='undefined')document.removeEventListener('visibilitychange',wake); };
   }, []);
   async function change(transform: (s: State) => State) {
     if (busy.current || !current.current) return false;
@@ -128,6 +137,17 @@ export default function LightApp() {
     } catch { setError('尚未儲存成功，請再試一次；點數與收藏尚未變更。'); return false; }
     finally { busy.current = false; setSaving(false); }
   }
+  useEffect(()=>{
+    if(!state||state.phase!=='active'||state.help||state.taskReminderShown||reminderBusy.current)return;
+    const target=state.minutes===0?600000:state.minutes*60000;
+    if(elapsedFocusMs(state,now)<target)return;
+    reminderBusy.current=true;
+    void (async()=>{
+      const saved=await change(s=>s.phase==='active'&&!s.help&&!s.taskReminderShown?{...s,taskReminderShown:true}:s);
+      if(saved&&current.current?.phase==='active'&&!current.current.help&&current.current.taskReminderShown&&current.current.taskSoundEnabled!==false)setSoundBlocked(!await playChime());
+      reminderBusy.current=false;
+    })();
+  },[state,now,playChime]); // change uses only stable refs and setters.
   const button = (label: string, action: () => void, secondary = false, disabled = false) => <Pressable testID={secondary ? "secondary-action" : "primary-action"} accessibilityRole="button" accessibilityLabel={label} disabled={disabled || saving} onPress={action} style={[styles.button, secondary && styles.secondary, (disabled || saving) && styles.disabled]}><Text style={[styles.buttonText, secondary && styles.secondaryText]}>{label}</Text></Pressable>;
   if (!state) return <SafeAreaView style={styles.root}><Text style={styles.body}>{error || '正在準備你的夥伴…'}</Text></SafeAreaView>;
   const journey=migrateJourneys(state).journeys;
@@ -233,7 +253,7 @@ export default function LightApp() {
     const triple = progress >= 3;
     const allDone = count >= (s.dailyGoal ?? 3) && s.dailyRewardDay !== dateKey;
     const reason = triple && allDone ? '完成 3 次任務，而且今天任務全完成了！' : triple ? '又完成 3 次任務！' : '今天任務全完成了！';
-    return { ...s, journeys:advanceJourney(migrateJourneys(s).journeys,s.activeWorld??'forest',completionId), phase: 'done', focusStartedAt:null, deadline: null, help: false, orbs: s.orbs + (s.taskReward ?? 1), history,
+    return { ...s, journeys:advanceJourney(migrateJourneys(s).journeys,s.activeWorld??'forest',completionId), phase: 'done', taskReminderShown:!!s.taskReminderShown, focusStartedAt:null, deadline: null, help: false, orbs: s.orbs + (s.taskReward ?? 1), history,
       rewardProgress: progress % 3, dailyRewardDay: allDone ? dateKey : s.dailyRewardDay,
       draws: [...(s.draws ?? []), ...(triple || allDone ? [{ id: String(at.getTime()), reason }] : [])] };
   }
@@ -261,7 +281,7 @@ export default function LightApp() {
     busy.current=true;setSaving(true);setError('');
     try {
       const before=createBackup(old);
-      const resetState={...initial(null),dailyGoal:old.dailyGoal??3,shopEnabled:old.shopEnabled??true,wishes:old.wishes??starterWishes(),reduceMotion:old.reduceMotion??false};
+      const resetState={...initial(null),dailyGoal:old.dailyGoal??3,shopEnabled:old.shopEnabled??true,wishes:old.wishes??starterWishes(),taskSoundEnabled:old.taskSoundEnabled!==false,reduceMotion:old.reduceMotion??false};
       const next=migrateJourneys({...((snapshot??resetState) as State),help:false,deadline:null,onboardingDone:true});
       createBackup(next); // Revalidate before any replacement write.
       await AsyncStorage.setItem(RECOVERY_KEY,before);
@@ -292,6 +312,7 @@ export default function LightApp() {
   return <SafeAreaView testID="immersive-world" style={styles.root}><WorldChrome />{inVillage?<VillageBackdrop/>:<WorldBackdrop scene={scene} world={world} completed={journey.counts[world]} />}<ScrollView ref={pageScroll} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
     <View testID="world-title" style={styles.header}><View style={{flex:1}}>{roomTitle?<Text testID={focusActive?"focus-world-name":undefined} style={[styles.worldName,focusActive&&{fontSize:24,lineHeight:32,letterSpacing:1}]}>{roomTitle}</Text>:null}<Text testID="holton-brand-title" style={inVillage?[styles.brand,{fontSize:24,fontWeight:'800'}]:styles.brand}>HOLTON HERO</Text></View>{!inVillage?<Pressable accessibilityRole="button" accessibilityLabel={settingsOpen&&parentReturn==='wishes'?'回到心願小屋':homePhase?'回到村莊':settingsOpen?'回到任務':'家長小屋'} style={{padding:12}} onPress={()=>{if(settingsOpen){setSettingsOpen(false);if(homePhase)navigateRoom(parentReturn==='wishes'?'wishes':'village');}else if(homePhase)navigateRoom('village');else openParent();}}><Text style={styles.link}>{settingsOpen&&parentReturn==='wishes'?'回心願小屋':homePhase?'回村莊':settingsOpen?'回到任務':'家長小屋'}</Text></Pressable>:null}</View>
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
+    {soundBlocked&&state.phase==='active'&&state.taskSoundEnabled!==false?<View style={styles.card}><Text style={styles.caption}>時間到了。裝置未能自動播放聲音。</Text>{button('播放到時提示音',()=>{armChime();setTimeout(()=>void playChime().then(ok=>setSoundBlocked(!ok)),100);},true)}</View>:null}
     {inVillage?<AdventureVillage reduced={reduceMotion} orbs={state.orbs} world={worlds[world].name} steps={journey.counts[world]} today={today.length} goal={state.dailyGoal??3} task={state.title} saving={saving} onStart={()=>void startFromVillage()} onVisit={place=>{if(place==='map')setMapOpen(true);else if(place==='parent')openParent();else navigateRoom(place);}}/>:null}
     {!settingsOpen&&homePhase&&room==='mission'?<><View style={{flexDirection:'row',justifyContent:'space-between',gap:8}}>{button('冒險地圖',()=>setMapOpen(true),true)}{button('看看我的旅程',()=>setJourneyOpen(true),true)}</View>{state.phase==='ready'?<View style={{gap:8}}>{journey.counts[world]===0?<Text style={[styles.body,{padding:12,backgroundColor:'rgba(8,35,49,.7)',borderRadius:14}]}>{worlds[world].intro}</Text>:null}<JourneyHint journeys={journey} world={world} onPress={()=>setJourneyOpen(true)}/></View>:null}</>:null}
 
@@ -303,9 +324,13 @@ export default function LightApp() {
       {parentTab==='rewards'?<RewardShop data={state} settings saving={saving} change={change}/>:null}
       {parentTab==='preferences'?<>
       {button('再看新手帶領',()=>setIntroReplay(true),true,!homePhase)}
-      <View style={styles.card}><Text style={styles.section}>世界 · 動畫設定</Text><Text style={styles.body}>選卡、準備、完成與守護獸挑戰有短動畫。任務中場景靜止，這版不播放音效。</Text>
+      <View style={styles.card}><Text style={styles.section}>世界 · 動畫設定</Text><Text style={styles.body}>選卡、準備、完成與守護獸挑戰有短動畫。任務中場景靜止，到時可播放柔和提示音。</Text>
         <Pressable accessibilityRole="switch" accessibilityLabel="減少動畫" accessibilityState={{ checked: !!state.reduceMotion }} disabled={saving} onPress={() => void change(s => ({ ...s, reduceMotion: !s.reduceMotion }))} style={styles.secondarySetting}><Text style={styles.section}>減少動畫：{state.reduceMotion ? '開啟' : '關閉'}</Text></Pressable>
         <Text style={styles.caption}>{systemReduced ? '裝置已設定減少動態效果，這裡也會自動減少。' : '開啟後改用靜態提示，獎勵與任務流程不變。'}</Text>
+        <Pressable accessibilityRole="switch" accessibilityLabel="任務到時提示音" accessibilityState={{checked:state.taskSoundEnabled!==false}} disabled={saving} onPress={()=>{armChime();void change(s=>({...s,taskSoundEnabled:s.taskSoundEnabled===false}));}} style={styles.secondarySetting}><Text style={styles.section}>到時提示音：{state.taskSoundEnabled===false?'關閉':'開啟'}</Text></Pressable>
+        <Text style={styles.caption}>柔和三音，不循環。限時任務倒數到零時提醒；不限時滿 10 分鐘提醒，不會自動完成或發點數。</Text>
+        {button('試聽到時提示音',()=>{armChime();setTimeout(()=>void playChime().then(ok=>setNotice(ok?'已播放提示音':'裝置暫時無法播放，請確認媒體音量後再試。')),100);},true)}
+        <Text style={styles.caption}>手機靜音、鎖定或切換 App 時可能聽不到；回到這裡仍會顯示到時提醒。</Text>
         <Text style={styles.caption}>原卡獎勵：3／5 分鐘＋1、10 分鐘＋2、15 分鐘＋3、20 分鐘＋4、25 分鐘／不限時＋5。其他自訂時間＋1。休息與求助不扣獎勵。</Text>
       </View>
       </>:null}
@@ -331,7 +356,14 @@ export default function LightApp() {
       {parentTab==='records'?<View style={styles.card}><Text style={styles.section}>3 · 今天完成 {today.length} 件事</Text>{today.length ? today.map(item => <View key={item.id} style={styles.record}><Text style={styles.body}>✓ {item.title}</Text><Text style={styles.caption}>{new Date(item.at).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} · {durationLabel(item.minutes)}{item.cardId ? ` · ${timeChallenges.find(card => card.id === item.cardId)?.name || "任務卡"}` : ""} · ＋{item.reward ?? 1} 能量球{item.supportUsed?.length ? ` · ${item.supportUsed.map(id => helpCards.find(card => card.id === id)?.title).filter(Boolean).join('、')}` : item.helpUsed ? ' · 有表達求助需要' : ''}</Text></View>) : <Text style={styles.body}>今天還沒有完成紀錄，慢慢來就好。</Text>}<Text style={styles.caption}>紀錄保存在這台裝置、這個瀏覽器；舊版資料保留。</Text></View>:null}
     </> : homePhase&&room==='wishes'?<><Text style={styles.body}>和大人一起約定，讓努力變成小小心願。</Text>{button('家長管理心願',()=>openParent('rewards'),true)}<RewardShop data={state} settings={false} saving={saving} change={change}/></> : homePhase&&room==='companions'?<>
       {companionScene}<View style={styles.card}><Text style={styles.section}>你的夥伴與收藏</Text><Text style={styles.body}>已收藏 {ownedIds.size} 張守護獸卡 · {state.collection?.length??0} 張世界卡</Text>{button('我的守護獸收藏',()=>setCollectionOpen(true))}{button('世界卡換點數',()=>setWorldExchangeOpen(true),true)}{button(showWorldAlbum?'收起世界卡收藏':'打開世界卡收藏',()=>setShowWorldAlbum(!showWorldAlbum),true)}{!state.collection?.length?<Text style={styles.caption}>完成任務，慢慢收集你的第一張世界卡。</Text>:null}<Text style={styles.caption}>任務時間卡上的機器人會陪你出發。守護獸可在收藏中選擇「今天陪我」；原有身分與卡片都保留。</Text></View>
-    </> : !inVillage ? <>
+    </> : taskAway&&state.phase==='active'?<View testID="task-away-panel" style={styles.card}>
+      <Text style={styles.heading}>任務繼續計時中</Text><Text style={styles.section}>{state.title}</Text>
+      <Text style={styles.body}>可以先把手機交給家長，切換到其他 App 或鎖定螢幕。回來不必重新開始。</Text>
+      <Text style={styles.caption}>這是繼續計時，不是暫停。需要休息請回任務選「我需要幫忙」。</Text>
+      <Text testID="away-clock" style={styles.timer}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text>
+      {state.taskReminderShown?<Text testID="away-due" accessibilityLiveRegion="polite" style={styles.body}>{state.minutes===0?'已滿 10 分鐘，可以回任務確認是否完成。':'任務時間到了，可以回去確認是否完成。'}</Text>:null}
+      {button('回到任務',()=>{armChime();setTaskAway(false);})}
+    </View> : !inVillage ? <>
 
       
       <View testID="mission-stage" onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }} style={[styles.card, styles.missionPanel]}>{state.phase==='ready'?<Pressable testID="task-title-entry" accessibilityRole="button" accessibilityLabel={state.title?`修改任務：${state.title}`:'選擇任務'} accessibilityHint="點開後可換個任務或選得更清楚" disabled={saving} onPress={()=>{setTaskDetailsOpen(false);setTaskActionsOpen(true);}} style={({pressed})=>[styles.taskTitleEntry,pressed&&{opacity:.8}]}><Text testID="mission-name" style={styles.taskTitleText}>{state.title||'今天要完成什麼？'} ▾</Text><Text style={styles.taskTitleHint}>點一下選擇或調整任務</Text></Pressable>:<Text testID="mission-name" style={[styles.heading,focusActive&&styles.focusMissionName]}>{state.phase === 'done' ? '你做到了！' : state.title || '今天要完成什麼？'}</Text>}
@@ -342,12 +374,12 @@ export default function LightApp() {
           <Pressable accessibilityRole="button" accessibilityLabel="下一張時間卡" onPress={() => stepCard(1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>›</Text></Pressable>
         </View>
         <Text style={styles.cardPlaque}>{durationLabel(state.minutes)} · 完成＋{rewardForMinutes(state.minutes)}</Text>
-        {button('準備出發', () => void change(s => s.phase !== 'ready' || !s.title.trim() ? s : ({ ...s, phase: 'preparing', focusElapsedMs:0,focusStartedAt:null, cardId: s.cardId ?? timeChallenges.find(c => c.minutes === s.minutes)?.id, taskReward: rewardForMinutes(s.minutes), supportCardId: undefined, supportUsed: [], breakDeadline: null, helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })), false, !state.title.trim())}
+        {button('準備出發', () => void change(s => s.phase !== 'ready' || !s.title.trim() ? s : ({ ...s, phase: 'preparing', taskReminderShown:false, focusElapsedMs:0,focusStartedAt:null, cardId: s.cardId ?? timeChallenges.find(c => c.minutes === s.minutes)?.id, taskReward: rewardForMinutes(s.minutes), supportCardId: undefined, supportUsed: [], breakDeadline: null, helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })), false, !state.title.trim())}
       </> : state.phase === 'preparing' ? <>
         <PortalCue reduced={reduceMotion} />
         <Image source={sopCards.find(card => card.id === 'task-starter')!.imageSource} accessibilityLabel="Task Starter 任務啟動卡" style={styles.ritualArt} resizeMode="contain" />
         <Text style={styles.section}>Task Starter · 任務啟動</Text><Text style={styles.quote}>拿出 Task Starter，把需要的東西準備好。</Text><Text style={styles.body}>這次挑戰：{durationLabel(state.minutes)}。準備好再按，現在還沒有計時。</Text>
-        {button('我準備好了，開始！', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'active', focusElapsedMs:0,focusStartedAt:Date.now(), help: false, deadline: s.minutes === 0 ? null : Date.now() + s.minutes * 60000, remaining: s.minutes * 60 })))}
+        {button('我準備好了，開始！', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'active', taskReminderShown:false, focusElapsedMs:0,focusStartedAt:Date.now(), help: false, deadline: s.minutes === 0 ? null : Date.now() + s.minutes * 60000, remaining: s.minutes * 60 })))}
         {button('回去選時間卡', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'ready', deadline: null })), true)}
       </> : state.phase === 'finishing' ? <>
         <Image source={finishImage} accessibilityLabel={`${finish.title} 收尾鼓勵卡`} style={styles.ritualArt} resizeMode="contain" />
@@ -374,6 +406,8 @@ export default function LightApp() {
         </> : <Pressable testID="focus-help" accessibilityRole="button" accessibilityLabel="我需要幫忙" disabled={saving} onPress={()=>void change(openHelp)} style={[styles.button,styles.secondary,saving&&styles.disabled]}><Text style={[styles.buttonText,styles.secondaryText]}>我需要幫忙</Text></Pressable>}
 
         {!state.help ? <>
+          {button('暫時離開，任務繼續',()=>setLeavePrompt(true),true)}
+          {state.taskReminderShown?<Text testID="task-due-reminder" accessibilityLiveRegion="polite" style={styles.caption}>{state.minutes===0?'已滿 10 分鐘，做好了再按完成。':'任務時間到了，做好了再按完成。'}</Text>:null}
           <Text testID="focus-unlock-hint" style={styles.focusHint}>{focusReady?'做好了，再按完成。':`再專心 ${clockText(focusWait)}，完成鍵就會亮起。`}</Text>
           <Pressable testID="focus-complete" accessibilityRole="button" accessibilityLabel="完成" accessibilityState={{disabled:!focusReady||saving}} disabled={!focusReady||saving} onPress={()=>void change(enterFinishing)} style={[styles.button,(!focusReady||saving)&&styles.focusLocked]}><Text style={styles.buttonText}>完成</Text></Pressable>
 
@@ -396,6 +430,7 @@ export default function LightApp() {
     <ParentGate visible={parentGateTab!==null} onCancel={()=>setParentGateTab(null)} onConfirm={()=>parentGateTab&&enterParent(parentGateTab)}/>
     <Modal visible={!!journey.event && !pending && !challenge && !settingsOpen && homePhase} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={dismissStory}>{journey.event?<JourneyReveal event={journey.event} reduced={reduceMotion} onDismiss={dismissStory} saving={saving}/>:null}{error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}</Modal>
 
+    <Modal visible={leavePrompt&&state.phase==='active'} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={()=>setLeavePrompt(false)}><View style={styles.overlay}><View style={[styles.card,{margin:20}]}><Text style={styles.heading}>暫時離開任務？</Text><Text style={styles.body}>時間會繼續走，進度不會清空。接著可切換 App，讓家長使用手機。</Text>{button('離開畫面，繼續計時',()=>{armChime();setTaskAway(true);setLeavePrompt(false);})}{button('留在任務',()=>setLeavePrompt(false),true)}</View></View></Modal>
     <Modal visible={taskActionsOpen&&state.phase==='ready'} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={()=>setTaskActionsOpen(false)}><View style={styles.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalScroll}><View testID="task-actions-panel" style={styles.card}>
       <Text style={styles.heading}>{taskDetailsOpen?'選得更清楚':state.title||'今天要完成什麼？'}</Text>
       {!taskDetailsOpen?<>
