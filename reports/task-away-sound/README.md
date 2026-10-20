@@ -9,3 +9,5 @@ Background/mobile/lockscreen audio is best effort, not a promised OS alarm. Susp
 Preserves user's newly requested classic focus scene: larger task/time, companion panel about25% smaller, task-title edit menu, all time/reward rules.
 
 Validation: typecheck/lint/export; model/backup tests; Chrome320/390 synthetic actual-click tests count Web Audio oscillator starts (3notes) for timed/untimed, once-only/no automatic reward, sound off and saved preference, explicit preview, autoplay rejection/manual fallback, lifecycle frozen→active catchup, help pause, leave/cancel/return/reload invariants. Focus regression includes all9scenes and threshold/reward checks. This tests browser audio scheduling, not physical iPhone audibility or guaranteed background alarms.
+
+Follow-up screenshot request: removed the complete-button helper line and its backing panel for both locked and eligible states (no countdown-to-unlock or "做好了，再按完成"). Actual button eligibility is unchanged. Due notification text is kept short and only appears when the actual timer target is reached, as part of the requested sound fallback.

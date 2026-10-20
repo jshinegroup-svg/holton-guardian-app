@@ -19,7 +19,7 @@ import { chooseFinishEncouragement, finishEncouragements, type FinishContext } f
 import { planWorldRedemption, redeemWorldCards, worldExchangeDay, worldRewardLabel, type WorldDraw, type WorldRedemption } from './data/worldRedemption';
 import type { PersistedAppState } from './types/holton';
 
-import {migrateFocus,elapsedFocusMs,minimumFocusMs,canFinishFocus,pauseFocus,clockText} from './lib/focusSession';
+import {migrateFocus,elapsedFocusMs,canFinishFocus,pauseFocus,clockText} from './lib/focusSession';
 
 import {useTaskChime} from './lib/taskChime';
 
@@ -156,7 +156,6 @@ export default function LightApp() {
   const dismissStory=()=>void change(s=>!s.journeys||s.journeys.event?.id!==journey.event?.id?s:({...s,journeys:{...s.journeys,event:undefined}}));
   const remaining = state.deadline ? Math.max(0, Math.ceil((state.deadline - now) / 1000)) : state.remaining;
   const focusElapsed=elapsedFocusMs(state,now);
-  const focusWait=Math.max(0,Math.ceil((minimumFocusMs(state.minutes)-focusElapsed)/1000));
   const focusReady=canFinishFocus(state,now);
   const focusActive=state.phase==='active'&&!state.help&&!settingsOpen;
   const guardian = state.guardian;
@@ -407,8 +406,7 @@ export default function LightApp() {
 
         {!state.help ? <>
           {button('暫時離開，任務繼續',()=>setLeavePrompt(true),true)}
-          {state.taskReminderShown?<Text testID="task-due-reminder" accessibilityLiveRegion="polite" style={styles.caption}>{state.minutes===0?'已滿 10 分鐘，做好了再按完成。':'任務時間到了，做好了再按完成。'}</Text>:null}
-          <Text testID="focus-unlock-hint" style={styles.focusHint}>{focusReady?'做好了，再按完成。':`再專心 ${clockText(focusWait)}，完成鍵就會亮起。`}</Text>
+          {state.taskReminderShown?<Text testID="task-due-reminder" accessibilityLiveRegion="polite" style={styles.caption}>{state.minutes===0?'已滿 10 分鐘。':'任務時間到了。'}</Text>:null}
           <Pressable testID="focus-complete" accessibilityRole="button" accessibilityLabel="完成" accessibilityState={{disabled:!focusReady||saving}} disabled={!focusReady||saving} onPress={()=>void change(enterFinishing)} style={[styles.button,(!focusReady||saving)&&styles.focusLocked]}><Text style={styles.buttonText}>完成</Text></Pressable>
 
         </> : null}
@@ -509,7 +507,6 @@ const styles = StyleSheet.create({
   taskTitleHint:{fontSize:12,lineHeight:18,color:'#c2d9dd',textAlign:'center'},
   focusMissionName:{fontSize:32,lineHeight:42,fontWeight:'800'},
   focusCompanionPanel:{padding:9,gap:10},
-  focusHint:{fontSize:12,lineHeight:18,color:'#d6e5df',textAlign:'center',backgroundColor:'rgba(9,35,40,.65)',borderRadius:8,paddingHorizontal:6,paddingVertical:2},
   focusLocked:{backgroundColor:'#46565f',borderColor:'#829399'},
   worldName: {fontSize: 28, fontWeight: '900', color: '#fff1b9', letterSpacing: 3},
   smallLink: { minHeight: 44, alignSelf: 'center', paddingHorizontal: 18, justifyContent: 'center', borderRadius: 18, backgroundColor: 'rgba(8,31,49,.88)' },

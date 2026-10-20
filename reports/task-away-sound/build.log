@@ -5,11 +5,9 @@
 
 Using (experimental) base path: /holton-guardian-app
 Starting Metro Bundler
-| (node:31812) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (node:32634) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 | (Use `node --trace-warnings ...` to show where the warning was created)
-| (node:31813) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-| (Use `node --trace-warnings ...` to show where the warning was created)
-Web Bundled 1320ms node_modules/expo/AppEntry.js (488 modules)
+Web Bundled 1031ms node_modules/expo/AppEntry.js (488 modules)
 
 › Assets (174):
 assets/cards/active/breather-mode-1.59f359d82963158c6a7a3edb3c9098a2.png (130 kB)
@@ -188,7 +186,7 @@ assets/worlds/sky-base/island-v3.2967e08298506898bdaea542f7c933da.png (3.15 MB)
 assets/worlds/village/landmark-map.ea82839d5f3ffd13fced15501dc0904d.png (3.75 MB)
 
 › web bundles (1):
-_expo/static/js/web/AppEntry-28db279e4d9763d3d6898591b295d86f.js (1.25 MB)
+_expo/static/js/web/AppEntry-67e8152df68047a57fee6010652886d1.js (1.25 MB)
 
 › Files (3):
 favicon.ico (14.5 kB)
