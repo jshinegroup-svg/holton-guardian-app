@@ -8,3 +8,5 @@ Built-in image_gen generated the transparent RGBA 2×2 atlas `assets/worlds/vill
 
 ## Verification
 TypeScript, scoped ESLint and web export passed. Browser QA uses isolated Chrome at320/390, not physical phones. `browser-check.mjs` checks four sprites, changing entry light/finite count, actual touch on building body + pressed feedback, keyboard Enter, both reduced-motion controls, all destination/return links, parent price defaults/override/reload, old-state no-write navigation, map locks, active/preparing/finishing resume, one award, wish cart/cancel/checkout/reload.
+
+Public release verified: Pages `7da0c9a77bbb045fe17a9180714bd576fa739151`, run `39408580762` built successfully; public full browser suite PASS and cottage atlas SHA256 matches local. Screenshot `public-share-village-390.png` shows fresh-family zero state in isolated profile (390×950); no real user data modified. No physical-device claim.
