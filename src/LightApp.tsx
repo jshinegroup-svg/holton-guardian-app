@@ -76,7 +76,6 @@ export default function LightApp() {
     return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); };
   }, [state?.phase, reduceMotion]);
   const [taskAway,setTaskAway]=useState(false);
-  const [leavePrompt,setLeavePrompt]=useState(false);
   const [soundBlocked,setSoundBlocked]=useState(false);
   const reminderBusy=useRef(false);
   const {arm:armChime,play:playChime}=useTaskChime(state?.taskSoundEnabled!==false);
@@ -357,7 +356,7 @@ export default function LightApp() {
     </> : homePhase&&room==='wishes'?<><Text style={styles.body}>和大人一起約定，讓努力變成小小心願。</Text>{button('家長管理心願',()=>openParent('rewards'),true)}<RewardShop data={state} settings={false} saving={saving} change={change}/></> : homePhase&&room==='companions'?<>
       {companionScene}<View style={styles.card}><Text style={styles.section}>你的夥伴與收藏</Text><Text style={styles.body}>已收藏 {ownedIds.size} 張守護獸卡 · {state.collection?.length??0} 張世界卡</Text>{button('我的守護獸收藏',()=>setCollectionOpen(true))}{button('世界卡換點數',()=>setWorldExchangeOpen(true),true)}{button(showWorldAlbum?'收起世界卡收藏':'打開世界卡收藏',()=>setShowWorldAlbum(!showWorldAlbum),true)}{!state.collection?.length?<Text style={styles.caption}>完成任務，慢慢收集你的第一張世界卡。</Text>:null}<Text style={styles.caption}>任務時間卡上的機器人會陪你出發。守護獸可在收藏中選擇「今天陪我」；原有身分與卡片都保留。</Text></View>
     </> : taskAway&&state.phase==='active'?<View testID="task-away-panel" style={styles.card}>
-      <Text style={styles.heading}>任務繼續計時中</Text><Text testID="away-task-title" style={[styles.section,{fontSize:viewportWidth<360?32:36,lineHeight:48,textAlign:'center'}]}>{state.title}</Text>
+      <Text style={styles.heading}>專注時間</Text><Text testID="away-task-title" style={[styles.section,{fontSize:viewportWidth<360?32:36,lineHeight:48,textAlign:'center'}]}>{state.title}</Text>
       <Text testID="away-clock" style={[styles.timer,{fontSize:viewportWidth<360?72:88,lineHeight:112,fontWeight:'800',paddingHorizontal:4,paddingVertical:24}]}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text>
       {state.taskReminderShown?<Text testID="away-due" accessibilityLiveRegion="polite" style={styles.body}>{state.minutes===0?'已滿 10 分鐘，可以回任務確認是否完成。':'任務時間到了，可以回去確認是否完成。'}</Text>:null}
       {button('回到任務',()=>{armChime();setTaskAway(false);})}
@@ -387,7 +386,7 @@ export default function LightApp() {
         {button('還有一點，回去繼續', () => void change(s => s.phase !== 'finishing' ? s : ({ ...s, phase: 'active', focusStartedAt:Date.now(), deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000, help: false })), true)}
       </> : state.phase === 'active' ? <>
         {companionScene}
-        {!state.help?<>{state.minutes===0?<Text style={styles.caption}>不限時 · 已進行</Text>:null}<View testID="focus-time-panel"><Text testID="crystal-clock" style={[styles.timer,{fontSize:60}]}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text></View></>:null}
+        {!state.help?<>{state.minutes===0?<Text style={styles.caption}>不限時 · 已進行</Text>:null}<Pressable testID="focus-time-panel" accessibilityRole="button" accessibilityLabel="進入專注介面" accessibilityHint="放大任務與時間，計時繼續" onPress={()=>{armChime();setTaskAway(true);requestAnimationFrame(()=>pageScroll.current?.scrollTo({y:0,animated:false}));}}><Text testID="crystal-clock" style={[styles.timer,{fontSize:60}]}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text></Pressable></>:null}
         <Text style={styles.body}>{state.help ? '任務已暫停' : state.minutes !== 0 && remaining === 0 ? '時間到了。還沒做好也沒關係，可以慢慢完成。' : '照自己的速度來。'}</Text>
         {state.help ? <>
           {!helpCard ? <Text style={styles.body}>拿出你的幫忙卡，再選同一張。</Text> : null}
@@ -404,7 +403,6 @@ export default function LightApp() {
         </> : <Pressable testID="focus-help" accessibilityRole="button" accessibilityLabel="我需要幫忙" disabled={saving} onPress={()=>void change(openHelp)} style={[styles.button,styles.secondary,saving&&styles.disabled]}><Text style={[styles.buttonText,styles.secondaryText]}>我需要幫忙</Text></Pressable>}
 
         {!state.help ? <>
-          {button('暫時離開，任務繼續',()=>setLeavePrompt(true),true)}
           {state.taskReminderShown?<Text testID="task-due-reminder" accessibilityLiveRegion="polite" style={styles.caption}>{state.minutes===0?'已滿 10 分鐘。':'任務時間到了。'}</Text>:null}
           <Pressable testID="focus-complete" accessibilityRole="button" accessibilityLabel="完成" accessibilityState={{disabled:!focusReady||saving}} disabled={!focusReady||saving} onPress={()=>void change(enterFinishing)} style={[styles.button,(!focusReady||saving)&&styles.focusLocked]}><Text style={styles.buttonText}>完成</Text></Pressable>
 
@@ -427,7 +425,6 @@ export default function LightApp() {
     <ParentGate visible={parentGateTab!==null} onCancel={()=>setParentGateTab(null)} onConfirm={()=>parentGateTab&&enterParent(parentGateTab)}/>
     <Modal visible={!!journey.event && !pending && !challenge && !settingsOpen && homePhase} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={dismissStory}>{journey.event?<JourneyReveal event={journey.event} reduced={reduceMotion} onDismiss={dismissStory} saving={saving}/>:null}{error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}</Modal>
 
-    <Modal visible={leavePrompt&&state.phase==='active'} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={()=>setLeavePrompt(false)}><View style={styles.overlay}><View style={[styles.card,{margin:20}]}><Text style={styles.heading}>暫時離開任務？</Text><Text style={styles.body}>時間會繼續走，進度不會清空。接著可切換 App，讓家長使用手機。</Text>{button('離開畫面，繼續計時',()=>{armChime();setTaskAway(true);setLeavePrompt(false);})}{button('留在任務',()=>setLeavePrompt(false),true)}</View></View></Modal>
     <Modal visible={taskActionsOpen&&state.phase==='ready'} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={()=>setTaskActionsOpen(false)}><View style={styles.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.modalScroll}><View testID="task-actions-panel" style={styles.card}>
       <Text style={styles.heading}>{taskDetailsOpen?'選得更清楚':state.title||'今天要完成什麼？'}</Text>
       {!taskDetailsOpen?<>
