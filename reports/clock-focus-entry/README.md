@@ -5,3 +5,5 @@ Jerry22844: whole active non-help time frame is an accessible press target. One 
 Validation: typecheck/lint (existing warnings)/base-path web export. Browser suite adapted from existing handoff/audio tests, adds whole-frame touch, keyboard Enter, zero-time entry, long task title and no focus entry while help is active. Headless keyboard emulation requires page bring-to-front/focus emulation; initial synthetic key test without focus did not activate native HTML button.
 
 Separate new-user guidance request is proposal-only: contextual spotlight on actual controls, one short instruction at a time; defer wallet/shop explanations until first genuine completion; allow skip/replay. No new onboarding implemented in this release.
+
+Released source c7360a5, Pages d606b7f/run39429226414 success. Public exact bundle a147772e matched; full direct-entry/return/zero/keyboard/touch/long-title/help/audio suite PASS. Public focus screenshot inspected.
