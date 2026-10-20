@@ -68,3 +68,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-20 actor=codex approval=user trigger=compact-journey-panel: shrink JourneyHint to horizontal 88px panel; preserve detail/reveal and state; typecheck/eslint/build/browser passed.
 2026-10-20 actor=bot approval=Jerry:22821 trigger=approved-landmark-design changed=AdventureVillage,landmark-map,QA; local checks PASS
 2026-10-20 actor=bot approval=Jerry:22821 trigger=landmark-public-verification result=Pages:c92307a,public-browser-PASS,artwork-hash-match
+2026-10-20 actor=bot approval=Jerry:22824 trigger=task-first-focus-and-minimum-time changed=LightApp,focusSession,familyBackup; local-model/browser/regression-PASS
