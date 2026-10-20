@@ -7,3 +7,5 @@ Audited card assets referenced by catalog, shop and energy math. Left already-sm
 DeferredCardImage in shop/settings reserves the exact image layout, mounts native Image once within450px of viewport using IntersectionObserver on web, and retains it after scrolling away. Native/unsupported-browser fallback loads normally. Applies to catalog art and custom style previews. No global eager preload of large libraries. No changes to prices, transactions, stored data, timers or card art designs.
 
 Typecheck/export, lint, transaction model and actual390/320 Chrome checks: initial1of13 shop images, all13 loaded/decoded on scroll, no reload on backscroll, custom styles correct, selection/removal no debit, double-click checkout charged once, reload receipts unchanged. All42 exported derivative files fetched and decoded in browser. Screenshot review of shop/custom art passed. Physical iPhone latency unmeasured.
+
+Release source6d12879, Pagesc54cca0/run39511731303 success; live bundle919ebe038640925f411ef445af4c7a9b matched. Public lazy-load/13 shop artworks/42 derivative decodes/checkout/mobile suite PASS.
