@@ -66,3 +66,4 @@ actor=bot approval=explicit-user-request trigger=forest-first-route; v2 journey 
 actor=bot approval=explicit-user-request trigger=first-season-brand; changed display name/header only; checks pass; critical=config-display-name-only
 
 2026-10-20 actor=codex approval=user trigger=compact-journey-panel: shrink JourneyHint to horizontal 88px panel; preserve detail/reveal and state; typecheck/eslint/build/browser passed.
+2026-10-20 actor=bot approval=Jerry:22821 trigger=approved-landmark-design changed=AdventureVillage,landmark-map,QA; local checks PASS
