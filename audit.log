@@ -88,3 +88,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-20 actor=bot approval=Jerry-naming-music trigger=public-verification result=Pages457bedd,public-music-and-child-name-suites-PASS
 
 2026-10-21 actor=bot approval=Jerry22931 trigger=world-card-layout | Added supplied card back, compact responsive draw panel and reduced-motion-aware flip; local checks passed.
+
+2026-10-21 actor=bot approval=Jerry22931 trigger=public-verification | PUBLIC 320/390 draw and persistence checks passed; screenshots refreshed.
