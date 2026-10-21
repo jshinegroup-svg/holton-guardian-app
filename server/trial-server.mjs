@@ -38,7 +38,24 @@ export function createTrialServer({root,password,secure=true,origin}){
  let file=path.resolve(rootPath,'.'+name);if(!file.startsWith(rootPath+path.sep)&&file!==rootPath)return send(404,'Not found','text/plain');
  try{if((await stat(file)).isDirectory())file=path.join(file,'index.html');file=await realpath(file);}catch{return send(404,'Not found','text/plain');}
  if(!file.startsWith(rootPath+path.sep))return send(404,'Not found','text/plain');
- const data=await readFile(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Content-Length':data.length});res.end(req.method==='HEAD'?undefined:data);
+ const data=await readFile(file);
+ const headers={'Content-Type':mime[path.extname(file)]||'application/octet-stream','Content-Length':data.length,'Accept-Ranges':'bytes'};
+ // Safari probes media with byte ranges before it starts playback. Authentication
+ // above applies equally to full files and partial responses.
+ const range=req.method==='GET'?req.headers.range:undefined;
+ if(range&&/^bytes=/.test(range)){
+  const match=/^bytes=(\d*)-(\d*)$/.exec(range);
+  // Ignore unsupported/malformed ranges (including multipart), returning the file.
+  if(match&&(match[1]||match[2])){
+   const start=match[1]?Number(match[1]):Math.max(0,data.length-Number(match[2]));
+   const end=match[1]?(match[2]?Math.min(Number(match[2]),data.length-1):data.length-1):data.length-1;
+   if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start>=data.length||start>end){
+    res.writeHead(416,{'Content-Range':`bytes */${data.length}`,'Content-Length':0,'Accept-Ranges':'bytes'});return res.end();
+   }
+   res.writeHead(206,{...headers,'Content-Length':end-start+1,'Content-Range':`bytes ${start}-${end}/${data.length}`});return res.end(data.subarray(start,end+1));
+  }
+ }
+ res.writeHead(200,headers);res.end(req.method==='HEAD'?undefined:data);
  }catch{if(!res.headersSent)send(500,'暫時無法開啟，請稍後再試。','text/plain');else res.end();}
  });server.requestTimeout=10000;server.headersTimeout=10000;return server;
 }
