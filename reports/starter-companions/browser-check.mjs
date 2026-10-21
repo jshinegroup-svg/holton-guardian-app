@@ -60,6 +60,8 @@ try {
 
 
  await wait(1000);
+ await run('localStorage.clear()');await reload();check(await run(`!!document.querySelector('[data-testid="starter-picker"]')`),'fresh install picker');check(!(await read()).starterCompanionId,'fresh not auto assigned');
+ await seed({...base});check((await read()).starterCompanionId==='pip'&&(await read()).phase==='active'&&(await read()).deadline===base.deadline,'active legacy migration preserves timer');
  await seed({...base,phase:'preparing',deadline:null,focusStartedAt:null});
  check((await read()).starterCompanionId==='pip','legacy auto Pip');check((await read()).orbs===41,'legacy points preserved');
  check(await run(`!!document.querySelector('[data-testid="starter-art-pip"]')`),'Pip replaces unearned shark');
