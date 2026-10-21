@@ -9,7 +9,7 @@ export async function initializeGuide(fresh:boolean,force=false){
  if(force)await AsyncStorage.removeItem(MUSIC_HINT_KEY);
  if(force||!await AsyncStorage.getItem(GUIDE_KEY))await AsyncStorage.setItem(GUIDE_KEY,JSON.stringify({main:!fresh,companions:!fresh,wishes:!fresh,parent:!fresh}));
 }
-type Step={selector:string;text:string;delay?:number;action?:'mission'|'picker';info?:boolean};
+type Step={selector:string;text:string;delay?:number;action?:'mission'|'picker';info?:boolean;passThrough?:boolean};
 const companionStep:Step={selector:'[data-testid="guardian-companion"] [data-testid="companion-reaction"]',text:'點點你的夥伴，看看他想跟你說什麼！他會用文字泡泡回應，做任務時也可以點他陪你一下。',delay:1400};
 const main:Step[]=[
  {selector:'[aria-label="開始任務"]',text:'先點這裡，進入今天的任務。',action:'mission'},
@@ -28,9 +28,9 @@ const rooms:Record<string,Step[]>={
   {selector:'[aria-label^="試聽"]',text:'點這裡試聽 20 秒。試聽不等於選用，也不會開啟任務自動播放。'},
   {selector:'[role="radio"][aria-label^="選用"]',text:'喜歡這首就按「選用」。任務開始是否播放，由「任務開始時播放」開關決定；也能在計時器旁開關。'},
  ],
- companions:[{selector:'[data-testid="guardian-companion"] [aria-label^="摸摸"]',text:'點一下夥伴，他會發光、用文字泡泡陪你，不會花點數。'},{selector:'[aria-label="我的守護獸收藏"]',text:'從這裡看收藏；點已擁有的角色，就能選他今天陪你。',info:true}],
+ companions:[{selector:'[data-testid="guardian-companion"] [aria-label^="摸摸"]',text:'點一下夥伴，他會發光、用文字泡泡陪你，不會花點數。'},{selector:'[aria-label="我的守護獸收藏"]',text:'點這裡打開收藏；點已擁有的角色，就能選他今天陪你。',info:true,passThrough:true}],
  wishes:[{selector:'[data-testid="wish-guide-card"], [data-testid="wish-guide-empty"]',text:'這是心願卡與需要的點數。點數足夠時可以選取，最後確認才扣點；教學不會替你兌換。',info:true}],
- parent:[{selector:'[data-testid="parent-nav"]',text:'從這裡切換任務、獎勵、音樂與偏好。重看操作教學在「偏好與舊卡」，不必重置進度。',info:true}],
+ parent:[{selector:'[aria-label="任務與目標"]',text:'先點「任務與目標」看看設定。也能切換其他分類；重看操作教學在「偏好與舊卡」。',info:true,passThrough:true}],
 };
 export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,hasTask,onMission,onPicker,onMusicDone}:{allowed:boolean;room:string;replay:number;phase:string;pickerOpen:boolean;hasTask:boolean;onMission:()=>void;onPicker:()=>void;onMusicDone:()=>void}){
  const [store,setStore]=useState<GuideStore|null>(null),[mode,setMode]=useState<string|null>(null),[index,setIndex]=useState(0),[rect,setRect]=useState<DOMRect|null>(null),[size,setSize]=useState({w:0,h:0,top:0,left:0}),[notice,setNotice]=useState(''),[tipHeight,setTipHeight]=useState(180);
@@ -53,20 +53,30 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
  const active=Platform.OS==='web'&&allowed&&!!step;
  useEffect(()=>{
   if(!active||!step){setRect(null);return;}
-  let scrollTarget:HTMLElement|null=null;let lastScroll=0;
+  let anchor:HTMLElement|null=null,attempts=0,userMoved=false,frame=0,layoutWidth=window.innerWidth;
+  const viewport=()=>{const vv=window.visualViewport;return {w:vv?.width??window.innerWidth,h:vv?.height??window.innerHeight,top:vv?.offsetTop??0,left:vv?.offsetLeft??0};};
   const measure=()=>{
    const el=document.querySelector<HTMLElement>(step.selector);target.current=el;
-   const vv=window.visualViewport;const view={w:vv?.width??window.innerWidth,h:vv?.height??window.innerHeight,top:vv?.offsetTop??0,left:vv?.offsetLeft??0};setSize(view);
+   const view=viewport();setSize(old=>Object.keys(view).every(k=>Math.abs(old[k as keyof typeof old]-view[k as keyof typeof view])<.5)?old:view);
    if(tip.current){const measured=tip.current.offsetHeight;setTipHeight(old=>Math.abs(old-measured)>1?measured:old);}
-   if(!el){setRect(null);return;}
-   const before=el.getBoundingClientRect();const outside=before.bottom<=view.top+8||before.top>=view.top+view.h-8||(before.height<view.h*.4&&(before.top<view.top+8||before.bottom>view.top+view.h-8));
-   // Modal dismissal and late image layout can undo the initial scroll on mobile. Retry until visible.
-   if(scrollTarget!==el||(outside&&Date.now()-lastScroll>300)){lastScroll=Date.now();el.scrollIntoView({block:before.height>view.h*.4?'start':'center',inline:'nearest',behavior:'instant' as ScrollBehavior});scrollTarget=el;}
-   const r=el.getBoundingClientRect();setRect(r.width&&r.height?r:null);
+   const r=el?.getBoundingClientRect();
+   setRect(old=>!r||!r.width||!r.height?null:old&&['left','top','width','height'].every(k=>Math.abs((old[k as keyof DOMRect] as number)-(r[k as keyof DOMRect] as number))<.5)?old:r);
   };
-  const resized=()=>{scrollTarget=null;measure();};
-  measure();const timer=setInterval(measure,180);window.addEventListener('resize',resized);window.visualViewport?.addEventListener('resize',resized);window.visualViewport?.addEventListener('scroll',measure);document.addEventListener('scroll',measure,true);
-  return()=>{clearInterval(timer);window.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('scroll',measure);document.removeEventListener('scroll',measure,true);};
+  // Measurement never scrolls. Only bounded initial alignment can move the page;
+  // mobile toolbar / visual viewport events must not create a scroll feedback loop.
+  const align=()=>{
+   const el=document.querySelector<HTMLElement>(step.selector);if(!el||userMoved)return;
+   const v=viewport(),r=el.getBoundingClientRect();
+   const outside=r.bottom<=v.top+12||r.top>=v.top+v.h-12;
+   if((anchor!==el||outside)&&attempts<4){attempts++;anchor=el;el.scrollIntoView({block:r.height>v.h*.4?'start':'center',inline:'nearest',behavior:'instant' as ScrollBehavior});}
+   measure();
+  };
+  const schedule=()=>{if(!frame)frame=requestAnimationFrame(()=>{frame=0;measure();});};
+  const manual=()=>{userMoved=true;};
+  const resized=()=>{if(Math.abs(window.innerWidth-layoutWidth)>40){layoutWidth=window.innerWidth;attempts=0;anchor=null;userMoved=false;align();}schedule();};
+  align();const retries=[120,450,1000,1600].map(ms=>setTimeout(align,ms));const timer=setInterval(measure,250);
+  window.addEventListener('resize',resized);window.visualViewport?.addEventListener('resize',schedule);window.visualViewport?.addEventListener('scroll',schedule);document.addEventListener('scroll',schedule,true);document.addEventListener('touchmove',manual,{passive:true,capture:true});document.addEventListener('wheel',manual,{passive:true,capture:true});
+  return()=>{retries.forEach(clearTimeout);clearInterval(timer);cancelAnimationFrame(frame);window.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('resize',schedule);window.visualViewport?.removeEventListener('scroll',schedule);document.removeEventListener('scroll',schedule,true);document.removeEventListener('touchmove',manual,true);document.removeEventListener('wheel',manual,true);};
  },[active,step]);
  useEffect(()=>{
   if(!active||!step)return;
@@ -76,7 +86,7 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
    if(!permitted(event.target)){event.preventDefault();event.stopImmediatePropagation();return;}
    const button=(event.target as HTMLElement).closest('[role="button"],button');
    if(button?.getAttribute('aria-disabled')==='true'||button?.hasAttribute('disabled'))return;
-   if(step.info){event.preventDefault();event.stopImmediatePropagation();advance();return;}
+   if(step.info){if(!step.passThrough){event.preventDefault();event.stopImmediatePropagation();}else if(!button)return;advance();return;}
    if(step.action){event.preventDefault();event.stopImmediatePropagation();if(step.action==='mission')onMission();else onPicker();advance();return;}
    if(mode==='main'&&index===3)return;
    if(!button&&!(event.target as HTMLElement).closest('[role="radio"]'))return;
@@ -94,18 +104,18 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
   return()=>{document.removeEventListener('click',click,true);document.removeEventListener('keydown',key,true);};
  },[active,step,index,mode,store,onMission,onPicker]);
  if(Platform.OS!=='web'||!active)return null;
- const w=size.w||window.innerWidth,h=size.h||window.innerHeight,viewTop=size.top,viewBottom=viewTop+h;
- const r=rect?{left:Math.max(0,rect.left-5),right:Math.min(w,rect.right+5),top:Math.min(viewBottom,Math.max(viewTop,rect.top-5)),bottom:Math.max(viewTop,Math.min(viewBottom,rect.bottom+5))}:{left:0,right:0,top:0,bottom:0};
+ const w=size.w||window.innerWidth,h=size.h||window.innerHeight,viewTop=size.top,viewBottom=viewTop+h,viewLeft=size.left,viewRight=viewLeft+w,layoutW=window.innerWidth;
+ const r=rect?{left:Math.max(viewLeft,Math.min(viewRight,rect.left-5)),right:Math.max(viewLeft,Math.min(viewRight,rect.right+5)),top:Math.min(viewBottom,Math.max(viewTop,rect.top-5)),bottom:Math.max(viewTop,Math.min(viewBottom,rect.bottom+5))}:{left:0,right:0,top:0,bottom:0};
  const tipWidth=Math.min(340,w-24),below=viewBottom-r.bottom>=tipHeight+20;
- const side=rect&&!below&&r.top-viewTop<tipHeight+20?(w-r.right>=tipWidth+24?'right':r.left>=tipWidth+24?'left':null):null;
- const tipLeft=side==='right'?r.right+12:side==='left'?r.left-tipWidth-12:Math.max(12,Math.min(w-tipWidth-12,rect?(rect.left+rect.right-tipWidth)/2:(w-tipWidth)/2));
+ const side=rect&&!below&&r.top-viewTop<tipHeight+20?(viewRight-r.right>=tipWidth+24?'right':r.left-viewLeft>=tipWidth+24?'left':null):null;
+ const tipLeft=side==='right'?r.right+12:side==='left'?r.left-tipWidth-12:Math.max(viewLeft+12,Math.min(viewRight-tipWidth-12,rect?(rect.left+rect.right-tipWidth)/2:viewLeft+(w-tipWidth)/2));
  const desiredTop=side?(r.top+r.bottom-tipHeight)/2:rect?(below?r.bottom+10:r.top-tipHeight-10):viewTop+h/2-90;
  const tipTop=Math.max(viewTop+8,Math.min(viewBottom-tipHeight-8,desiredTop));
  const shade:React.CSSProperties={position:'fixed',background:'rgba(0,10,20,.82)',pointerEvents:'auto',touchAction:'pan-y'};
  const buttonStyle:React.CSSProperties={border:'1px solid #d8b56c',borderRadius:10,background:'#125368',color:'#fff0c9',padding:'10px 14px',fontSize:14,cursor:'pointer',minHeight:42};
  return createPortal(<div data-testid="spotlight-guide" style={{position:'fixed',inset:0,zIndex:2147483000,pointerEvents:'none',fontFamily:'system-ui,sans-serif'}}>
-  <div style={{...shade,left:0,top:0,width:w,height:r.top}}/><div style={{...shade,left:0,top:r.bottom,width:w,height:Math.max(0,window.innerHeight-r.bottom)}}/>
-  <div style={{...shade,left:0,top:r.top,width:r.left,height:r.bottom-r.top}}/><div style={{...shade,left:r.right,top:r.top,width:w-r.right,height:r.bottom-r.top}}/>
+  <div style={{...shade,left:0,top:0,width:layoutW,height:r.top}}/><div style={{...shade,left:0,top:r.bottom,width:layoutW,height:Math.max(0,window.innerHeight-r.bottom)}}/>
+  <div style={{...shade,left:0,top:r.top,width:r.left,height:r.bottom-r.top}}/><div style={{...shade,left:r.right,top:r.top,width:Math.max(0,layoutW-r.right),height:r.bottom-r.top}}/>
   {rect?<div data-testid="spotlight-hole" style={{position:'fixed',left:r.left,top:r.top,width:r.right-r.left,height:r.bottom-r.top,border:'3px solid #ffe2a0',borderRadius:14,boxSizing:'border-box',boxShadow:'0 0 22px #f7c55977'}}/>:null}
   <div ref={tip} tabIndex={-1} role="dialog" aria-label="操作教學" aria-live="polite" data-testid="spotlight-tip" style={{position:'fixed',pointerEvents:'auto',left:tipLeft,top:tipTop,width:tipWidth,maxHeight:Math.max(80,viewBottom-tipTop-8),overflowY:'auto',boxSizing:'border-box',background:'#0b3046',color:'#fff0c9',border:'1px solid #e0bd75',borderRadius:16,padding:14,boxShadow:'0 8px 30px #0008'}}>
    <div style={{fontSize:13,color:'#e2c682'}}>操作教學 · {index+1}／{steps.length}</div>

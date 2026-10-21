@@ -3,7 +3,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {Animated,Pressable,StyleSheet,Text,View} from 'react-native';
 
 /** Local-only feedback: never writes game progress or touches the task clock. */
-export default function CompanionReaction({name,character,mood,reduced,children,onActivate,selected,disabled=false}:{name:string;character:string;mood:CompanionMood;reduced:boolean;children:React.ReactNode;onActivate?:()=>void;selected?:boolean;disabled?:boolean}){
+export default function CompanionReaction({name,character,mood,reduced,children,onActivate,selected,disabled=false,alignTop=false}:{name:string;character:string;mood:CompanionMood;reduced:boolean;children:React.ReactNode;onActivate?:()=>void;selected?:boolean;disabled?:boolean;alignTop?:boolean}){
  const [reply,setReply]=useState('');
  const active=useRef(false),next=useRef(0);
  const timeout=useRef<ReturnType<typeof setTimeout>|null>(null);
@@ -22,7 +22,7 @@ export default function CompanionReaction({name,character,mood,reduced,children,
   ]).start();
   timeout.current=setTimeout(()=>{setReply('');active.current=false;timeout.current=null;},2000);
  };
- return <View testID="companion-reaction" style={s.root}>
+ return <View testID="companion-reaction" style={[s.root,alignTop&&{alignSelf:'flex-start'}]}>
   <Pressable accessibilityRole="button" accessibilityLabel={onActivate?`今天陪我：${name}`:`摸摸${name}`} accessibilityState={{selected,disabled}} disabled={disabled} accessibilityHint="夥伴會用一句話回應你" onPress={greet}>
    <Animated.View testID="companion-reaction-art" style={{transform:[{translateY:bounce.interpolate({inputRange:[0,1],outputRange:[0,-4]})},{scale:bounce.interpolate({inputRange:[0,1],outputRange:[1,1.035]})}]}}>
     {children}
