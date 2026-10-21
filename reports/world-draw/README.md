@@ -20,3 +20,5 @@ Jerry22939 requested a slower reveal: total2.5s, gathering1s, existing reduced-m
 
 ## Stronger gathering (Jerry22942)
 Added18 foreground energy streams with bright6px heads and soft two-part tails. Staggered radial convergence now remains visible over the card (old six ambient dots were behind it), with a soft central energy glow and stronger background aura. Bounds stay within the card stage at320/390. Total2.5s timing and approximately1s gathering retained. New streams/core absent in reduced-motion mode and saved-result reload. Local typecheck/export/browser checks passed; gathering screenshot visually inspected.
+
+PUBLIC stronger-energy suite PASS:18 streams+core present, reduced mode omits streams,320/390 layout/persistence/reload/collect unchanged. Pages828657d/run39553039392 success; bundleb19ff3fe061e9bf3565ddd3917cb9f7c matched.
