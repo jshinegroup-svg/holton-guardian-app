@@ -63,12 +63,12 @@ try {
  await wait(1000);
  for(const id of ['pip','hop','bomo']){
  await seed({...base,starterChoiceVersion:1,starterCompanionId:id,phase:'preparing',deadline:null,focusStartedAt:null});
- const before=JSON.stringify(await read());const label='摸摸'+({pip:'Pip · 光核小機獸',hop:'HOP · 長耳機兔',bomo:'BOMO · 圓耳機熊'}[id]);
- await click(label);check(await run(`document.querySelector('[data-testid="companion-reaction-reply"]').textContent==='我在這裡！'`),'reply');
+ const first={pip:'我在這裡！',hop:'準備好探險了嗎？',bomo:'不用急，我陪你。'}[id];const second={pip:'一起勇敢出發！',hop:'一起發現新冒險！',bomo:'一起慢慢開始吧。'}[id];const before=JSON.stringify(await read());const label='摸摸'+({pip:'Pip · 光核小機獸',hop:'HOP · 長耳機兔',bomo:'BOMO · 圓耳機熊'}[id]);
+ await click(label);check(await run(`document.querySelector('[data-testid="companion-reaction-reply"]').textContent===${JSON.stringify(first)}`),'reply');
  check(!await run(`!!document.querySelector('[data-testid="companion-reaction-glow"]')`),'reduced no glow');
- await click(label);check(await run(`document.querySelector('[data-testid="companion-reaction-reply"]').textContent==='我在這裡！'`),'rapid click ignored');
+ await click(label);check(await run(`document.querySelector('[data-testid="companion-reaction-reply"]').textContent===${JSON.stringify(first)}`),'rapid click ignored');
  check(JSON.stringify(await read())===before,'no persistence writes');await wait(1800);check(!await run(`!!document.querySelector('[data-testid="companion-reaction-reply"]')`),'reply auto clears');
- await click(label);check(await run(`document.querySelector('[data-testid="companion-reaction-reply"]').textContent==='一起加油！'`),'next reply');
+ await click(label);check(await run(`document.querySelector('[data-testid="companion-reaction-reply"]').textContent===${JSON.stringify(second)}`),'next reply');
  }
  await seed({...base,starterChoiceVersion:1,starterCompanionId:'pip',reduceMotion:false});
  await click('摸摸Pip · 光核小機獸');check(await run(`!!document.querySelector('[data-testid="companion-reaction-glow"]')`),'normal glow');
@@ -76,5 +76,9 @@ try {
  await wait(2100);check(!await run(`!!document.querySelector('[data-testid="companion-reaction-reply"]')`),'normal clears');
  await seed({...base,phase:'preparing',deadline:null,focusStartedAt:null,guardianCards:[{cardId:'tidefin:0',at:'2026-10-19',cost:10,source:'sunday'}],companionCardId:'tidefin:0'});
  const earnedLabel=await run(`document.querySelector('[data-testid="companion-reaction"] [role="button"]').getAttribute('aria-label')`);await click(earnedLabel);check(await run(`!!document.querySelector('[data-testid="companion-reaction-reply"]')`),'earned guardian responds');await click('回到村莊');await wait(2200);check(!await run(`!!document.querySelector('[data-testid="companion-reaction-reply"]')`),'unmount cleanup');
+
+ for(const [phase,help,expected] of [['active',false,'我陪你專心。'],['active',true,'歇一下，我等你。'],['done',false,'這一步，做到了！']]){
+ await seed({...base,starterChoiceVersion:1,starterCompanionId:'pip',phase,help,deadline:phase==='done'?null:base.deadline});if(phase==='done')await click('夥伴小屋');await click('摸摸Pip · 光核小機獸');check(await run(`document.querySelector('[data-testid="companion-reaction-reply"]').textContent===${JSON.stringify(expected)}`),'phase-aware reply');
+ }
  console.log('PASS all3 and earned reactions, cooldown, auto clear, reduced motion, no save/reward/timer changes, navigation cleanup');
 }finally{proc.kill('SIGTERM')}

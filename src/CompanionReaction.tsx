@@ -1,8 +1,9 @@
+import {companionReplies,type CompanionMood} from './lib/companionReplies';
 import React,{useEffect,useRef,useState} from 'react';
 import {Animated,Pressable,StyleSheet,Text,View} from 'react-native';
 
 /** Local-only feedback: never writes game progress or touches the task clock. */
-export default function CompanionReaction({name,reduced,children}:{name:string;reduced:boolean;children:React.ReactNode}){
+export default function CompanionReaction({name,character,mood,reduced,children}:{name:string;character:string;mood:CompanionMood;reduced:boolean;children:React.ReactNode}){
  const [reply,setReply]=useState('');
  const active=useRef(false),next=useRef(0);
  const timeout=useRef<ReturnType<typeof setTimeout>|null>(null);
@@ -12,7 +13,7 @@ export default function CompanionReaction({name,reduced,children}:{name:string;r
  const greet=()=>{
   if(active.current)return;
   active.current=true;
-  const lines=['我在這裡！','一起加油！','慢慢來，我陪你。'];
+  const lines=companionReplies(character,mood);
   setReply(lines[next.current++%lines.length]);
   if(!reduced)Animated.sequence([
    Animated.timing(bounce,{toValue:1,duration:160,useNativeDriver:true}),
