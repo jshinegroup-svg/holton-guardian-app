@@ -42,7 +42,6 @@ export function WorldChrome() {
 [data-testid="mission-stage"]:has([data-testid="focus-companion-panel"])>[data-testid="mission-name"]{font-size:32px!important;line-height:42px!important;padding:9px 14px!important;width:100%}
 [data-testid="focus-time-panel"] [data-testid="crystal-clock"]{font-size:60px!important;line-height:72px!important}
 @media(max-width:350px){[data-testid="focus-world-name"]{font-size:20px!important;line-height:28px!important;letter-spacing:0!important}[data-testid="focus-time-panel"] [data-testid="crystal-clock"]{font-size:56px!important;line-height:68px!important}}
-@media(min-width:650px){[data-testid="immersive-world"]{max-width:520px;align-self:center;width:100%;box-shadow:0 0 80px #061e31}}
 @media(max-height:740px){[data-testid="world-title"]{margin-top:12px;margin-bottom:10px}[data-testid="original-card-pedestal"]{height:286px!important;width:214px!important}[data-testid="original-card-pedestal"]>div:last-child{top:43px!important;left:50px!important;width:114px!important;height:161px!important}}
 `);
 }

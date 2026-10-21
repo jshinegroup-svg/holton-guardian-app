@@ -100,3 +100,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-21 actor=bot approval=Jerry22942 trigger=stronger-energy | Added18 foreground energy streams/trails and gathering core; kept timing/rules.
 
 2026-10-21 actor=bot approval=Jerry22942 trigger=public-check | Stronger gathering public suite PASS.
+
+2026-10-21 actor=bot approval=Jerry22948 trigger=responsive-spotlight | Added full-width adaptive layouts and per-browser first-use real-action spotlight; local typecheck/lint/export/six-viewports/rotation/pointer/keyboard/onboarding/persistence and draw regression PASS.

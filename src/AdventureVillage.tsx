@@ -27,17 +27,17 @@ function MapLightStyles() {
 export default function AdventureVillage({orbs,world,steps,today,goal,task,onStart,onVisit,saving,reduced=false,ongoing=false,childName=''}:{orbs:number;world:string;steps:number;today:number;goal:number;task:string;onStart:()=>void;onVisit:(place:typeof destinations[number]['id'])=>void;saving:boolean;reduced?:boolean;ongoing?:boolean;childName?:string}) {
  return <View testID="adventure-village" style={s.content}>
   <MapLightStyles/>
-  <View style={s.welcome}><Text testID="village-child-title" accessibilityRole="header" style={s.title}>{childName?`${childName}的冒險村莊`:'冒險村莊'}</Text><Text style={s.subtitle}>沿著小路，找到你想去的小屋。</Text></View>
+  <View testID="village-overview"><View style={s.welcome}><Text testID="village-child-title" accessibilityRole="header" style={s.title}>{childName?`${childName}的冒險村莊`:'冒險村莊'}</Text><Text style={s.subtitle}>沿著小路，找到你想去的小屋。</Text></View>
   <View style={s.status}><Text style={s.balance}>✦ {orbs} 能量球</Text><Text style={s.small}>今天 {today}／{goal} 次任務</Text></View>
   <Pressable accessibilityRole="button" accessibilityLabel={ongoing?"繼續任務":"開始任務"} disabled={saving} onPress={onStart} style={({pressed})=>[s.start,pressed&&s.pressed,saving&&{opacity:.5}]}><Text style={s.startTitle}>{ongoing?'▶ 繼續任務':'▶ 開始任務'}</Text><Text style={s.startNote}>{task||'先選今天想完成的一件小事'}</Text><Text style={s.small}>{world} · 旅程 {steps}／15 步</Text></Pressable>
-  <Text style={s.hint}>✦ 直接點地圖上的小屋，就能進入</Text>
+  </View><View testID="village-landscape"><Text style={s.hint}>✦ 直接點地圖上的小屋，就能進入</Text>
   <View testID={reduced?'village-map-reduced':'village-map-live'} style={s.map}>
     <Image testID="village-integrated-map" source={require('../assets/worlds/village/landmark-map.png')} accessible={false} style={s.mapImage} resizeMode="stretch"/>
     {destinations.map(d=><Pressable key={d.id} testID={`cottage-${d.id}`} accessibilityRole="button" accessibilityLabel={d.title} accessibilityHint={`${d.name}，${d.note}`} onPress={()=>onVisit(d.id)} style={({pressed})=>[s.hotspot,{left:`${d.left}%`,top:`${d.top}%`,width:`${d.width}%`,height:`${d.height}%`},pressed&&s.hotspotPressed]}>
       {({pressed})=><><View pointerEvents="none" testID="cottage-halo" style={[s.halo,{left:`${d.doorX-15}%`,top:`${d.doorY-12}%`},pressed&&{opacity:1}]}/><View testID="cottage-label" pointerEvents="none" style={[s.plaque,{borderColor:d.tint},pressed&&s.labelPressed]}><Text style={s.houseTitle}>{d.title} ›</Text><Text style={s.houseName}>{d.name}</Text></View></>}
     </Pressable>)}
   </View>
-  <Text style={s.footer}>每一小步，都有夥伴陪你。</Text>
+  <Text style={s.footer}>每一小步，都有夥伴陪你。</Text></View>
  </View>;
 }
 export function VillageBackdrop(){return <View pointerEvents="none" style={[StyleSheet.absoluteFillObject,{backgroundColor:'#0b2937'}]}/>;}

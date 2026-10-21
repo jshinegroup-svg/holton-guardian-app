@@ -70,7 +70,7 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
       else setNote('尚未完成兌換。請核對點數與品項，或稍後再試；選擇已保留。');
     } finally { submitting.current = false; }
   };
-  return <View style={s.panel}><Text style={s.title}>✧ 心願小屋</Text><Text style={s.text}>可用能量球 {data.orbs} 顆</Text>
+  return <View style={s.panel}><Text testID={!data.shopEnabled||!catalog(data.wishes).some(w=>w.enabled&&w.name.trim()&&w.cost>0)?"wish-guide-empty":undefined} style={s.title}>✧ 心願小屋</Text><Text style={s.text}>可用能量球 {data.orbs} 顆</Text>
     {settings ? <>
       <Text style={s.text}>由大人決定是否開放。關閉不扣點、不清空餘額，也不影響守護獸收藏。這是共同設定，不是家長身分驗證。</Text>
       {action(`生活獎勵：${data.shopEnabled ? '開啟' : '關閉'}`, () => void change(s => ({ ...s, shopEnabled: !s.shopEnabled })))}
@@ -94,7 +94,7 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
         const picked = selected.some(x => x.id === w.id);
         const unavailable = !picked && total + w.cost > data.orbs;
         return <View key={w.id} style={[s.product, picked && s.productSelected]}>
-          <Pressable accessibilityRole="button" accessibilityLabel={`${picked?'取消選擇':'選擇'}${w.name}卡片`} aria-pressed={picked} accessibilityState={{disabled:unavailable||saving}} disabled={unavailable||saving} onPress={()=>toggle(w)} style={({pressed})=>[s.cardTap,pressed&&s.pressed]}>
+          <Pressable testID="wish-guide-card" accessibilityRole="button" accessibilityLabel={`${picked?'取消選擇':'選擇'}${w.name}卡片`} aria-pressed={picked} accessibilityState={{disabled:unavailable||saving}} disabled={unavailable||saving} onPress={()=>toggle(w)} style={({pressed})=>[s.cardTap,pressed&&s.pressed]}>
             <Text style={[s.badge,picked&&s.badgeSelected]}>{picked?'✓ 已選取 · 1 張':'點卡片也可以選擇'}</Text>
             <Art wish={w}/>
             {!w.custom?<Text style={s.title}>{w.name}</Text>:null}{!w.custom&&w.note?<Text style={s.text}>{w.note}</Text>:null}<Text style={s.text}>{w.cost} 點／張</Text>

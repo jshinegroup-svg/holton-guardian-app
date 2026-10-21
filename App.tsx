@@ -140,7 +140,9 @@ import type {
   RealTestSession,
   PersistedAppState,
 } from "./src/types/holton";
-export { default } from "./src/LightApp";
+import LightApp from "./src/LightApp";
+import ResponsiveStyles from "./src/ResponsiveStyles";
+export default function HoltonApp(){return <><ResponsiveStyles/><LightApp/></>;}
 
 export function LegacyApp() {
   const [childName, setChildName] = useState("Holton");
