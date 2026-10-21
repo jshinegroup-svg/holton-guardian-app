@@ -36,7 +36,7 @@ const s=StyleSheet.create({
  root:{position:'relative',alignSelf:'center'},
  glow:{...StyleSheet.absoluteFillObject,borderRadius:12,borderWidth:2,borderColor:'#91f5ff',backgroundColor:'rgba(55,211,245,.12)'},
  slot:{height:88,paddingTop:12,width:'100%',justifyContent:'flex-start'},
- bubble:{minHeight:64,maxWidth:180,paddingVertical:10,paddingHorizontal:9,borderRadius:26,borderTopLeftRadius:22,borderBottomRightRadius:22,borderWidth:2,borderColor:'#dec68c',backgroundColor:'#fff8e5',justifyContent:'center'},
+ bubble:{minHeight:64,maxWidth:180,paddingVertical:8,paddingHorizontal:9,borderRadius:26,borderTopLeftRadius:22,borderBottomRightRadius:22,borderWidth:2,borderColor:'#dec68c',backgroundColor:'#fff8e5',justifyContent:'center'},
  tail:{position:'absolute',top:-7,left:'42%',width:12,height:12,backgroundColor:'#fff8e5',borderTopWidth:2,borderLeftWidth:2,borderColor:'#dec68c',transform:[{rotate:'45deg'}]},
- text:{fontSize:14,lineHeight:20,textAlign:'center',fontWeight:'700',color:'#193e50'},
+ text:{fontSize:14,lineHeight:18,textAlign:'center',fontWeight:'700',color:'#193e50'},
 });
