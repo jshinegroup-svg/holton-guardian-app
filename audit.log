@@ -94,3 +94,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-21 actor=bot approval=Jerry22936 trigger=world-card-ceremony | Added breathing gold aura, gathering glints, flip ring, delayed details and collection fade; preserved persistence and reduced motion.
 
 2026-10-21 actor=bot approval=Jerry22936 trigger=public-verification | Ceremony public browser suite PASS and Pages deployment succeeded.
+
+2026-10-21 actor=bot approval=Jerry22939 trigger=slower-draw | Reveal extended to2.5s with1s gathering; reduced-motion/persistence unchanged.

@@ -26,7 +26,7 @@ export default function WorldDrawArt({source,title,reduced,height,children,onCol
   useEffect(()=>{
     if(!source||!loaded)return;
     if(initial||reduced){ritual.setValue(1);setRevealed(true);return;}
-    const animation=Animated.timing(ritual,{toValue:1,duration:1500,easing:Easing.linear,useNativeDriver:true});
+    const animation=Animated.timing(ritual,{toValue:1,duration:2500,easing:Easing.linear,useNativeDriver:true});
     animation.start(({finished})=>{if(finished)setRevealed(true)});
     return()=>animation.stop();
   },[source,loaded,reduced,initial,ritual]);
@@ -42,15 +42,15 @@ export default function WorldDrawArt({source,title,reduced,height,children,onCol
   return <View style={styles.layout}>
     <View testID="world-ritual-stage" style={[styles.stage,{height:height+22}]}>
       <Animated.View pointerEvents="none" style={[styles.halo,webGlow,{width:height*1.25,height:height*1.25,borderRadius:height,
-        opacity:source?interpolate([0,.3,.7,1],[.25,.7,.5,.18]):breath.interpolate({inputRange:[0,1],outputRange:[.18,.4]}),
-        transform:[{scale:source?interpolate([0,.32,.65,1],[1,.72,1.2,1]):breath.interpolate({inputRange:[0,1],outputRange:[.93,1.06]})}]}]}/>
+        opacity:source?interpolate([0,.4,.7,1],[.25,.7,.5,.18]):breath.interpolate({inputRange:[0,1],outputRange:[.18,.4]}),
+        transform:[{scale:source?interpolate([0,.4,.65,1],[1,.72,1.2,1]):breath.interpolate({inputRange:[0,1],outputRange:[.93,1.06]})}]}]}/>
       {source&&!initial&&!reduced?<Animated.View testID="world-reveal-ring" pointerEvents="none" style={[styles.ring,{width:height*.8,height:height*.8,borderRadius:height,opacity:interpolate([0,.5,.62,1],[0,0,.65,0]),transform:[{scale:interpolate([0,.5,1],[.65,.65,1.6])}]}]}/>:null}
-      {[-1,1].flatMap(side=>[0,1,2].map(i=><Animated.View key={`${side}-${i}`} pointerEvents="none" style={[styles.spark,{left:'50%',top:'50%',opacity:source?interpolate([0,.33,.65,1],[.5,.9,.65,0]):breath.interpolate({inputRange:[0,1],outputRange:[.18+i*.1,.75-i*.1]}),transform:[{translateX:source?interpolate([0,.33,.65,1],[side*(height*.4+i*5),side*22,side*(height*.43+i*8),side*(height*.44+i*8)]):side*(height*.4+i*5)},{translateY:source?interpolate([0,.33,.65,1],[(i-1)*55,0,(i-1)*68,(i-1)*74]):(i-1)*55}]}]}/>))}
-      <Animated.View testID="world-draw-art" style={{height,width:height*2/3,opacity:departure.interpolate({inputRange:[0,1],outputRange:[1,0]}),transform:[{translateY:source?0:breath.interpolate({inputRange:[0,1],outputRange:[2,-3]})},{scale:Animated.multiply(source?interpolate([0,.33,.7,1],[1,1.055,1.025,1]):1,departure.interpolate({inputRange:[0,1],outputRange:[1,.82]}))}]}}>
-        <Animated.View style={[styles.face,{transform:[{perspective:800},{rotateY:ritual.interpolate({inputRange:[0,.33,.73,1],outputRange:['0deg','0deg','180deg','180deg']})}]}]}>
+      {[-1,1].flatMap(side=>[0,1,2].map(i=><Animated.View key={`${side}-${i}`} pointerEvents="none" style={[styles.spark,{left:'50%',top:'50%',opacity:source?interpolate([0,.4,.65,1],[.5,.9,.65,0]):breath.interpolate({inputRange:[0,1],outputRange:[.18+i*.1,.75-i*.1]}),transform:[{translateX:source?interpolate([0,.4,.65,1],[side*(height*.4+i*5),side*22,side*(height*.43+i*8),side*(height*.44+i*8)]):side*(height*.4+i*5)},{translateY:source?interpolate([0,.4,.65,1],[(i-1)*55,0,(i-1)*68,(i-1)*74]):(i-1)*55}]}]}/>))}
+      <Animated.View testID="world-draw-art" style={{height,width:height*2/3,opacity:departure.interpolate({inputRange:[0,1],outputRange:[1,0]}),transform:[{translateY:source?0:breath.interpolate({inputRange:[0,1],outputRange:[2,-3]})},{scale:Animated.multiply(source?interpolate([0,.4,.7,1],[1,1.055,1.025,1]):1,departure.interpolate({inputRange:[0,1],outputRange:[1,.82]}))}]}}>
+        <Animated.View style={[styles.face,{transform:[{perspective:800},{rotateY:ritual.interpolate({inputRange:[0,.4,.73,1],outputRange:['0deg','0deg','180deg','180deg']})}]}]}>
           <Image source={require('../assets/world-draw/world-card-back.jpg')} accessibilityLabel="世界卡黑金卡背" resizeMode="contain" style={styles.image}/>
         </Animated.View>
-        {source?<Animated.View style={[styles.face,{transform:[{perspective:800},{rotateY:ritual.interpolate({inputRange:[0,.33,.73,1],outputRange:['-180deg','-180deg','0deg','0deg']})}]}]}>
+        {source?<Animated.View style={[styles.face,{transform:[{perspective:800},{rotateY:ritual.interpolate({inputRange:[0,.4,.73,1],outputRange:['-180deg','-180deg','0deg','0deg']})}]}]}>
           <Image source={source} accessibilityLabel={title} resizeMode="contain" style={styles.image} onLoad={()=>setLoaded(true)} onError={()=>setLoaded(true)}/>
         </Animated.View>:null}
       </Animated.View>

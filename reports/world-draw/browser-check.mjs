@@ -57,7 +57,7 @@ try {
  await shot('ready-'+width);
  await run(`(()=>{const b=document.querySelector('[aria-label="抽一張世界卡"]');for(let i=0;i<5;i++)b.click()})()`);await wait(180);
  check(await run(`Number(getComputedStyle(document.querySelector('[data-testid=world-draw-details]')).opacity)<1`),'details withheld during reveal');
- await shot('gather-'+width);await wait(1600);
+ await shot('gather-'+width);await wait(2600);
  check(await run(`Number(getComputedStyle(document.querySelector('[data-testid=world-draw-details]')).opacity)===1`),'details revealed after ritual');
  let state=await read();check(state.collection.length===1&&state.orbs===48,'single draw, no points');const card=state.draws[0].cardId;check(!!card,'draw saved');await shot('revealed-'+width);
  await reload();check((await read()).draws[0].cardId===card&&(await read()).collection.length===1,'same reveal after reload');

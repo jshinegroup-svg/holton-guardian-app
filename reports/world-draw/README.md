@@ -10,8 +10,10 @@ Public verification: dc5397a2589c45bbdca75487286ae41a bundle matched; full PUBLI
 
 ## Ceremony (Jerry22936)
 - Waiting: 3.6s gentle breathing radial gold aura, +/-3px float and six soft glints.
-- Saved result: 1.5s choreography, first 0.5s particles gather and card expands 5.5%, then Y flip with expanding gold ring, then details fade in. Buttons stay disabled during reveal. Cold image load waits with status; reload of saved draw skips ceremony. Reduced motion skips all continuous/reveal/departure animation. No audio.
+- Saved result: 2.5s choreography, first 1s particles gather and card expands 5.5%, then Y flip with expanding gold ring, then details fade in. Buttons stay disabled during reveal. Cold image load waits with status; reload of saved draw skips ceremony. Reduced motion skips all continuous/reveal/departure animation. No audio.
 - Collect: 260ms shrink/fade, guarded against repeated activation; storage failure restores card/button for retry. Original parent persistence/random choice/point rules unchanged.
 - Local typecheck/export and 320/390 suite pass, including details hidden during reveal and reload mid-animation preserving the exact card; screenshots inspected.
 
 Ceremony PUBLIC verification PASS: bundle c5525599dacef3f187a71b8c9feacfd1; Pages89f6722 run39550478460 successful. 320/390 layout, details timing, mid-animation reload, five clicks once, collect, reduced-motion immediate/no-ring, unchanged balance.
+
+Jerry22939 requested a slower reveal: total2.5s, gathering1s, existing reduced-motion and persistence unchanged.
