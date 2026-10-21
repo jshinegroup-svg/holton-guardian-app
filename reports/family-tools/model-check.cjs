@@ -12,3 +12,7 @@ for(const t of music.exports.focusMusicTracks)a.equal(parseBackup(createBackup({
 for(const id of ['pip','hop','bomo'])a.equal(parseBackup(createBackup({...state,starterChoiceVersion:1,starterCompanionId:id})).state.starterCompanionId,id);
 a.throws(()=>createBackup({...state,starterCompanionId:'fox'}));a.throws(()=>createBackup({...state,starterChoiceVersion:2}));
 console.log('PASS starter backup IDs/version and legacy compatibility');
+
+for(const value of [true,false])a.equal(parseBackup(createBackup({...state,allowEarlyFinish:value})).state.allowEarlyFinish,value);
+for(const value of ['true',1,null])a.throws(()=>createBackup({...state,allowEarlyFinish:value}));
+console.log('PASS early-finish bool backup roundtrip, missing legacy allowed, invalid values rejected');
