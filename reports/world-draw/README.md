@@ -17,3 +17,6 @@ Public verification: dc5397a2589c45bbdca75487286ae41a bundle matched; full PUBLI
 Ceremony PUBLIC verification PASS: bundle c5525599dacef3f187a71b8c9feacfd1; Pages89f6722 run39550478460 successful. 320/390 layout, details timing, mid-animation reload, five clicks once, collect, reduced-motion immediate/no-ring, unchanged balance.
 
 Jerry22939 requested a slower reveal: total2.5s, gathering1s, existing reduced-motion and persistence unchanged.
+
+## Stronger gathering (Jerry22942)
+Added18 foreground energy streams with bright6px heads and soft two-part tails. Staggered radial convergence now remains visible over the card (old six ambient dots were behind it), with a soft central energy glow and stronger background aura. Bounds stay within the card stage at320/390. Total2.5s timing and approximately1s gathering retained. New streams/core absent in reduced-motion mode and saved-result reload. Local typecheck/export/browser checks passed; gathering screenshot visually inspected.

@@ -96,3 +96,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-21 actor=bot approval=Jerry22936 trigger=public-verification | Ceremony public browser suite PASS and Pages deployment succeeded.
 
 2026-10-21 actor=bot approval=Jerry22939 trigger=slower-draw | Reveal extended to2.5s with1s gathering; reduced-motion/persistence unchanged.
+
+2026-10-21 actor=bot approval=Jerry22942 trigger=stronger-energy | Added18 foreground energy streams/trails and gathering core; kept timing/rules.

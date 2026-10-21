@@ -42,7 +42,7 @@ export default function WorldDrawArt({source,title,reduced,height,children,onCol
   return <View style={styles.layout}>
     <View testID="world-ritual-stage" style={[styles.stage,{height:height+22}]}>
       <Animated.View pointerEvents="none" style={[styles.halo,webGlow,{width:height*1.25,height:height*1.25,borderRadius:height,
-        opacity:source?interpolate([0,.4,.7,1],[.25,.7,.5,.18]):breath.interpolate({inputRange:[0,1],outputRange:[.18,.4]}),
+        opacity:source?interpolate([0,.4,.7,1],[.3,.95,.5,.18]):breath.interpolate({inputRange:[0,1],outputRange:[.18,.4]}),
         transform:[{scale:source?interpolate([0,.4,.65,1],[1,.72,1.2,1]):breath.interpolate({inputRange:[0,1],outputRange:[.93,1.06]})}]}]}/>
       {source&&!initial&&!reduced?<Animated.View testID="world-reveal-ring" pointerEvents="none" style={[styles.ring,{width:height*.8,height:height*.8,borderRadius:height,opacity:interpolate([0,.5,.62,1],[0,0,.65,0]),transform:[{scale:interpolate([0,.5,1],[.65,.65,1.6])}]}]}/>:null}
       {[-1,1].flatMap(side=>[0,1,2].map(i=><Animated.View key={`${side}-${i}`} pointerEvents="none" style={[styles.spark,{left:'50%',top:'50%',opacity:source?interpolate([0,.4,.65,1],[.5,.9,.65,0]):breath.interpolate({inputRange:[0,1],outputRange:[.18+i*.1,.75-i*.1]}),transform:[{translateX:source?interpolate([0,.4,.65,1],[side*(height*.4+i*5),side*22,side*(height*.43+i*8),side*(height*.44+i*8)]):side*(height*.4+i*5)},{translateY:source?interpolate([0,.4,.65,1],[(i-1)*55,0,(i-1)*68,(i-1)*74]):(i-1)*55}]}]}/>))}
@@ -54,6 +54,23 @@ export default function WorldDrawArt({source,title,reduced,height,children,onCol
           <Image source={source} accessibilityLabel={title} resizeMode="contain" style={styles.image} onLoad={()=>setLoaded(true)} onError={()=>setLoaded(true)}/>
         </Animated.View>:null}
       </Animated.View>
+      {source&&!initial&&!reduced?<View testID="world-energy-streams" pointerEvents="none" style={StyleSheet.absoluteFill}>
+        {Array.from({length:18},(_,i)=>{
+          const angle=i*Math.PI*2/18;
+          const delay=(i%3)*.035;
+          const x=Math.cos(angle)*height*.48;
+          const y=Math.sin(angle)*height*.48;
+          return <Animated.View key={i} style={[styles.energyStream,{opacity:interpolate([0,delay+.035,delay+.18,delay+.34,delay+.39,1],[0,0,.95,1,0,0]),transform:[
+            {translateX:interpolate([0,delay+.035,delay+.18,delay+.37,1],[x,x,x*.72,0,0])},
+            {translateY:interpolate([0,delay+.035,delay+.18,delay+.37,1],[y,y,y*.72,0,0])},
+            {rotate:`${angle}rad`},
+            {scale:interpolate([0,.2,.4,1],[.75,1.1,.65,.65])},
+          ]}]}>
+            <View style={styles.energyTrail}/><View style={styles.energyTrailSoft}/><View style={styles.energyDot}/>
+          </Animated.View>;
+        })}
+        <Animated.View testID="world-energy-core" style={[styles.halo,webGlow,{left:'50%',top:'50%',marginLeft:-42,marginTop:-42,width:84,height:84,borderRadius:42,opacity:interpolate([0,.2,.37,.45,.55,1],[0,.08,.6,.45,0,0]),transform:[{scale:interpolate([0,.2,.4,.55,1],[.55,.65,1.15,1.3,1.3])}]}]}/>
+      </View>:null}
     </View>
     {source&&!revealed?<Text accessibilityLiveRegion="polite" style={styles.status}>{loaded?'你的努力，正在喚醒世界…':'世界卡正在到來…'}</Text>:null}
     <Animated.View testID="world-draw-details" pointerEvents={source&&!revealed?'none':'auto'} accessibilityElementsHidden={!!source&&!revealed} style={[styles.layout,{opacity:source?interpolate([0,.78,1],[0,0,1]):1}]}>
@@ -66,6 +83,10 @@ const styles=StyleSheet.create({
   layout:{gap:10},stage:{alignItems:'center',justifyContent:'center'},
   halo:{position:'absolute',backgroundColor:'transparent',borderWidth:0,shadowColor:'#ffc45c',shadowOpacity:.8,shadowRadius:28,shadowOffset:{width:0,height:0}},
   ring:{position:'absolute',borderWidth:2,borderColor:'#ffe5a0'},spark:{position:'absolute',width:4,height:4,borderRadius:2,backgroundColor:'#ffe7ac'},
+  energyStream:{position:'absolute',left:'50%',top:'50%',width:1,height:1},
+  energyDot:{position:'absolute',left:-3,top:-3,width:6,height:6,borderRadius:3,backgroundColor:'#fff4c5',shadowColor:'#ffc45c',shadowOpacity:1,shadowRadius:8,shadowOffset:{width:0,height:0}},
+  energyTrail:{position:'absolute',left:1,top:-1.5,width:15,height:3,borderRadius:2,backgroundColor:'rgba(255,216,123,.7)'},
+  energyTrailSoft:{position:'absolute',left:12,top:-1,width:12,height:2,borderRadius:2,backgroundColor:'rgba(255,204,100,.25)'},
   face:{...StyleSheet.absoluteFillObject,backfaceVisibility:'hidden'},image:{width:'100%',height:'100%',borderRadius:10},
   status:{position:'absolute',bottom:64,alignSelf:'center',color:'#ffe6a5',fontSize:16},
   button:{minHeight:58,borderWidth:2,borderColor:'#c8b078',backgroundColor:'#076f89',borderRadius:32,alignItems:'center',justifyContent:'center',padding:14},buttonText:{fontSize:20,fontWeight:'700',color:'#fff'},
