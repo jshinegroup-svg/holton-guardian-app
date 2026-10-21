@@ -1,3 +1,4 @@
+import WorldDrawArt from './WorldDrawArt';
 import CompanionReaction from './CompanionReaction';
 import {migrateStarterCompanion} from './lib/starterCompanion';
 import StarterCompanionPicker,{StarterCompanionArt,starterCompanions,isStarterCompanion,type StarterCompanionId} from './StarterCompanions';
@@ -57,7 +58,7 @@ function importGuardianCards(old: Partial<PersistedAppState> | null): GuardianRe
 }
 
 export default function LightApp() {
-  const {width: viewportWidth} = useWindowDimensions();
+  const {width: viewportWidth, height: viewportHeight} = useWindowDimensions();
   const [state, setState] = useState<State | null>(null);
   const systemReduced = useSystemReducedMotion();
   const reduceMotion = systemReduced || !!state?.reduceMotion;
@@ -516,10 +517,11 @@ export default function LightApp() {
       {button('先不挑戰，不扣點', () => setChallengeConfirmId(null), true)}
     </View> : null}</ScrollView></View></Modal>
     <Modal visible={!!battleGuardian} animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => { if (!challenge || challenge.status === 'won') void closeBattle(); }}><SafeAreaView style={styles.root}><WorldBackdrop scene="focus" />{battleGuardian ? <GuardianBattle guardianId={battleGuardian.id} key={challenge?.id ?? `preview:${battleGuardian.id}`} hero={{name: battleHero.name, image: battleHero.imageSource}} guardian={{name: `${battleGuardian.name} · ${battleGuardian.label}`, image: battleGuardian.image}} cost={challenge?.cost ?? 0} reduced={reduceMotion} won={challenge?.status === 'won'} preview={!challenge} saving={saving} error={error} onWin={() => { if (challenge) void change(s => winGuardianChallenge(s, challenge.id, Date.now())); }} onClose={() => void closeBattle()} onCompanion={() => void closeBattle(true)} /> : null}</SafeAreaView></Modal>
-    <Modal visible={!!pending} transparent animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => {}}><View style={styles.overlay}><ScrollView contentContainerStyle={styles.modalScroll}><View style={styles.card}>
-      <Text style={styles.heading}>{drawnCard ? '你的世界卡！' : '可以抽世界卡了！'}</Text><Text style={styles.body}>{pending?.reason}</Text>
+    <Modal visible={!!pending} transparent animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => {}}><View style={styles.overlay}><ScrollView contentContainerStyle={styles.modalScroll}><View testID="world-draw-panel" style={[styles.card,styles.drawPanel]}>
+      <Text style={[styles.heading,styles.drawHeading]}>{drawnCard ? '你的世界卡！' : '可以抽世界卡了！'}</Text><Text style={styles.drawReason}>{pending?.reason}</Text>
+      <WorldDrawArt key={pending?.id ?? 'no-draw'} source={drawnCard?.imageSource} title={drawnCard?.title} reduced={reduceMotion} height={Math.min(210,Math.max(135,viewportHeight*0.30))}/>
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
-      {drawnCard ? <><Image source={drawnCard.imageSource} accessibilityLabel={drawnCard.title} resizeMode="contain" style={styles.rewardArt} /><Text style={styles.section}>{drawnCard.title}</Text><Text style={styles.body}>{drawnCard.desc}</Text><Text style={styles.caption}>{worldRewardLabel(drawnCard.id)}。先收下，再到「世界卡換點數」結算；抽卡本身不會立刻加點。</Text>{button('收下世界卡', () => void change(s => ({ ...s, draws: (s.draws ?? []).slice(1) })))}</> : <><Text style={styles.score}>✦ ? ✦</Text><Text style={styles.body}>你的努力，帶來一張新的世界卡。</Text>{button('抽一張世界卡', () => void change(s => {
+      {drawnCard ? <><Text style={styles.section}>{drawnCard.title}</Text><Text style={styles.body}>{drawnCard.desc}</Text><Text style={styles.caption}>{worldRewardLabel(drawnCard.id)}。先收下，再到「世界卡換點數」結算；抽卡本身不會立刻加點。</Text>{button('收下世界卡', () => void change(s => ({ ...s, draws: (s.draws ?? []).slice(1) })))}</> : <><Text style={styles.drawReason}>你的努力，帶來新的世界。</Text>{button('抽一張世界卡', () => void change(s => {
         const first = s.draws?.[0];
         if (!first || first.cardId) return s;
         const cardId = worldEvents[Math.floor(Math.random() * worldEvents.length)].id;
@@ -530,6 +532,9 @@ export default function LightApp() {
   </SafeAreaView>;
 }
 const styles = StyleSheet.create({
+  drawPanel:{gap:10,padding:16},
+  drawHeading:{fontSize:22,lineHeight:30,padding:4,backgroundColor:'transparent'},
+  drawReason:{fontSize:16,lineHeight:24,color:'#deedf1',textAlign:'center'},
   taskTitleEntry:{minHeight:64,paddingVertical:9,paddingHorizontal:14,alignItems:'center',justifyContent:'center',gap:2,borderWidth:2,borderColor:'#d5b976',borderRadius:18,backgroundColor:'rgba(9,43,66,.9)'},
   taskTitleText:{fontSize:24,lineHeight:32,fontWeight:'800',color:'#fff0cf',textAlign:'center'},
   taskTitleHint:{fontSize:12,lineHeight:18,color:'#c2d9dd',textAlign:'center'},
