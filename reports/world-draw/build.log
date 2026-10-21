@@ -5,9 +5,9 @@
 
 Using (experimental) base path: /holton-guardian-app
 Starting Metro Bundler
-| (node:75696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (node:77095) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 | (Use `node --trace-warnings ...` to show where the warning was created)
-Web Bundled 1018ms node_modules/expo/AppEntry.js (503 modules)
+Web Bundled 486ms node_modules/expo/AppEntry.js (503 modules)
 
 › Assets (178):
 assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage1.5ca17d014e88fb556df6f582f9ac044e.jpg (206 kB)
@@ -190,7 +190,7 @@ assets/worlds/sky-base/island-v3.2967e08298506898bdaea542f7c933da.png (3.15 MB)
 assets/worlds/village/landmark-map.ea82839d5f3ffd13fced15501dc0904d.png (3.75 MB)
 
 › web bundles (1):
-_expo/static/js/web/AppEntry-dc5397a2589c45bbdca75487286ae41a.js (1.29 MB)
+_expo/static/js/web/AppEntry-c5525599dacef3f187a71b8c9feacfd1.js (1.3 MB)
 
 › Files (3):
 favicon.ico (14.5 kB)

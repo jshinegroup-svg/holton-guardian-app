@@ -43,7 +43,7 @@ try {
  const run=async expression=>{const r=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value};
  const check=(v,m)=>{if(!v)throw Error(m)};
  const key='holton-guardian-app::light-v1';const read=()=>run(`JSON.parse(localStorage.getItem('${key}'))`);
- const click=async label=>{await run(`new Promise((resolve,reject)=>{let tries=0;const timer=setInterval(()=>{const el=[...document.querySelectorAll('[role="button"],[role="switch"]')].find(e=>e.getAttribute('aria-label')===${JSON.stringify(label)}||e.textContent===${JSON.stringify(label)});if(el){clearInterval(timer);el.click();resolve(true)}else if(++tries>70){clearInterval(timer);reject(Error('missing '+${JSON.stringify(label)}))}},80)})`);await wait(220)};
+ const click=async label=>{await run(`new Promise((resolve,reject)=>{let tries=0;const timer=setInterval(()=>{const el=[...document.querySelectorAll('[role="button"],[role="switch"]')].find(e=>e.getAttribute('aria-label')===${JSON.stringify(label)}||e.textContent===${JSON.stringify(label)});if(el){clearInterval(timer);el.click();resolve(true)}else if(++tries>70){clearInterval(timer);reject(Error('missing '+${JSON.stringify(label)}))}},80)})`);await wait(500)};
  const ready=async()=>{for(let i=0;i<60;i++){if(await run("document.body.innerText.includes('HOLTON HERO')"))return;await wait(100)}throw Error('page not ready: '+await run('document.body.innerText'))};
  const reload=async()=>{await run('location.reload()');await wait(700);await ready()};
  const shot=async name=>{await wait(300);const r=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await fs.writeFile(`reports/world-draw/${name}.png`,Buffer.from(r.data,'base64'))};
@@ -55,11 +55,15 @@ try {
  await run(`localStorage.setItem('${key}',${JSON.stringify(JSON.stringify(seed))})`);await reload();await wait(500);
  check(await run(`(()=>{const p=document.querySelector('[data-testid="world-draw-panel"]').getBoundingClientRect();const b=document.querySelector('[aria-label="抽一張世界卡"]').getBoundingClientRect();const i=document.querySelector('[aria-label="世界卡黑金卡背"]');return p.left>=0&&p.right<=innerWidth&&b.bottom<=innerHeight&&i&&[...i.querySelectorAll('img')].every(x=>x.complete&&x.naturalWidth>0)})()`),'card and button fit '+width);
  await shot('ready-'+width);
- await run(`(()=>{const b=document.querySelector('[aria-label="抽一張世界卡"]');for(let i=0;i<5;i++)b.click()})()`);await wait(1000);
+ await run(`(()=>{const b=document.querySelector('[aria-label="抽一張世界卡"]');for(let i=0;i<5;i++)b.click()})()`);await wait(180);
+ check(await run(`Number(getComputedStyle(document.querySelector('[data-testid=world-draw-details]')).opacity)<1`),'details withheld during reveal');
+ await shot('gather-'+width);await wait(1600);
+ check(await run(`Number(getComputedStyle(document.querySelector('[data-testid=world-draw-details]')).opacity)===1`),'details revealed after ritual');
  let state=await read();check(state.collection.length===1&&state.orbs===48,'single draw, no points');const card=state.draws[0].cardId;check(!!card,'draw saved');await shot('revealed-'+width);
  await reload();check((await read()).draws[0].cardId===card&&(await read()).collection.length===1,'same reveal after reload');
  await click('收下世界卡');check((await read()).draws.length===0&&(await read()).collection.length===1,'accept only dismisses');
  }
+ await run(`localStorage.setItem('${key}',${JSON.stringify(JSON.stringify(seed))})`);await reload();await run(`document.querySelector('[aria-label="抽一張世界卡"]').click()`);await wait(120);const midway=(await read()).draws[0].cardId;await reload();check((await read()).draws[0].cardId===midway&&(await read()).collection.length===1,'reload mid-animation keeps saved card');
  await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
  await run(`localStorage.setItem('${key}',${JSON.stringify(JSON.stringify(seed))})`);await reload();await click('抽一張世界卡');await wait(400);check((await read()).collection.length===1,'reduced motion draw');
  console.log('PASS 390/320 layout; double-click; persistence; accept; reduced motion; unchanged points');

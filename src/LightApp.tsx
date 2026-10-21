@@ -519,15 +519,16 @@ export default function LightApp() {
     <Modal visible={!!battleGuardian} animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => { if (!challenge || challenge.status === 'won') void closeBattle(); }}><SafeAreaView style={styles.root}><WorldBackdrop scene="focus" />{battleGuardian ? <GuardianBattle guardianId={battleGuardian.id} key={challenge?.id ?? `preview:${battleGuardian.id}`} hero={{name: battleHero.name, image: battleHero.imageSource}} guardian={{name: `${battleGuardian.name} · ${battleGuardian.label}`, image: battleGuardian.image}} cost={challenge?.cost ?? 0} reduced={reduceMotion} won={challenge?.status === 'won'} preview={!challenge} saving={saving} error={error} onWin={() => { if (challenge) void change(s => winGuardianChallenge(s, challenge.id, Date.now())); }} onClose={() => void closeBattle()} onCompanion={() => void closeBattle(true)} /> : null}</SafeAreaView></Modal>
     <Modal visible={!!pending} transparent animationType={reduceMotion ? 'none' : 'fade'} onRequestClose={() => {}}><View style={styles.overlay}><ScrollView contentContainerStyle={styles.modalScroll}><View testID="world-draw-panel" style={[styles.card,styles.drawPanel]}>
       <Text style={[styles.heading,styles.drawHeading]}>{drawnCard ? '你的世界卡！' : '可以抽世界卡了！'}</Text><Text style={styles.drawReason}>{pending?.reason}</Text>
-      <WorldDrawArt key={pending?.id ?? 'no-draw'} source={drawnCard?.imageSource} title={drawnCard?.title} reduced={reduceMotion} height={Math.min(210,Math.max(135,viewportHeight*0.30))}/>
+      <WorldDrawArt key={pending?.id ?? 'no-draw'} source={drawnCard?.imageSource} title={drawnCard?.title} reduced={reduceMotion} height={Math.min(210,Math.max(135,viewportHeight*0.30))} saving={saving} onCollect={()=>change(s=>({...s,draws:(s.draws??[]).slice(1)}))}>
       {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
-      {drawnCard ? <><Text style={styles.section}>{drawnCard.title}</Text><Text style={styles.body}>{drawnCard.desc}</Text><Text style={styles.caption}>{worldRewardLabel(drawnCard.id)}。先收下，再到「世界卡換點數」結算；抽卡本身不會立刻加點。</Text>{button('收下世界卡', () => void change(s => ({ ...s, draws: (s.draws ?? []).slice(1) })))}</> : <><Text style={styles.drawReason}>你的努力，帶來新的世界。</Text>{button('抽一張世界卡', () => void change(s => {
+      {drawnCard ? <><Text style={styles.section}>{drawnCard.title}</Text><Text style={styles.body}>{drawnCard.desc}</Text><Text style={styles.caption}>{worldRewardLabel(drawnCard.id)}。先收下，再到「世界卡換點數」結算；抽卡本身不會立刻加點。</Text></> : <><Text style={styles.drawReason}>你的努力，帶來新的世界。</Text>{button('抽一張世界卡', () => void change(s => {
         const first = s.draws?.[0];
         if (!first || first.cardId) return s;
         const cardId = worldEvents[Math.floor(Math.random() * worldEvents.length)].id;
         const revealed = { ...first, cardId };
         return { ...s, draws: [revealed, ...(s.draws ?? []).slice(1)], collection: [...(s.collection ?? []), revealed] };
       }))}</>}
+      </WorldDrawArt>
     </View></ScrollView></View></Modal>
   </SafeAreaView>;
 }
