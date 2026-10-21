@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: holton-trial
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run export:web
+    startCommand: node server/trial-server.mjs
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: EXPO_PUBLIC_BASE_URL
+        value: ''
+      - key: TRIAL_ACCESS_PASSWORD
+        sync: false
+      - key: PUBLIC_ORIGIN
+        sync: false
