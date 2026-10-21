@@ -22,7 +22,7 @@ const rooms:Record<string,Step[]>={
  parent:[{selector:'[data-testid="parent-nav"]',text:'從這裡切換任務、獎勵、音樂與偏好。重看操作教學在「偏好與舊卡」，不必重置進度。',info:true}],
 };
 export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,hasTask,onMission,onPicker}:{allowed:boolean;room:string;replay:number;phase:string;pickerOpen:boolean;hasTask:boolean;onMission:()=>void;onPicker:()=>void}){
- const [store,setStore]=useState<GuideStore|null>(null),[mode,setMode]=useState<string|null>(null),[index,setIndex]=useState(0),[rect,setRect]=useState<DOMRect|null>(null),[size,setSize]=useState({w:0,h:0}),[notice,setNotice]=useState(''),[tipHeight,setTipHeight]=useState(180);
+ const [store,setStore]=useState<GuideStore|null>(null),[mode,setMode]=useState<string|null>(null),[index,setIndex]=useState(0),[rect,setRect]=useState<DOMRect|null>(null),[size,setSize]=useState({w:0,h:0,top:0,left:0}),[notice,setNotice]=useState(''),[tipHeight,setTipHeight]=useState(180);
  const target=useRef<HTMLElement|null>(null),tip=useRef<HTMLDivElement|null>(null),lastReplay=useRef(0),saveLock=useRef(false);
  const steps=mode==='main'?main:rooms[mode??'']??[];const step=steps[index];
  useEffect(()=>{if(Platform.OS==='web')void AsyncStorage.getItem(GUIDE_KEY).then(raw=>{if(raw)setStore(JSON.parse(raw))});},[]);
@@ -40,18 +40,20 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
  const active=Platform.OS==='web'&&allowed&&!!step;
  useEffect(()=>{
   if(!active||!step){setRect(null);return;}
-  let scrollTarget:HTMLElement|null=null;
+  let scrollTarget:HTMLElement|null=null;let lastScroll=0;
   const measure=()=>{
    const el=document.querySelector<HTMLElement>(step.selector);target.current=el;
-   setSize({w:window.innerWidth,h:window.innerHeight});
+   const vv=window.visualViewport;const view={w:vv?.width??window.innerWidth,h:vv?.height??window.innerHeight,top:vv?.offsetTop??0,left:vv?.offsetLeft??0};setSize(view);
    if(tip.current){const measured=tip.current.offsetHeight;setTipHeight(old=>Math.abs(old-measured)>1?measured:old);}
    if(!el){setRect(null);return;}
-   if(scrollTarget!==el){el.scrollIntoView({block:el.getBoundingClientRect().height>window.innerHeight*.4?'start':'center',inline:'nearest',behavior:'instant' as ScrollBehavior});scrollTarget=el;}
+   const before=el.getBoundingClientRect();const outside=before.bottom<=view.top+8||before.top>=view.top+view.h-8||(before.height<view.h*.4&&(before.top<view.top+8||before.bottom>view.top+view.h-8));
+   // Modal dismissal and late image layout can undo the initial scroll on mobile. Retry until visible.
+   if(scrollTarget!==el||(outside&&Date.now()-lastScroll>300)){lastScroll=Date.now();el.scrollIntoView({block:before.height>view.h*.4?'start':'center',inline:'nearest',behavior:'instant' as ScrollBehavior});scrollTarget=el;}
    const r=el.getBoundingClientRect();setRect(r.width&&r.height?r:null);
   };
   const resized=()=>{scrollTarget=null;measure();};
-  measure();const timer=setInterval(measure,180);window.addEventListener('resize',resized);document.addEventListener('scroll',measure,true);
-  return()=>{clearInterval(timer);window.removeEventListener('resize',resized);document.removeEventListener('scroll',measure,true);};
+  measure();const timer=setInterval(measure,180);window.addEventListener('resize',resized);window.visualViewport?.addEventListener('resize',resized);window.visualViewport?.addEventListener('scroll',measure);document.addEventListener('scroll',measure,true);
+  return()=>{clearInterval(timer);window.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('resize',resized);window.visualViewport?.removeEventListener('scroll',measure);document.removeEventListener('scroll',measure,true);};
  },[active,step]);
  useEffect(()=>{
   if(!active||!step)return;
@@ -77,17 +79,18 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
   return()=>{document.removeEventListener('click',click,true);document.removeEventListener('keydown',key,true);};
  },[active,step,index,mode,store,onMission,onPicker]);
  if(Platform.OS!=='web'||!active)return null;
- const w=size.w||window.innerWidth,h=size.h||window.innerHeight;
- const r=rect?{left:Math.max(0,rect.left-5),right:Math.min(w,rect.right+5),top:Math.max(0,rect.top-5),bottom:Math.min(h,rect.bottom+5)}:{left:0,right:0,top:0,bottom:0};
- const tipWidth=Math.min(340,w-24),below=h-r.bottom>=tipHeight+20;
- const tipTop=rect?(below?r.bottom+10:Math.max(8,r.top-tipHeight-10)):Math.max(12,h/2-90);
- const shade:React.CSSProperties={position:'fixed',background:'rgba(0,10,20,.82)',pointerEvents:'auto',touchAction:'none'};
+ const w=size.w||window.innerWidth,h=size.h||window.innerHeight,viewTop=size.top,viewBottom=viewTop+h;
+ const r=rect?{left:Math.max(0,rect.left-5),right:Math.min(w,rect.right+5),top:Math.min(viewBottom,Math.max(viewTop,rect.top-5)),bottom:Math.max(viewTop,Math.min(viewBottom,rect.bottom+5))}:{left:0,right:0,top:0,bottom:0};
+ const tipWidth=Math.min(340,w-24),below=viewBottom-r.bottom>=tipHeight+20;
+ const desiredTop=rect?(below?r.bottom+10:r.top-tipHeight-10):viewTop+h/2-90;
+ const tipTop=Math.max(viewTop+8,Math.min(viewBottom-tipHeight-8,desiredTop));
+ const shade:React.CSSProperties={position:'fixed',background:'rgba(0,10,20,.82)',pointerEvents:'auto',touchAction:'pan-y'};
  const buttonStyle:React.CSSProperties={border:'1px solid #d8b56c',borderRadius:10,background:'#125368',color:'#fff0c9',padding:'10px 14px',fontSize:14,cursor:'pointer',minHeight:42};
  return createPortal(<div data-testid="spotlight-guide" style={{position:'fixed',inset:0,zIndex:2147483000,pointerEvents:'none',fontFamily:'system-ui,sans-serif'}}>
-  <div style={{...shade,left:0,top:0,width:w,height:r.top}}/><div style={{...shade,left:0,top:r.bottom,width:w,height:h-r.bottom}}/>
+  <div style={{...shade,left:0,top:0,width:w,height:r.top}}/><div style={{...shade,left:0,top:r.bottom,width:w,height:Math.max(0,window.innerHeight-r.bottom)}}/>
   <div style={{...shade,left:0,top:r.top,width:r.left,height:r.bottom-r.top}}/><div style={{...shade,left:r.right,top:r.top,width:w-r.right,height:r.bottom-r.top}}/>
   {rect?<div data-testid="spotlight-hole" style={{position:'fixed',left:r.left,top:r.top,width:r.right-r.left,height:r.bottom-r.top,border:'3px solid #ffe2a0',borderRadius:14,boxSizing:'border-box',boxShadow:'0 0 22px #f7c55977'}}/>:null}
-  <div ref={tip} tabIndex={-1} role="dialog" aria-label="操作教學" aria-live="polite" data-testid="spotlight-tip" style={{position:'fixed',pointerEvents:'auto',left:Math.max(12,Math.min(w-tipWidth-12,rect?(rect.left+rect.right-tipWidth)/2:(w-tipWidth)/2)),top:tipTop,width:tipWidth,maxHeight:Math.max(140,h-tipTop-8),overflowY:'auto',boxSizing:'border-box',background:'#0b3046',color:'#fff0c9',border:'1px solid #e0bd75',borderRadius:16,padding:14,boxShadow:'0 8px 30px #0008'}}>
+  <div ref={tip} tabIndex={-1} role="dialog" aria-label="操作教學" aria-live="polite" data-testid="spotlight-tip" style={{position:'fixed',pointerEvents:'auto',left:Math.max(12,Math.min(w-tipWidth-12,rect?(rect.left+rect.right-tipWidth)/2:(w-tipWidth)/2)),top:tipTop,width:tipWidth,maxHeight:Math.max(80,viewBottom-tipTop-8),overflowY:'auto',boxSizing:'border-box',background:'#0b3046',color:'#fff0c9',border:'1px solid #e0bd75',borderRadius:16,padding:14,boxShadow:'0 8px 30px #0008'}}>
    <div style={{fontSize:13,color:'#e2c682'}}>操作教學 · {index+1}／{steps.length}</div>
    <p style={{fontSize:16,lineHeight:1.55,margin:'7px 0 10px'}}>{rect?step.text:'正在定位操作位置…'}</p>
    {notice?<p role="alert">{notice}</p>:null}
