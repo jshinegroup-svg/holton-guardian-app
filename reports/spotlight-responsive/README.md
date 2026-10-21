@@ -18,3 +18,5 @@ Authorized by Jerry22948, following22946 photos and agreed design.
 - Isolated Chrome320x740,390x844,768x1024,1024x768,1366x900,1024x1366: full-width shell/no overflow/centered responsive layout and parent controls. Screenshots reviewed.
 - Main guide performs actual choices; unrelated clicks blocked; prepare has no deadline/no added points; completion persists after reload. Fresh starter/welcome, skip, legacy no guide, companion once, wish no spending, parent replay. Rotation bounds and real pointer/keyboard checks included.
 - Existing world-draw suite PASS. Synthetic test storage only, not physical iPad validation.
+
+Final PUBLIC verification: bundle4de692e996a87b07043513f7c1b6dc80 matched; Pagesdd8bf04/run39557587755 successful. Full PUBLIC suite PASS, including fresh-welcome skip, actual pointer arrow click, keyboard focus containment and rotation. Public screenshots include distinct width x height names. No physical iPad verification.

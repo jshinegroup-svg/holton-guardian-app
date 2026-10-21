@@ -58,10 +58,10 @@ try {
  for(const [width,height] of [[320,740],[390,844],[768,1024],[1024,768],[1366,900],[1024,1366]]){
   await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<1100});await setSeed(done);
   const bounds=await run(`(()=>{const r=document.querySelector('[data-testid=immersive-world]').getBoundingClientRect();const p=document.querySelector('[data-testid=main-scroll]').firstElementChild.getBoundingClientRect();return {root:r.width,left:p.left,right:p.right,width:p.width,overflow:document.documentElement.scrollWidth>innerWidth}})()`);
-  check(bounds.root===width&&!bounds.overflow,'full width/no overflow '+width);check(Math.abs(bounds.left-(width-bounds.right))<3,'centered '+width);check(width<700||bounds.width>600,'tablet widened');await shot('village-'+width);
-  await click('開始任務');await shot('mission-'+width);
+  check(bounds.root===width&&!bounds.overflow,'full width/no overflow '+width);check(Math.abs(bounds.left-(width-bounds.right))<3,'centered '+width);check(width<700||bounds.width>600,'tablet widened');await shot('village-'+width+'x'+height);
+  await click('開始任務');await shot('mission-'+width+'x'+height);
   check(await run(`(()=>{const m=document.querySelector('[data-testid=mission-stage]').getBoundingClientRect();const c=document.querySelector('[data-testid=guardian-companion]').getBoundingClientRect();return ${width>=1200||(width>=1000&&width>height)}?c.left>=m.right:c.top>=m.bottom})()`),'mission columns '+width);
-  await click('回到村莊');await parent();await click('任務與目標');await shot('parent-'+width);
+  await click('回到村莊');await parent();await click('任務與目標');await shot('parent-'+width+'x'+height);
  }
  // Legacy player lacking a tutorial key must never get forced into a new guide.
  await run(`localStorage.removeItem('${guideKey}')`);await reload();check(!await run(`!!document.querySelector('[data-testid=spotlight-guide]')`),'legacy guide omitted');
