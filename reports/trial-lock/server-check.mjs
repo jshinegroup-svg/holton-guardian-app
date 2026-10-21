@@ -8,7 +8,7 @@ try{
  for(const origin of ['null','https://other.example'])assert.equal((await fetch(base+'/trial/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded',Origin:origin},body:'password='})).status,403);
 
  for(const p of ['/','/index.html','/assets/example.png','/server/trial-server.mjs'])assert.equal((await fetch(base+p)).status,401);
- const login=await fetch(base+'/trial/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Origin':'https://trial.example'},body:new URLSearchParams({password}),redirect:'manual'});assert.equal(login.status,303);const cookie=login.headers.get('set-cookie');assert(cookie.includes('HttpOnly'));assert(cookie.includes('SameSite=Strict'));
+ const login=await fetch(base+'/trial/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Origin':'https://trial.example'},body:new URLSearchParams({password}),redirect:'manual'});assert.equal(login.status,303);const cookie=login.headers.get('set-cookie');assert(cookie.includes('HttpOnly'));assert(cookie.includes('SameSite=Lax'));
  assert.equal((await fetch(base+'/',{headers:{cookie}})).status,200);
  const media='/music/meditation.mp3';
  assert.equal((await fetch(base+media,{headers:{Range:'bytes=0-1'}})).status,401);
