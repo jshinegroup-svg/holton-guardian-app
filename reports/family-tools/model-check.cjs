@@ -8,3 +8,7 @@ const row=(id,at,extra={})=>({id,title:id,at,minutes:5,...extra});const history=
 console.log('PASS roundtrip preserves all data; corrupt/version/negative/malformed/active/unknown/oversize/duplicate rejected; Taipei Monday boundary, future exclusion, dedup and help count.');
 
 for(const t of music.exports.focusMusicTracks)a.equal(parseBackup(createBackup({...state,focusMusicTrackId:t.id})).state.focusMusicTrackId,t.id);a.throws(()=>createBackup({...state,focusMusicTrackId:'unknown-track'}));console.log('PASS all20 track IDs backup roundtrip; unknown track rejected');
+
+for(const id of ['pip','hop','bomo'])a.equal(parseBackup(createBackup({...state,starterChoiceVersion:1,starterCompanionId:id})).state.starterCompanionId,id);
+a.throws(()=>createBackup({...state,starterCompanionId:'fox'}));a.throws(()=>createBackup({...state,starterChoiceVersion:2}));
+console.log('PASS starter backup IDs/version and legacy compatibility');
