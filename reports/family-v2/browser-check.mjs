@@ -40,7 +40,7 @@ try{for(const [width,height] of [[320,568],[390,600],[844,390],[900,700]]){
  await panels.nth(1).getByRole('button',{name:'完成任務',exact:true}).click();await p.waitForFunction(()=>document.querySelectorAll('[data-testid="duo-child-task"]')[1]?.textContent.includes('準備收尾'));
  await panels.nth(1).getByTestId('primary-action').click();await p.waitForFunction(()=>document.querySelectorAll('[data-testid="duo-child-task"]')[1]?.textContent.includes('完成了！'));
  assert.equal(saves.get(a).state.orbs,10);assert.equal(saves.get(a).state.phase,'active');assert.equal(saves.get(b).state.orbs,32);assert.equal(completions,1);
- await panels.nth(0).getByRole('button',{name:'進入個人畫面',exact:true}).click();await p.getByRole('button',{name:'家庭選擇',exact:true}).click();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await panels.nth(0).waitFor();assert.equal(saves.get(a).state.phase,'active');
+ await panels.nth(0).getByRole('button',{name:'進入個人畫面',exact:true}).click();await p.getByRole('button',{name:'冒險小隊',exact:true}).click();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await panels.nth(0).waitFor();assert.equal(saves.get(a).state.phase,'active');
  assert.equal(await p.evaluate(()=>localStorage.getItem('holton-guardian-app::light-v1')),'original-v1-sentinel');
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await p.screenshot({path:`reports/family-v2/duo-${process.env.TEST_BASE_URL?'public-':''}${width}.png`,fullPage:true});
