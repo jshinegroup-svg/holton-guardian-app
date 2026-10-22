@@ -30,7 +30,7 @@ const rooms:Record<string,Step[]>={
  ],
  companions:[{selector:'[data-testid="guardian-companion"] [aria-label^="摸摸"]',text:'點一下夥伴，他會發光、用文字泡泡陪你，不會花點數。'},{selector:'[aria-label="我的守護獸收藏"]',text:'點這裡打開收藏；點已擁有的角色，就能選他今天陪你。',info:true,passThrough:true}],
  wishes:[{selector:'[data-testid="wish-guide-card"], [data-testid="wish-guide-empty"]',text:'這是心願卡與需要的點數。點數足夠時可以選取，最後確認才扣點；教學不會替你兌換。',info:true}],
- parent:[{selector:'[aria-label="任務與目標"]',text:'先點「任務與目標」看看設定。也能切換其他分類；重看操作教學在「偏好與舊卡」。',info:true,passThrough:true}],
+ parent:[{selector:'[aria-label="任務與目標"]',text:'先點「任務與目標」看看設定。也能切換其他分類；重看操作教學在「設定與教學」。',info:true,passThrough:true}],
 };
 export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,hasTask,onMission,onPicker,onMusicDone,onResumeChange}:{allowed:boolean;room:string;replay:number;phase:string;pickerOpen:boolean;hasTask:boolean;onMission:()=>void;onPicker:()=>void;onMusicDone:()=>void;onResumeChange:(available:boolean)=>void}){
  const [store,setStore]=useState<GuideStore|null>(null),[mode,setMode]=useState<string|null>(null),[index,setIndex]=useState(0),[rect,setRect]=useState<DOMRect|null>(null),[size,setSize]=useState({w:0,h:0,top:0,left:0}),[notice,setNotice]=useState(''),[tipHeight,setTipHeight]=useState(180),[confirmSkip,setConfirmSkip]=useState(false);
@@ -122,7 +122,7 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
   <div style={{...shade,left:0,top:r.top,width:r.left,height:r.bottom-r.top}}/><div style={{...shade,left:r.right,top:r.top,width:Math.max(0,layoutW-r.right),height:r.bottom-r.top}}/>
   {rect?<div data-testid="spotlight-hole" style={{position:'fixed',left:r.left,top:r.top,width:r.right-r.left,height:r.bottom-r.top,border:'3px solid #ffe2a0',borderRadius:14,boxSizing:'border-box',boxShadow:'0 0 22px #f7c55977'}}/>:null}
   <div ref={tip} tabIndex={-1} role="dialog" aria-label="操作教學" aria-live="polite" data-testid="spotlight-tip" style={{position:'fixed',pointerEvents:'auto',left:tipLeft,top:tipTop,width:tipWidth,maxHeight:Math.max(80,viewBottom-tipTop-8),overflowY:'auto',boxSizing:'border-box',background:'#0b3046',color:'#fff0c9',border:'1px solid #e0bd75',borderRadius:16,padding:14,boxShadow:'0 8px 30px #0008'}}>
-   {confirmSkip?<><h2 style={{fontSize:20,margin:'0 0 8px'}}>✨ 想先自己探索嗎？</h2><p style={{fontSize:16,lineHeight:1.55}}>教學還沒結束喔！繼續跟著操作，認識更多功能，讓第一次冒險更順手。也可以先自己試試看。</p><p style={{fontSize:13,lineHeight:1.5}}>之後想再看，可以到「家長小屋 → 偏好與舊卡 → 重新觀看操作教學」。</p>{notice?<p role="alert">{notice}</p>:null}<div style={{display:'flex',flexDirection:'column',gap:8}}><button style={buttonStyle} onClick={()=>setConfirmSkip(false)}>繼續帶我玩</button><button style={{...buttonStyle,background:'transparent'}} onClick={()=>void finish(true)}>先自己探索</button></div></>:<>
+   {confirmSkip?<><h2 style={{fontSize:20,margin:'0 0 8px'}}>✨ 想先自己探索嗎？</h2><p style={{fontSize:16,lineHeight:1.55}}>教學還沒結束喔！繼續跟著操作，認識更多功能，讓第一次冒險更順手。也可以先自己試試看。</p><p style={{fontSize:13,lineHeight:1.5}}>之後想再看，可以到「家長小屋 → 設定與教學 → 重新觀看操作教學」。</p>{notice?<p role="alert">{notice}</p>:null}<div style={{display:'flex',flexDirection:'column',gap:8}}><button style={buttonStyle} onClick={()=>setConfirmSkip(false)}>繼續帶我玩</button><button style={{...buttonStyle,background:'transparent'}} onClick={()=>void finish(true)}>先自己探索</button></div></>:<>
    <div style={{fontSize:13,color:'#e2c682'}}>操作教學 · {index+1}／{steps.length}</div>
    <p style={{fontSize:16,lineHeight:1.55,margin:'7px 0 10px'}}>{rect?step.text:'正在定位操作位置…'}</p>
    {notice?<p role="alert">{notice}</p>:null}
