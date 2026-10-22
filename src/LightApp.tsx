@@ -394,7 +394,6 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       {parentTab==='preferences'?<>
       {button('修改家長密碼',()=>setChangePin(true),true)}
       {button('重新觀看操作教學',()=>{void (async()=>{if(state.phase==='done'&&!await change(s=>({...s,phase:'ready',deadline:null,help:false,remaining:s.minutes*60})))return;await storage.removeItem(MUSIC_HINT_KEY);navigateRoom('village');setTutorialReplay(n=>Math.abs(n)+1);})();},true,!homePhase)}
-      {button('再看新手帶領',()=>setIntroReplay(true),true,!homePhase)}
       <View style={styles.card} testID="guardian-exchange-setting"><Text style={styles.section}>守護獸兌換時間</Text>
         <Pressable accessibilityRole="switch" accessibilityLabel="僅限星期日兌換" aria-checked={state.guardianSundayOnly!==false} accessibilityState={{checked:state.guardianSundayOnly!==false,disabled:saving}} disabled={saving} onPress={()=>void change(s=>({...s,guardianSundayOnly:s.guardianSundayOnly===false}))} style={styles.secondarySetting}><Text style={styles.section}>僅限星期日兌換：{state.guardianSundayOnly===false?'關閉':'開啟'}</Text></Pressable>
         <Text style={styles.body}>{state.guardianSundayOnly===false?'已開放隨時兌換守護獸，不限星期幾。':'僅在台北時間星期日開放守護獸兌換；關閉後可隨時兌換。'}</Text>
