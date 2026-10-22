@@ -5,7 +5,7 @@ import path from 'node:path';
 import {randomUUID,randomInt} from 'node:crypto';
 import assert from 'node:assert/strict';
 const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=path.resolve('dist','.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(path.resolve('dist')+path.sep)){res.writeHead(403).end();return;}const data=await readFile(file);const ext=path.extname(file);res.setHeader('Content-Type',ext==='.js'?'application/javascript':ext==='.html'?'text/html':ext==='.png'?'image/png':ext==='.jpg'?'image/jpeg':'application/octet-stream');res.end(data);}catch{res.writeHead(404).end();}});
-await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}`;
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=process.env.TEST_BASE_URL||`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
 try{for(const width of [320,390,900]){
  const family=randomUUID(),user=randomUUID(),a=randomUUID(),b=randomUUID();
@@ -34,7 +34,7 @@ try{for(const width of [320,390,900]){
  await panels.nth(0).getByRole('button',{name:'進入個人畫面',exact:true}).click();await p.getByRole('button',{name:'回雙人畫面',exact:true}).click();await panels.nth(0).waitFor();assert.equal(saves.get(a).state.phase,'active');
  assert.equal(await p.evaluate(()=>localStorage.getItem('holton-guardian-app::light-v1')),'original-v1-sentinel');
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
- await p.screenshot({path:`reports/family-v2/duo-${width}.png`,fullPage:true});
+ await p.screenshot({path:`reports/family-v2/duo-${process.env.TEST_BASE_URL?'public-':''}${width}.png`,fullPage:true});
  await p.reload();console.log('select children');await p.getByRole('button',{name:'哥哥 · 8 歲',exact:true}).click();await p.getByRole('button',{name:'妹妹 · 6 歲',exact:true}).click();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await p.getByTestId('duo-child-task').nth(1).waitFor();console.log('duo ready');assert.equal(saves.get(b).state.orbs,31);assert.equal(completions,1);assert.deepEqual(errors,[]);
  console.log(`PASS ${width}: sibling isolation, independent timers, completion once, expand/back, reload, V1 intact, no overflow/JS errors`);await context.close();
 }}finally{await browser.close();server.close();}

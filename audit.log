@@ -106,3 +106,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-21 actor=bot approval=Jerry22948 trigger=public-verification | Full responsive/spotlight PUBLIC suite PASS; deployment successful; screenshots refreshed.
 2026-10-22 actor:bot approval:user-request trigger:23119 create isolated V2 foundation, draft unapplied RLS migration, tests; V1 unchanged
 2026-10-22 actor:bot approval:user-request trigger:23122 family V2 on external APFS image; dedicated Supabase schema, account/duo UI and tests; V1 untouched
+2026-10-22 actor:bot approval:user-request trigger:23122 verify separate V2 hosted preview; auth configuration pending; V1 unchanged

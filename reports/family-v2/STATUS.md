@@ -36,3 +36,6 @@ Full V1 live-data migration requires export from actual phone; no real child pro
 [RPC definer advisory](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable): intentional owner-checking RPC with fixed empty search_path; cross-family denial tested.
 [No-policy advisory](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy): child_operations/app_admins are intentionally inaccessible directly to clients, only accessed by checked functions.
 These are not proof of an independently audited or tamper-proof rewards system. JSON progress is owner-authorized.
+
+## Hosted preview verification
+Render static preview https://holton-family-v2.onrender.com/ deployed source5c391dd via dep-dbcqk00m7kps73ck4smg at14:17:09 Taipei. Service srv-dbcqjvgm7kps73ck4rng; auto-deployOff. Hosted AppEntry-9e9b6ac8932e10420ec0e8d3530d34d7.js matches local. Anonymous public login/registration UI, password masking, blank validation and no-JS-error/overflow checks PASS without submitting any registration email. Hosted assets + mocked cloud320/390/900 duo regression PASS; this is not real authenticated cloud end-to-end. Real Supabase anonymous REST returns no readable rows. Await owner dashboard login for auth URL/email configuration.
