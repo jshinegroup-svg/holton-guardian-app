@@ -21,10 +21,11 @@ export function WorldChrome() {
   return React.createElement('style', {}, `
 [data-testid="immersive-world"] {background:#082f43}
 [data-testid="world-title"] {position:relative;border:3px solid #c6a153!important;border-radius:8px 8px 20px 20px!important;box-shadow:inset 0 0 0 2px #254e5f,inset 0 0 0 4px #ddc58a,0 5px 9px #061b2677;background:linear-gradient(110deg,#092b41,#1b5266 48%,#092b41)!important;margin:22px 24px 18px;padding:16px 20px 10px!important}
+[data-testid="world-title"] [data-testid="family-header-entry"]{left:-24px!important;right:auto!important;min-width:44px;min-height:44px;width:auto!important}
 [data-testid="world-title"]:before {content:'◆';position:absolute;left:calc(50% - 14px);top:-26px;color:#52e5ee;font-size:34px;text-shadow:0 2px #d4af5e,2px 0 #e6c67c,-2px 0 #e6c67c,0 0 12px #32dbea}
 [data-testid="world-title"] [role="button"] {position:absolute;right:-24px;top:-20px;border:1px solid #c7af70;border-radius:7px;padding:0 9px;background:#0b354c}
 [data-testid="world-title"] [role="button"]>div{font-size:12px;padding:9px 0}
-[data-testid="world-title"]>div:first-child{align-items:center;width:100%}
+[data-testid="world-title"]>div:not([role="button"]){align-items:center;width:100%}
 [data-testid="mission-stage"]{gap:7px!important;padding:0 4px!important}
 [data-testid="mission-stage"]>[data-testid="mission-name"]{align-self:center;max-width:100%;min-width:65%;border:2px solid #d5b976;border-radius:9px 9px 18px 18px;background:linear-gradient(#19536a,#092b42)!important;box-shadow:inset 0 0 0 2px #071d2f,0 3px 7px #09263399;font-size:20px!important;line-height:27px!important;padding:5px 14px!important}
 [data-testid="immersive-world"] [data-testid="primary-action"],[data-testid="focus-complete"]{background:linear-gradient(#6ce4e5 0%,#10a6b6 18%,#027489 65%,#034458 100%)!important;border:3px solid #e0bf77!important;box-shadow:inset 0 0 0 2px #06445b,inset 0 3px 2px #d2ffffb0,0 4px 0 #5c5b45,0 6px 10px #092a38aa;min-height:51px!important;padding:9px 15px!important;margin:2px 3px}
