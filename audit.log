@@ -115,3 +115,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 
 2026-10-22 actor:bot approval:Jerry23167 trigger:v2-simplification merge V1 fixes, two-name management, optional age and DB cap preserving existing profiles, shared start independent timers; verified local browser and DB fixtures.
 2026-10-22 actor:bot approval:Jerry23167 trigger:v2-live verified hosted source76fe313 and three viewport mock-cloud flows; existing children untouched.
+
+2026-10-22 actor=bot approval=Jerry23223 trigger=personal-companion-greetings | Add live adventurer names with four moods alternating original personality lines; solo/collection/duo, bounded wrapping/no audio. Typecheck/export/reply-model and four viewport mock-cloud browser tests PASS, rename/isolation/guardian-rest/long-name/timers/rewards verified.

@@ -8,3 +8,11 @@ for(const id of ['tidefin','stoneback','emberwing','steel-eagle','bramblefang'])
 assert.deepEqual(Array.from(ctx.exports.companionReplies('unknown','rest')),Array.from(ctx.exports.companionReplies('guardian','rest')));
 const signatures=['tidefin','stoneback','emberwing','steel-eagle','bramblefang'].map(id=>JSON.stringify(ctx.exports.companionReplies(id,'ready')));assert.equal(new Set(signatures).size,5);
 console.log('PASS 96 character replies plus12 fallback; 12 unique short lines per character,4 moods, all20 guardian stages route to species');
+
+for(const id of ['pip','hop','bomo','tidefin','stoneback','emberwing','steel-eagle','bramblefang'])for(const mood of ['ready','focus','rest','done']){
+ const originals=ctx.exports.companionReplies(id,mood);
+ for(let t=0;t<6;t++){const text=ctx.exports.companionReply(id,mood,t,'Holton');if(t%2)assert.equal(text,originals[Math.floor(t/2)]);else assert(text.includes('Holton'));}
+ assert.equal(ctx.exports.companionReply(id,mood,0,''),originals[0]);
+}
+assert.equal(ctx.exports.companionReply('pip','rest',0,'Holton'),'Holton，伸個懶腰，補充能量吧！');
+console.log('PASS personalized four moods alternate with all original personality lines, empty name fallback');

@@ -60,3 +60,13 @@ export function companionReplies(id:string,mood:CompanionMood):readonly string[]
  const character=Object.prototype.hasOwnProperty.call(replies,species)?species as keyof typeof replies:'guardian';
  return replies[character][mood];
 }
+
+/** Personal encouragement alternates with every original character line. */
+export function companionReply(id:string,mood:CompanionMood,turn:number,adventurerName=''):string {
+ const lines=companionReplies(id,mood);
+ const name=Array.from(adventurerName.replace(/\s+/g,' ').trim()).slice(0,20).join('');
+ if(!name)return lines[turn%lines.length];
+ if(turn%2!==0)return lines[Math.floor(turn/2)%lines.length];
+ const personal={ready:`${name}，我們一起加油吧！`,focus:`${name}，我陪你，一步一步來。`,done:`太棒了，${name}！又完成一個任務！`,rest:`${name}，伸個懶腰，補充能量吧！`};
+ return personal[mood];
+}
