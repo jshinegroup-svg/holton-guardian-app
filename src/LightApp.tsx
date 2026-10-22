@@ -439,7 +439,7 @@ export default function LightApp() {
         {button('我準備好了，開始！', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'active', taskReminderShown:false, focusElapsedMs:0,focusStartedAt:Date.now(), help: false, deadline: s.minutes === 0 ? null : Date.now() + s.minutes * 60000, remaining: s.minutes * 60 })))}
         {button('回去選時間卡', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'ready', deadline: null })), true)}
       </> : state.phase === 'finishing' ? <>
-        <Image source={finishImage} accessibilityLabel={`${finish.title} 收尾鼓勵卡`} style={styles.ritualArt} resizeMode="contain" />
+        <Image source={finishImage} accessibilityLabel={`${finish.title} 收尾鼓勵卡`} style={[styles.ritualArt,{width:'85%',height:238,alignSelf:'center'}]} resizeMode="contain" />
         <Text style={styles.section}>{finish.title}</Text>{usedHelpNames ? <Text style={styles.caption}>這輪你選了{usedHelpNames}，表達自己的需要也是重要的一步。</Text> : null}<Text style={styles.quote}>{finish.line}</Text>
         {button(finish.button, () => void change(completeTask))}
         {button('還有一點，回去繼續', () => void change(s => s.phase !== 'finishing' ? s : ({ ...s, phase: 'active', focusStartedAt:Date.now(), deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000, help: false })), true)}
