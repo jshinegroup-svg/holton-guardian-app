@@ -44,5 +44,18 @@ try{for(const [width,height] of [[320,568],[390,600],[844,390],[900,700]]){
  await p.screenshot({path:`reports/family-v2/duo-${process.env.TEST_BASE_URL?'public-':''}${width}.png`,fullPage:true});
  await p.reload();console.log('select children');await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await p.getByTestId('duo-child-task').nth(1).waitFor();console.log('duo ready');assert.equal(saves.get(b).state.orbs,32);assert.equal(completions,1);assert.deepEqual(errors,[]);
  await panels.nth(1).getByRole('button',{name:'下一個任務',exact:true}).click();await panels.nth(1).getByLabel('任務時間（分鐘）',{exact:true}).fill('15');const siblingDeadline=saves.get(a).state.deadline;await panels.nth(1).getByRole('button',{name:'開始任務',exact:true}).click();await p.waitForFunction(()=>document.querySelectorAll('[data-testid="duo-child-task"]')[1]?.textContent.includes('努力中'));assert.equal(saves.get(a).state.deadline,siblingDeadline);assert.equal(saves.get(b).state.minutes,15);
+ // Complete solo mode must keep the same child save, remove chrome, and survive reload.
+ const beforeSolo=[saves.get(a).state.deadline,saves.get(b).state.deadline,saves.get(a).state.orbs,saves.get(b).state.orbs];
+ await panels.nth(0).getByRole('button',{name:'進入個人畫面',exact:true}).click();
+ const village=async()=>{await p.getByTestId('immersive-world').filter({visible:true}).waitFor();if(!await p.getByRole('button',{name:'家長小屋',exact:true}).count())await p.getByRole('button',{name:'回到村莊',exact:true}).click();await p.getByRole('button',{name:'家長小屋',exact:true}).waitFor();};
+ const unlock=async()=>{await village();await p.getByRole('button',{name:'家長小屋',exact:true}).click();await p.getByLabel('6 位數家長密碼',{exact:true}).fill(value);await p.getByRole('button',{name:'確認',exact:true}).click();await p.getByTestId('family-mode-settings').waitFor();};
+ await unlock();await p.getByRole('button',{name:'改為完整單人模式',exact:true}).click();
+ await p.waitForFunction(()=>!document.querySelector('[data-testid="family-game-nav"]'));
+ assert.deepEqual([saves.get(a).state.deadline,saves.get(b).state.deadline,saves.get(a).state.orbs,saves.get(b).state.orbs],beforeSolo);
+ await p.reload();await village();assert.equal(await p.getByTestId('family-game-nav').count(),0);assert.equal(await p.getByRole('button',{name:'開始雙人冒險',exact:true}).count(),0);
+ await p.screenshot({path:`reports/family-v2/solo-${width}.png`});await unlock();await p.getByRole('button',{name:'切換孩子／雙人模式',exact:true}).click();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).waitFor();
+ await p.getByRole('button',{name:'只有 妹妹 玩',exact:true}).click();await village();assert.equal(await p.getByTestId('family-game-nav').count(),0);assert.equal(await p.evaluate(family=>localStorage.getItem(`holton-family-v2::${family}::solo-child`),family),b);
+ await p.reload();await village();await unlock();await p.getByRole('button',{name:'切換孩子／雙人模式',exact:true}).click();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await panels.nth(1).waitFor();assert.deepEqual([saves.get(a).state.deadline,saves.get(b).state.deadline,saves.get(a).state.orbs,saves.get(b).state.orbs],beforeSolo);
+ assert.deepEqual(errors,[]);console.log('PASS solo: no top chrome, parent-only mode controls, reload remembered, switch child, return duo, deadlines/balances intact');
  console.log(`PASS ${width}: sibling isolation, independent timers, completion once, expand/back, reload, V1 intact, no overflow/JS errors`);await context.close();
 }}finally{await browser.close();server.close();}
