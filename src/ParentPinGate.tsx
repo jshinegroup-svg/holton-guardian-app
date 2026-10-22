@@ -1,3 +1,4 @@
+import PasswordInput from './PasswordInput';
 import {useFamilyStorage} from './family/context';
 import React,{useEffect,useRef,useState} from 'react';
 import {Modal,View,Text,TextInput,Pressable,ScrollView} from 'react-native';
@@ -14,7 +15,7 @@ export function ParentPinGate({visible,onConfirm,onCancel,change=false}:{visible
  else throw Error(mode==='recovery'?'復原碼不正確。':'家長密碼不正確。');
  }catch(e){setNotice(e instanceof Error?e.message:'操作失敗，請再試一次。');}finally{lock.current=false;setBusy(false);}};
  const button=(label:string,fn:()=>void)=><Pressable accessibilityRole="button" accessibilityLabel={label} disabled={busy} onPress={fn} style={{padding:15,backgroundColor:'#086b80',borderRadius:14,marginTop:12}}><Text style={{color:'#fff',textAlign:'center',fontSize:18}}>{label}</Text></Pressable>;
- const input=(label:string,v:string,fn:(v:string)=>void)=><TextInput accessibilityLabel={label} placeholder={label} placeholderTextColor="#9db6bd" secureTextEntry autoComplete="off" value={v} onChangeText={fn} keyboardType={mode==='recovery'?'default':'number-pad'} maxLength={mode==='recovery'?32:6} style={{fontSize:18,color:'#fff',borderColor:'#c3a65c',borderWidth:1,padding:14,borderRadius:12,marginTop:12}}/>;
+ const input=(label:string,v:string,fn:(v:string)=>void)=><PasswordInput key={`${label}-${visible}-${mode}`} resetKey={`${visible}-${mode}`} accessibilityLabel={label} placeholder={label} placeholderTextColor="#9db6bd" autoComplete="off" value={v} onChangeText={fn} keyboardType={mode==='recovery'?'default':'number-pad'} maxLength={mode==='recovery'?32:6} style={{fontSize:18,color:'#fff',borderColor:'#c3a65c',borderWidth:1,padding:14,borderRadius:12,marginTop:12}}/>;
  return <Modal visible={visible} transparent onRequestClose={()=>!busy&&onCancel()}><View style={{flex:1,backgroundColor:'rgba(0,0,0,.8)',justifyContent:'center',padding:20}}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{flexGrow:1,justifyContent:'center',alignItems:'center'}}><View testID="parent-pin-gate" style={{width:'100%',maxWidth:440,padding:24,backgroundColor:'#082b3d',borderRadius:20}}><Text style={{color:'#fff0b3',fontSize:24,fontWeight:'bold'}}>{mode==='setup'?'設定家長密碼':mode==='keep'?'請保管家長復原碼':mode==='recovery'?'使用復原碼':'家長小屋解鎖'}</Text><Text style={{color:'#d5e5e9',marginTop:12}}>這台裝置專用，與試玩通關密碼不同。請由家長操作，不要告訴孩子。</Text>
  {mode==='verify'||mode==='setup'||mode==='recovery'?input(mode==='recovery'?'家長復原碼':'6 位數家長密碼',value,setValue):null}
  {mode==='setup'?input('再次輸入家長密碼',repeat,setRepeat):null}
