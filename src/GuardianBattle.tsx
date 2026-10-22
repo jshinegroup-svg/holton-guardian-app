@@ -1,3 +1,4 @@
+import EnergyAmount from './EnergyAmount';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
@@ -39,7 +40,7 @@ function LegacyGuardianBattle({ hero, guardian, cost, reduced, won, preview = fa
   return <ScrollView contentContainerStyle={s.page} testID="guardian-battle">
     <Text style={s.kicker}>{preview ? '動畫預覽 · 不扣點／不取得卡片' : '天空基地 · 夥伴挑戰'}</Text>
     <Text style={s.title}>{won ? '新的守護夥伴！' : lines[step]}</Text>
-    <Text style={s.body}>{preview ? '看看你與守護獸相遇的時刻。' : won ? '牠認可了你的勇氣，願意陪你一起成長。' : `已使用 ${cost} 點 · 這場試煉一定能成功`}</Text>
+    <Text style={s.body}>{preview ? '看看你與守護獸相遇的時刻。' : won ? '牠認可了你的勇氣，願意陪你一起成長。' : <>已使用 <EnergyAmount kind="cost" value={cost}/> · 這場試煉一定能成功</>}</Text>
     <View style={s.arena} testID="battle-arena">
       <View style={s.ring} />
       <Animated.View pointerEvents="none" style={[s.aura, { opacity: reduced || won ? 0.18 : aura, transform: [{ scale: reduced ? 1 : aura.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.15] }) }] }]} />

@@ -1,3 +1,4 @@
+import EnergyAmount from './EnergyAmount';
 import {chapterScene} from './ChapterScenery';
 import {chapterSceneIndex} from './lib/journeys';
 import type {WorldId} from './lib/journeys';
@@ -67,7 +68,7 @@ export function RewardArrival({ reward, balance, reduced, animate }: { reward: n
   return <View style={s.arrival} testID="sky-reward-arrival">
     <Text style={s.eyebrow}>能量回到基地</Text>
     <View style={s.rewardRow}><View style={s.orbTrack}><Animated.View pointerEvents="none" style={[s.orb, { transform: [{ translateX: travel.interpolate({ inputRange: [0, 1], outputRange: [-75, 0] }) }, { scale: travel.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) }] }]}><Image source={require('../assets/ui/energy/blue-orb.png')} accessibilityLabel="藍色能量球" resizeMode="contain" style={{width:78,height:78}}/></Animated.View></View>
-    <Text style={s.reward}>＋{reward}</Text></View><Text style={s.balance}>現在共有 {balance} 顆能量球</Text>
+    <Text style={s.reward}>＋{reward}</Text></View><Text style={s.balance}>現在共有 <EnergyAmount value={balance} size={22} style={s.balance}/></Text>
     {playing ? <Pressable accessibilityRole="button" accessibilityLabel="略過慶祝動畫" onPress={() => { motionRef.current?.stop(); travel.setValue(1); setPlaying(false); }} style={s.skip}><Text style={s.heroLine}>略過動畫</Text></Pressable> : null}
   </View>;
 }

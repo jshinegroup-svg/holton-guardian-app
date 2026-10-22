@@ -121,3 +121,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-22 actor=bot approval=Jerry23229 trigger=village-entry-layout | Enlarge start/resume title26px, task20px and journey16px; move task/progress to right column, retain full-card action and wrapping. Typecheck/export/four-viewport existing browser suite PASS;320 screenshot reviewed.
 
 2026-10-22 actor=bot approval=Jerry23232 trigger=remove-intro-replay-button | Remove only 再看新手帶領 from parent settings; retain 重新觀看操作教學 and first-run onboarding.
+
+2026-10-22 actor=bot approval=Jerry23237 trigger=energy-icon-display | Shared original blue orb with balance×/gain+/cost− across player amounts; no arithmetic or persistence changes. Typecheck/export/lint,4viewport mock-cloud regression and wish debit checks PASS.

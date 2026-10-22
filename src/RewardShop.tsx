@@ -1,3 +1,4 @@
+import EnergyAmount from './EnergyAmount';
 import DeferredCardImage from './DeferredCardImage';
 import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
@@ -48,7 +49,7 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
   const [selected, setSelected] = useState<Wish[]>([]);
   const submitting = useRef(false);
   const [note, setNote] = useState('');
-  const action = (label: string, fn: () => void, disabled = false) => <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled || saving} onPress={fn} style={({pressed})=>[s.button, pressed && s.pressed, (disabled || saving) && { opacity: .45 }]}><Text style={s.text}>{label}</Text></Pressable>;
+  const action = (label: string, fn: () => void, disabled = false, content?:React.ReactNode) => <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled || saving} onPress={fn} style={({pressed})=>[s.button, pressed && s.pressed, (disabled || saving) && { opacity: .45 }]}><Text style={s.text}>{content??label}</Text></Pressable>;
   const edit=(id:string,patch:Partial<Wish>)=>setDraft(old=>old.map(w=>w.id===id?{...w,...patch}:w));
   const total = selected.reduce((sum, w) => sum + w.cost, 0);
   const toggle = (wish: Wish) => {
@@ -70,7 +71,7 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
       else setNote('尚未完成兌換。請核對點數與品項，或稍後再試；選擇已保留。');
     } finally { submitting.current = false; }
   };
-  return <View style={s.panel}><Text testID={!data.shopEnabled||!catalog(data.wishes).some(w=>w.enabled&&w.name.trim()&&w.cost>0)?"wish-guide-empty":undefined} style={s.title}>✧ 心願小屋</Text><Text style={s.text}>可用能量球 {data.orbs} 顆</Text>
+  return <View style={s.panel}><Text testID={!data.shopEnabled||!catalog(data.wishes).some(w=>w.enabled&&w.name.trim()&&w.cost>0)?"wish-guide-empty":undefined} style={s.title}>✧ 心願小屋</Text><Text style={s.text}>可用 <EnergyAmount value={data.orbs}/></Text>
     {settings ? <>
       <Text style={s.text}>由大人決定是否開放。關閉不扣點、不清空餘額，也不影響守護獸收藏。這是共同設定，不是家長身分驗證。</Text>
       {action(`生活獎勵：${data.shopEnabled ? '開啟' : '關閉'}`, () => void change(s => ({ ...s, shopEnabled: !s.shopEnabled })))}
@@ -89,7 +90,7 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
       })}
     </> : data.shopEnabled ? <>
       <Text style={s.text}>① 按「我想兌換」選心願，可選多項。② 滑到下方核對，最後一次確認才扣點。</Text>
-      <Text accessibilityLiveRegion="polite" style={s.text}>已選 {selected.length} 項 · 合計 {total} 點</Text>
+      <Text accessibilityLiveRegion="polite" style={s.text}>已選 {selected.length} 項 · 費用 <EnergyAmount kind="cost" value={total}/></Text>
       {catalog(data.wishes).filter(w => w.enabled && w.name.trim() && w.cost > 0).map(w => {
         const picked = selected.some(x => x.id === w.id);
         const unavailable = !picked && total + w.cost > data.orbs;
@@ -97,28 +98,28 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
           <Pressable testID="wish-guide-card" accessibilityRole="button" accessibilityLabel={`${picked?'取消選擇':'選擇'}${w.name}卡片`} aria-pressed={picked} accessibilityState={{disabled:unavailable||saving}} disabled={unavailable||saving} onPress={()=>toggle(w)} style={({pressed})=>[s.cardTap,pressed&&s.pressed]}>
             <Text style={[s.badge,picked&&s.badgeSelected]}>{picked?'✓ 已選取 · 1 張':'點卡片也可以選擇'}</Text>
             <Art wish={w}/>
-            {!w.custom?<Text style={s.title}>{w.name}</Text>:null}{!w.custom&&w.note?<Text style={s.text}>{w.note}</Text>:null}<Text style={s.text}>{w.cost} 點／張</Text>
+            {!w.custom?<Text style={s.title}>{w.name}</Text>:null}{!w.custom&&w.note?<Text style={s.text}>{w.note}</Text>:null}<Text style={s.text}><EnergyAmount kind="cost" value={w.cost}/>／張</Text>
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel={`${picked?'取消選擇':'我想兌換'}${w.name}`} aria-pressed={picked} accessibilityState={{disabled:unavailable||saving}} disabled={unavailable||saving} onPress={()=>toggle(w)} style={({pressed})=>[s.button,picked&&s.selectedButton,pressed&&s.pressed,(unavailable||saving)&&{opacity:.45}]}><Text style={s.text}>{picked?'✓ 已選取｜先不換，取消':'＋ 我想兌換'}</Text></Pressable>
-          {picked?<Text accessibilityLiveRegion="polite" style={s.text}>已加入清單，尚未扣點。共選 {selected.length} 項／{total} 點；往下確認。</Text>:unavailable?<Text style={s.text}>再選這項還差 {total+w.cost-data.orbs} 點，可先取消其他選擇。</Text>:null}
+          {picked?<Text accessibilityLiveRegion="polite" style={s.text}>已加入清單，尚未扣點。共選 {selected.length} 項／<EnergyAmount kind="cost" value={total}/>；往下確認。</Text>:unavailable?<Text style={s.text}>再選這項還差 <EnergyAmount value={total+w.cost-data.orbs}/>，可先取消其他選擇。</Text>:null}
         </View>;
       })}
       {!(data.wishes ?? []).some(w => w.enabled && w.cost > 0) ? <Text style={s.text}>目前還沒有開放的心願，點數會繼續累積。</Text> : null}
       <Text style={s.text}>更多心願：10 張原卡與寶箱／卷軸自訂卡，可請家長在「家長小屋 → 心願獎勵」填寫點數並開放。</Text>
       <View style={s.summary}><Text style={s.title}>最後確認 · 我的兌換清單</Text>
         {!selected.length?<Text style={s.text}>還沒選心願。先在喜歡的卡片按「我想兌換」。</Text>:<>
-          {selected.map(w=><View key={w.id} style={s.item}><Text style={s.text}>{w.name} × 1 · {w.cost} 點</Text>{action(`移除${w.name}`,()=>toggle(w))}</View>)}
-          <Text style={s.title}>{selected.length} 項，共 {total} 點</Text>
-          <Text style={s.text}>{total<=data.orbs?`目前 ${data.orbs} − 兌換 ${total} ＝ 剩餘 ${data.orbs-total} 點`:`點數不足，還差 ${total-data.orbs} 點，請移除部分心願。`}</Text>
+          {selected.map(w=><View key={w.id} style={s.item}><Text style={s.text}>{w.name} × 1 · <EnergyAmount kind="cost" value={w.cost}/></Text>{action(`移除${w.name}`,()=>toggle(w))}</View>)}
+          <Text style={s.title}>{selected.length} 項，費用 <EnergyAmount kind="cost" value={total}/></Text>
+          <Text style={s.text}>{total<=data.orbs?<>目前 <EnergyAmount value={data.orbs}/> → 剩餘 <EnergyAmount value={data.orbs-total}/></>:`點數不足，還差 ${total-data.orbs} 點，請移除部分心願。`}</Text>
           <Text style={s.text}>按下面的確認按鈕，才會一次扣除點數。</Text>
-          {action(`確認兌換 ${selected.length} 項 · ${total} 點`,()=>void checkout(),total>data.orbs)}
+          {action(`確認兌換 ${selected.length} 項 · ${total} 點`,()=>void checkout(),total>data.orbs, <>確認兌換 {selected.length} 項 · <EnergyAmount kind="cost" value={total}/></>)}
           {action('全部先不換',()=>{setSelected([]);setNote('已取消選擇，沒有扣點。');})}
         </>}
       </View>
     </> : <Text style={s.text}>生活獎勵尚未開放。點數繼續累積，不會過期。</Text>}
     {note ? <Text accessibilityRole="alert" style={s.text}>{note}</Text> : null}
     <Text style={s.title}>心願紀錄</Text>
-    {[...(data.wishReceipts ?? [])].reverse().map(r => <View key={r.id} style={s.item}><Text style={s.text}>{r.name} · {r.cost} 點 · {r.fulfilled ? '已實現' : '待實現'}</Text><Text style={s.text}>{new Date(r.at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false})}{r.note?` · 約定：${r.note}`:''}</Text>{settings && !r.fulfilled ? action(`標記${r.name}已實現`, () => void change(s => ({ ...s, wishReceipts: (s.wishReceipts ?? []).map((x: WishReceipt) => x.id === r.id ? { ...x, fulfilled: true } : x) }))) : null}</View>)}
+    {[...(data.wishReceipts ?? [])].reverse().map(r => <View key={r.id} style={s.item}><Text style={s.text}>{r.name} · <EnergyAmount kind="cost" value={r.cost}/> · {r.fulfilled ? '已實現' : '待實現'}</Text><Text style={s.text}>{new Date(r.at).toLocaleString('zh-TW',{timeZone:'Asia/Taipei',hour12:false})}{r.note?` · 約定：${r.note}`:''}</Text>{settings && !r.fulfilled ? action(`標記${r.name}已實現`, () => void change(s => ({ ...s, wishReceipts: (s.wishReceipts ?? []).map((x: WishReceipt) => x.id === r.id ? { ...x, fulfilled: true } : x) }))) : null}</View>)}
   </View>;
 }
 const s = StyleSheet.create({ panel: { padding: 18, borderRadius: 24, borderWidth: 2, borderColor: '#d4b977', backgroundColor: 'rgba(10,38,52,.94)', gap: 14 }, title: { fontSize: 22, fontWeight: '800', color: '#ffe7ad' }, text: { fontSize: 16, lineHeight: 26, color: '#edf6f5' }, item: { gap: 10, paddingVertical: 12, borderTopWidth: 1, borderColor: '#557783' }, button: { minHeight: 48, padding: 12, borderWidth: 1, borderColor: '#bba66f', borderRadius: 20, backgroundColor: '#105c70', alignItems: 'center' }, product: { gap: 12, padding: 12, borderWidth: 2, borderColor: '#557783', borderRadius: 20, backgroundColor: '#102f40' }, productSelected: { borderColor: '#ffe19a', backgroundColor: '#18515b' }, cardTap: { gap: 10 }, badge: { color: '#d4e5e7', fontSize: 16, fontWeight: '700', textAlign: 'center', padding: 8 }, badgeSelected: { color: '#fff0b5', backgroundColor: '#246875', borderRadius: 10 }, selectedButton: { backgroundColor: '#287967', borderColor: '#ffe19a', borderWidth: 2 }, pressed: { opacity: .75, transform: [{scale: .97}], backgroundColor: '#327f88' }, summary: { padding: 14, gap: 12, borderWidth: 2, borderColor: '#d4b977', borderRadius: 18, backgroundColor: '#143e50' }, customCaption:{padding:12,gap:6,borderWidth:1,borderColor:'#d4b977',borderRadius:12,backgroundColor:'#123c50'},styleRow:{flexDirection:'row',flexWrap:'wrap',gap:8},styleChoice:{alignItems:'center',padding:8,borderWidth:2,borderColor:'#557783',borderRadius:12,minWidth:90},input: { color: '#fff', borderWidth: 1, borderColor: '#7199a1', borderRadius: 12, padding: 12, fontSize: 18 } });

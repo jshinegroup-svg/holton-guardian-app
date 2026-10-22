@@ -1,3 +1,4 @@
+import EnergyAmount from './EnergyAmount';
 import React from 'react';
 import {Image, Platform, Pressable, StyleSheet, Text, View} from 'react-native';
 export type VillageRoom = 'village' | 'mission' | 'wishes' | 'companions';
@@ -28,7 +29,7 @@ export default function AdventureVillage({orbs,world,steps,today,goal,task,onSta
  return <View testID="adventure-village" style={s.content}>
   <MapLightStyles/>
   <View testID="village-overview"><View style={s.welcome}><Text testID="village-child-title" accessibilityRole="header" style={s.title}>{childName?`${childName}的冒險村莊`:'冒險村莊'}</Text><Text style={s.subtitle}>沿著小路，找到你想去的小屋。</Text></View>
-  <View style={s.status}><Text style={s.balance}>✦ {orbs} 能量球</Text><Text style={s.small}>今天 {today}／{goal} 次任務</Text></View>
+  <View style={s.status}><EnergyAmount value={orbs} size={28} style={s.balance}/><Text style={s.small}>今天 {today}／{goal} 次任務</Text></View>
   <Pressable accessibilityRole="button" accessibilityLabel={ongoing?"繼續任務":"開始任務"} disabled={saving} onPress={onStart} style={({pressed})=>[s.start,pressed&&s.pressed,saving&&{opacity:.5}]}><View testID="village-start-action" style={s.startAction}><Text style={s.startIcon}>▶</Text><Text style={s.startTitle}>{ongoing?'繼續任務':'開始任務'}</Text></View><View testID="village-start-details" style={s.startDetails}><Text style={s.startNote}>{task||'先選今天想完成的一件小事'}</Text><Text style={s.startJourney}>{world}{'\n'}旅程 {steps}／15 步</Text></View></Pressable>
   </View><View testID="village-landscape"><Text style={s.hint}>✦ 直接點地圖上的小屋，就能進入</Text>
   <View testID={reduced?'village-map-reduced':'village-map-live'} style={s.map}>
