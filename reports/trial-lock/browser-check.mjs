@@ -60,7 +60,7 @@ try {
  const recovery=await run(`document.body.innerText.match(/[a-f0-9]{32}/)[0]`);
  await click('已妥善保存，啟用家長密碼');await ready();check((await read()).orbs===48,'setup preserves points');
  await click('家長小屋');await input('6 位數家長密碼','000000');await click('確認');check(await run("document.body.innerText.includes('家長密碼不正確')"),'wrong pin denied');
- await input('6 位數家長密碼',pin);await click('確認');await click('偏好與舊卡');await click('修改家長密碼');await input('6 位數家長密碼',pin);await click('確認');await input('6 位數家長密碼',newPin);await input('再次輸入家長密碼',newPin);await click('繼續設定');
+ await input('6 位數家長密碼',pin);await click('確認');await click('設定與教學');await click('修改家長密碼');await input('6 位數家長密碼',pin);await click('確認');await input('6 位數家長密碼',newPin);await input('再次輸入家長密碼',newPin);await click('繼續設定');
  const recovery2=await run(`document.body.innerText.match(/[a-f0-9]{32}/)[0]`);check(recovery!==recovery2,'recovery rotated');await click('已妥善保存，啟用家長密碼');await click('回到村莊');await click('家長小屋');
  await input('6 位數家長密碼',pin);await click('確認');check(await run("document.body.innerText.includes('家長密碼不正確')"),'old pin denied');await click('忘記密碼，使用復原碼');await input('家長復原碼',recovery2);await click('確認');await input('6 位數家長密碼',pin);await input('再次輸入家長密碼',pin);await click('繼續設定');await click('已妥善保存，啟用家長密碼');
  check((await read()).orbs===48,'recovery preserves points');await click('回到村莊');await reload();await click('家長小屋');

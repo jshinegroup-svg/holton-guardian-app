@@ -12,7 +12,7 @@ function validateChildProfile(nickname, ageYears) {
     const name = nickname.trim();
     if (!name || Array.from(name).length > 20)
         throw Error('暱稱請填寫 1～20 個字。');
-    if (!Number.isInteger(ageYears) || ageYears < 1 || ageYears > 18)
+    if (ageYears !== null && (!Number.isInteger(ageYears) || ageYears < 1 || ageYears > 18))
         throw Error('請選擇孩子的年齡。');
     return { nickname: name, ageYears };
 }

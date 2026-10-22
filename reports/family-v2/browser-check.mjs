@@ -17,7 +17,7 @@ try{for(const width of [320,390,900]){
   if(pathname.endsWith('/rpc/record_usage_event'))data=null;
   else if(pathname.includes('/auth/v1/user'))data={id:user,email:'fixture@example.invalid'};
   else if(pathname.endsWith('/families'))data={id:family};
-  else if(pathname.endsWith('/children'))data=kids;
+  else if(pathname.endsWith('/children')){if(req.method()==='PATCH'){const kid=kids.find(c=>c.id===url.searchParams.get('id')?.replace('eq.',''));Object.assign(kid,req.postDataJSON());}data=kids;}
   else if(pathname.endsWith('/child_saves')){const id=url.searchParams.get('child_id').replace('eq.','');data=saves.get(id)??null;}
   else if(pathname.endsWith('/rpc/save_child_progress')){const body=req.postDataJSON();if(ops.has(body.p_operation_id))data={...ops.get(body.p_operation_id),duplicate:true};else{const prev=saves.get(body.p_child_id);if(prev.revision!==body.p_expected_revision){await route.fulfill({status:409,json:{message:'revision_conflict'}});return;}const revision=prev.revision+1;saves.set(body.p_child_id,{...prev,revision,state:body.p_state});data={revision,duplicate:false};ops.set(body.p_operation_id,data);completions+=body.p_events.filter(e=>e.kind==='task_completed').length;}}
   else {await route.fulfill({status:400,json:{message:'unmocked route'}});return;}
@@ -26,15 +26,20 @@ try{for(const width of [320,390,900]){
  // Only synthetic local test session; production does not contain a test bypass.
  await p.addInitScript(({user})=>{const enc=x=>btoa(JSON.stringify(x));const exp=Math.floor(Date.now()/1000)+3600;localStorage.setItem('holton-family-v2-auth',JSON.stringify({access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:user,exp,role:'authenticated'})}.test`,refresh_token:'synthetic-test',expires_at:exp,expires_in:3600,token_type:'bearer',user:{id:user,email:'fixture@example.invalid'}}));localStorage.setItem('holton-guardian-app::light-v1','original-v1-sentinel');},{user});
  await p.goto(base);console.log('loaded',await p.locator('body').innerText());await p.getByLabel('6 位數家長密碼',{exact:true}).fill(String(randomInt(100000,999999)));const value=await p.getByLabel('6 位數家長密碼',{exact:true}).inputValue();await p.getByLabel('再次輸入家長密碼',{exact:true}).fill(value);await p.getByRole('button',{name:'繼續設定',exact:true}).click();await p.getByRole('button',{name:'已妥善保存，啟用家長密碼',exact:true}).click();
- console.log('select children');await p.getByRole('button',{name:'哥哥 · 8 歲',exact:true}).click();await p.getByRole('button',{name:'妹妹 · 6 歲',exact:true}).click();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await p.getByTestId('duo-child-task').nth(1).waitFor();console.log('duo ready');
- const panels=p.getByTestId('duo-child-task');await panels.nth(0).getByRole('button',{name:'準備出發',exact:true}).click();await panels.nth(1).getByRole('button',{name:'準備出發',exact:true}).click();await panels.nth(0).getByRole('button',{name:'開始任務',exact:true}).click();await panels.nth(1).getByRole('button',{name:'開始任務',exact:true}).click();
+ await p.getByLabel('孩子 1 的名字',{exact:true}).fill('哥哥新版');await p.getByRole('button',{name:'儲存名字',exact:true}).click();await p.getByText('名字已儲存，原有進度保留。',{exact:true}).waitFor();assert.equal(kids[0].nickname,'哥哥新版');assert.equal(saves.get(a).state.orbs,10);assert.equal(await p.getByLabel('孩子 3 的名字',{exact:true}).count(),0);
+ console.log('select children');await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await p.getByTestId('duo-child-task').nth(1).waitFor();console.log('duo ready');
+ const panels=p.getByTestId('duo-child-task');await panels.nth(0).getByLabel('任務時間（分鐘）',{exact:true}).fill('5');await panels.nth(1).getByLabel('任務時間（分鐘）',{exact:true}).fill('10');await p.getByRole('button',{name:'兩人一起開始',exact:true}).click();
+ await p.waitForFunction(()=>[...document.querySelectorAll('[data-testid="duo-child-task"]')].every(e=>e.textContent.includes('努力中')));
+ assert.equal(saves.get(a).state.focusStartedAt,saves.get(b).state.focusStartedAt);assert.equal(saves.get(b).state.deadline-saves.get(a).state.deadline,300000);
+ const start=saves.get(a).state.focusStartedAt;await p.getByRole('button',{name:'兩人一起開始',exact:true}).click();await p.getByRole('alert').filter({hasText:'進行中的任務不會重啟'}).waitFor();assert.equal(saves.get(a).state.focusStartedAt,start);
+
  await panels.nth(1).getByRole('button',{name:'完成任務',exact:true}).click();await p.waitForFunction(()=>document.querySelectorAll('[data-testid="duo-child-task"]')[1]?.textContent.includes('準備收尾'));
  await panels.nth(1).getByTestId('primary-action').click();await p.waitForFunction(()=>document.querySelectorAll('[data-testid="duo-child-task"]')[1]?.textContent.includes('完成了！'));
- assert.equal(saves.get(a).state.orbs,10);assert.equal(saves.get(a).state.phase,'active');assert.equal(saves.get(b).state.orbs,31);assert.equal(completions,1);
+ assert.equal(saves.get(a).state.orbs,10);assert.equal(saves.get(a).state.phase,'active');assert.equal(saves.get(b).state.orbs,32);assert.equal(completions,1);
  await panels.nth(0).getByRole('button',{name:'進入個人畫面',exact:true}).click();await p.getByRole('button',{name:'回雙人畫面',exact:true}).click();await panels.nth(0).waitFor();assert.equal(saves.get(a).state.phase,'active');
  assert.equal(await p.evaluate(()=>localStorage.getItem('holton-guardian-app::light-v1')),'original-v1-sentinel');
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await p.screenshot({path:`reports/family-v2/duo-${process.env.TEST_BASE_URL?'public-':''}${width}.png`,fullPage:true});
- await p.reload();console.log('select children');await p.getByRole('button',{name:'哥哥 · 8 歲',exact:true}).click();await p.getByRole('button',{name:'妹妹 · 6 歲',exact:true}).click();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await p.getByTestId('duo-child-task').nth(1).waitFor();console.log('duo ready');assert.equal(saves.get(b).state.orbs,31);assert.equal(completions,1);assert.deepEqual(errors,[]);
+ await p.reload();console.log('select children');await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await p.getByTestId('duo-child-task').nth(1).waitFor();console.log('duo ready');assert.equal(saves.get(b).state.orbs,32);assert.equal(completions,1);assert.deepEqual(errors,[]);
  console.log(`PASS ${width}: sibling isolation, independent timers, completion once, expand/back, reload, V1 intact, no overflow/JS errors`);await context.close();
 }}finally{await browser.close();server.close();}

@@ -1,13 +1,17 @@
 export type GuardianReceipt = { cardId: string; at: string; cost: number; source: 'legacy' | 'parent-restore' | 'sunday'; challengeId?: string; heroCardId?: string };
 export type GuardianChallenge = { id: string; cardId: string; heroCardId: string; cost: number; startedAt: string; status: 'battling' | 'won' };
-type ChallengeState = { orbs: number; phase: string; guardianCards?: GuardianReceipt[]; guardianChallenge?: GuardianChallenge };
+type ChallengeState = { guardianSundayOnly?: boolean; orbs: number; phase: string; guardianCards?: GuardianReceipt[]; guardianChallenge?: GuardianChallenge };
 type Target = { id: string; beastId: string; index: number; cost: number };
+
+/** Legacy/missing settings retain the Taipei Sunday restriction. */
+export function guardianExchangeOpen(state: {guardianSundayOnly?:boolean}, now: number): boolean {
+  return state.guardianSundayOnly === false || new Intl.DateTimeFormat('en-US', {timeZone:'Asia/Taipei',weekday:'short'}).format(now) === 'Sun';
+}
 
 /** Deduction and recoverable challenge are saved together by the caller. */
 export function beginGuardianChallenge<T extends ChallengeState>(state: T, target: Target, heroCardId: string, now: number): T {
-  const sunday = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Taipei', weekday: 'short' }).format(now) === 'Sun';
   const owned = new Set((state.guardianCards ?? []).map(item => item.cardId));
-  if (state.guardianChallenge || !['ready', 'done'].includes(state.phase) || !sunday || owned.has(target.id) || !Number.isInteger(target.cost) || target.cost <= 0 || state.orbs < target.cost || (target.index > 0 && !owned.has(`${target.beastId}:${target.index - 1}`))) return state;
+  if (state.guardianChallenge || !['ready', 'done'].includes(state.phase) || !guardianExchangeOpen(state, now) || owned.has(target.id) || !Number.isInteger(target.cost) || target.cost <= 0 || state.orbs < target.cost || (target.index > 0 && !owned.has(`${target.beastId}:${target.index - 1}`))) return state;
   return { ...state, orbs: state.orbs - target.cost, guardianChallenge: { id: `${now}:${target.id}`, cardId: target.id, heroCardId, cost: target.cost, startedAt: new Date(now).toISOString(), status: 'battling' } };
 }
 

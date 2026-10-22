@@ -39,3 +39,10 @@ These are not proof of an independently audited or tamper-proof rewards system. 
 
 ## Hosted preview verification
 Render static preview https://holton-family-v2.onrender.com/ deployed source5c391dd via dep-dbcqk00m7kps73ck4smg at14:17:09 Taipei. Service srv-dbcqjvgm7kps73ck4rng; auto-deployOff. Hosted AppEntry-9e9b6ac8932e10420ec0e8d3530d34d7.js matches local. Anonymous public login/registration UI, password masking, blank validation and no-JS-error/overflow checks PASS without submitting any registration email. Hosted assets + mocked cloud320/390/900 duo regression PASS; this is not real authenticated cloud end-to-end. Real Supabase anonymous REST returns no readable rows. Await owner dashboard login for auth URL/email configuration.
+
+## 2026-10-22 simplification (23167)
+Merged V1 883a01a including five post-baseline changes and all journey assets, retaining V2 scoped storage/auth.
+Two name fields; age optional (unknown stored as NULL, existing age retained). Database cap rejects new third profiles with family-row locking; existing three profiles untouched. Jerry's fixed pair choice remains pending; legacy families can still choose two without losing data.
+Duo inline task/minute inputs; shared start timestamp with independent deadlines and completion; per-child start and next task remain. No live cross-device subscription: switching devices reads last acknowledged cloud save, stale writes are rejected.
+Typecheck/export PASS; 320/390/900 browser mock-cloud PASS: rename preserves state, 5/10-minute shared start, repeat start guard, independent rewards, expand/back, reload, V1 sentinel, overflow/errors. Repository5/5 PASS. Rolled-back DB fixtures PASS NULL age/events, 2-child cap, rename.
+Supabase URL configuration saved and reload verified earlier this evening. Email delivery to outside team recipients still requires SMTP. This update is awaiting deployment at this checkpoint.
