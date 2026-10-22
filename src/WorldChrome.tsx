@@ -43,6 +43,9 @@ export function WorldChrome() {
 [data-testid="mission-stage"]:has([data-testid="focus-companion-panel"])>[data-testid="mission-name"]{font-size:32px!important;line-height:42px!important;padding:9px 14px!important;width:100%}
 [data-testid="focus-time-panel"] [data-testid="crystal-clock"]{font-size:60px!important;line-height:72px!important}
 @media(max-width:350px){[data-testid="focus-world-name"]{font-size:20px!important;line-height:28px!important;letter-spacing:0!important}[data-testid="focus-time-panel"] [data-testid="crystal-clock"]{font-size:56px!important;line-height:68px!important}}
+/* Family header navigation shares one visual scale in every task phase. */
+[data-testid="immersive-world"] [data-testid="world-title"]:has([data-testid="family-header-entry"]) [role="button"]{height:44px!important;min-height:44px!important;padding:0 9px!important;justify-content:center;align-items:center;background:#103448!important;border:1px solid #c6ac67!important;border-radius:10px!important}
+[data-testid="immersive-world"] [data-testid="world-title"]:has([data-testid="family-header-entry"]) [role="button"]>div{font-size:14px!important;font-weight:700!important;line-height:20px!important;color:#fff0c1!important;padding:0!important;white-space:nowrap}
 @media(max-height:740px){[data-testid="world-title"]{margin-top:12px;margin-bottom:10px}[data-testid="original-card-pedestal"]{height:286px!important;width:214px!important}[data-testid="original-card-pedestal"]>div:last-child{top:43px!important;left:50px!important;width:114px!important;height:161px!important}}
 `);
 }
