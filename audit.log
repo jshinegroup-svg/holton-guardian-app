@@ -104,3 +104,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-21 actor=bot approval=Jerry22948 trigger=responsive-spotlight | Added full-width adaptive layouts and per-browser first-use real-action spotlight; local typecheck/lint/export/six-viewports/rotation/pointer/keyboard/onboarding/persistence and draw regression PASS.
 
 2026-10-21 actor=bot approval=Jerry22948 trigger=public-verification | Full responsive/spotlight PUBLIC suite PASS; deployment successful; screenshots refreshed.
+2026-10-22 actor=bot approval=Jerry23140 trigger=tutorial-skip-confirm | Welcome and spotlight confirmation, persisted village resume, keyboard cancel and no premature timer; typecheck/export/four-viewports full flow PASS. V1 patch only; frozen tag and V2 untouched.
