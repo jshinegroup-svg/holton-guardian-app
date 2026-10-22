@@ -114,3 +114,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-22 actor=bot approval=Jerry23154 trigger=journey-visual-progress | Added9built-in-imagegen atlases/54states, replaced static reveal and vector landmarks with cumulative scenes, same-chapter before/after/recap/hint. Typecheck/export/current-model and90mobile cases PASS; source progress/rewards unchanged. Original PNGs/prompts preserved.
 
 2026-10-22 actor:bot approval:Jerry23167 trigger:v2-simplification merge V1 fixes, two-name management, optional age and DB cap preserving existing profiles, shared start independent timers; verified local browser and DB fixtures.
+2026-10-22 actor:bot approval:Jerry23167 trigger:v2-live verified hosted source76fe313 and three viewport mock-cloud flows; existing children untouched.
