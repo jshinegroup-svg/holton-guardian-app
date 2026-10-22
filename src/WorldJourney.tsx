@@ -1,4 +1,5 @@
-import {chapterArt,chapterScene} from './ChapterScenery';
+import {chapterScene} from './ChapterScenery';
+import JourneyStageScene,{journeyStage} from './JourneyStageScene';
 import React, {useEffect,useState} from 'react';
 import {Image,Pressable,SafeAreaView,ScrollView,StyleSheet,Text,View,Platform} from 'react-native';
 import {worldIds,worlds,unlocked,journeyHint,type Journeys,type WorldId,type JourneyEvent} from './lib/journeys';
@@ -19,30 +20,12 @@ export function WorldMap({journeys,activeWorld,onEnter,onSettings,onBack,saving,
  <View style={{padding:12,alignItems:'center'}}><Text style={s.small}>每章 5 次任務換新場景 · 進入世界不花點數</Text>{journeys.legacyCredit>0?<Text style={s.small}>已保留 {journeys.legacyCredit} 次既有完成紀錄</Text>:null}</View>
  </ScrollView></SafeAreaView>;
 }
-// Small vector landmarks are game-state overlays, not replacement scenery.
-function Landmark({world,chapter,steps,compact=false}:{world:WorldId;chapter:number;steps:number;compact?:boolean}) {
- const lit='#ffe39a',dark='#446675';
- const lights=Array.from({length:5},(_,i)=>`<circle cx="${25+i*42}" cy="130" r="9" fill="${i<steps?lit:dark}" stroke="#d2b97d" stroke-width="2"/>`).join('');
- const glow=steps?'<circle cx="110" cy="68" r="53" fill="#52dccc" opacity=".12"/>':'';
- const color=steps>=5?lit:'#82b4bf';
- let body='';
- if(chapter===1) body=`<path d="M15 105 Q110 5 205 105" fill="none" stroke="${color}" stroke-width="8"/><path d="M15 108 H205" stroke="#779ba9" stroke-width="3"/>`+Array.from({length:steps},(_,i)=>`<path d="M${28+i*38} 108 V${68-Math.sin(i/4*Math.PI)*28}" stroke="${lit}" stroke-width="5"/>`).join('');
- else if(chapter===2)body=`<ellipse cx="110" cy="68" rx="47" ry="51" fill="${steps>=5?'#64dfd0':'#163f51'}" stroke="${color}" stroke-width="7"/><path d="M110 23 L117 56 L145 68 L117 80 L110 112 L103 80 L75 68 L103 56Z" fill="${steps>=3?lit:dark}"/>`;
- else if(world==='forest')body=`<path d="M110 110 V55 M110 80 L65 52 M110 70 L152 42" stroke="#a88d64" stroke-width="12"/><circle cx="73" cy="44" r="26" fill="${steps>=2?'#388e75':dark}"/><circle cx="145" cy="38" r="30" fill="${steps>=3?'#4aad81':dark}"/><circle cx="108" cy="23" r="27" fill="${steps>=5?lit:'#326e64'}"/>`;
- else body=`<path d="M65 110 V62 L110 20 L155 62 V110Z" fill="#153d53" stroke="${color}" stroke-width="4"/><path d="M45 64 L110 5 L175 64" fill="none" stroke="${color}" stroke-width="5"/><rect x="98" y="74" width="24" height="36" rx="4" fill="${steps>=1?'#62d4e6':dark}"/>${steps>=4?'<path d="M155 30 V0 L185 10 L155 20" fill="#f7d18c" stroke="#d5b576" stroke-width="2"/>':''}${steps>=3?'<circle cx="110" cy="48" r="11" fill="#ffe39a"/>':''}`;
- if(world==='sky'&&chapter===0&&steps>=2)body+='<path d="M105 112 L82 123 M116 112 L140 123" stroke="#ffe39a" stroke-width="4"/>';
- if(world==='forest'&&chapter===2) body=`<path d="M110 115 V48 M110 76 L65 42 M110 65 L156 32" stroke="#b39762" stroke-width="12"/><circle cx="66" cy="38" r="26" fill="#35755f"/><circle cx="152" cy="31" r="27" fill="#3b8966"/><circle cx="109" cy="22" r="27" fill="#409376"/>`+Array.from({length:steps},(_,i)=>`<circle cx="${70+i*20}" cy="${25+Math.sin(i)*18}" r="7" fill="${lit}"/>`).join('');
- if(world==='cosmos'&&chapter===0) body=`<path d="M48 105 V70 A62 62 0 0 1 172 70 V105Z" fill="#16364e" stroke="${color}" stroke-width="4"/><path d="M30 108 H190 M110 9 V-3" stroke="${color}" stroke-width="5"/><circle cx="110" cy="49" r="21" fill="${steps>=3?'#59d5e5':dark}"/>${steps>=4?'<path d="M180 70 L215 43 V92Z M40 70 L5 43 V92Z" fill="#96aec8" stroke="#ffe39a" stroke-width="3"/>':''}`;
- if(world==='cosmos'&&chapter===2) body=`<path d="M85 112 L95 32 H125 L138 112Z" fill="#174a67" stroke="${color}" stroke-width="4"/><ellipse cx="110" cy="58" rx="51" ry="14" fill="none" stroke="${steps>=2?lit:dark}" stroke-width="4"/><ellipse cx="110" cy="88" rx="43" ry="11" fill="none" stroke="${steps>=3?lit:dark}" stroke-width="4"/><path d="M110 1 L117 17 L135 23 L117 29 L110 45 L103 29 L85 23 L103 17Z" fill="${steps>=5?lit:dark}"/>`;
- const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="230" height="150" viewBox="0 0 230 150">${glow}${body}${lights}</svg>`;
- return <Image accessibilityLabel={`${worlds[world].landmarks[chapter]}，已點亮 ${steps} 個旅程節點`} source={{uri:`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`}} style={{width:compact?100:230,height:compact?66:150,maxWidth:'100%',alignSelf:'center'}}/>;
-}
 export function JourneyMap({journeys,world,onClose,onWorldMap}:{journeys:Journeys;world:WorldId;onClose:()=>void;onWorldMap:()=>void}) {
  const n=journeys.counts[world],info=worlds[world];
  return <SafeAreaView style={s.root} testID="journey-map"><Image source={chapterScene(world,n)} style={s.background} resizeMode="cover"/><ScrollView contentContainerStyle={s.page}>
  <View style={s.heading}><Text style={s.title}>{info.name} · 我的旅程</Text><Text style={s.text}>{info.intro}</Text><Text style={s.small}>星光只記錄旅程，不是貨幣。不扣能量球，也不因休息或求助倒退。</Text></View>
  <Button label="回到目前任務" onPress={onClose}/>
- {info.chapters.map((chapter,c)=>{const count=Math.max(0,Math.min(5,n-c*5));return <View key={chapter} testID={`journey-chapter-${c}`} style={[s.chapter,count===5&&s.available]}><Text style={s.title}>{count===5?'✓ ':''}第 {c+1} 章 · {chapter}</Text><Image source={chapterArt[world][c]} resizeMode="cover" accessibilityLabel={`第${c+1}章場景`} style={{width:'100%',height:150,borderRadius:12,opacity:n<c*5?.3:1}}/><Landmark world={world} chapter={c} steps={count}/><Text style={s.text}>{count===5?'這個地方已經亮起，會一直留在你的旅程裡。':count===0&&n<c*5?'完成前一章，就可以來到這裡。':`已點亮 ${count}／5 步`}</Text>{info.steps.slice(c*5,c*5+5).map((line,i)=><Text key={line} style={[s.step,i<count&&s.stepDone]}>{i<count?'✦':'○'} {i<count?line:`第 ${c*5+i+1} 步 · 完成一輪任務後揭曉`}</Text>)}</View>})}
+ {info.chapters.map((chapter,c)=>{const count=Math.max(0,Math.min(5,n-c*5));return <View key={chapter} testID={`journey-chapter-${c}`} style={[s.chapter,count===5&&s.available]}><Text style={s.title}>{count===5?'✓ ':''}第 {c+1} 章 · {chapter}</Text><JourneyStageScene world={world} chapter={c} step={count} style={{opacity:n<c*5?.3:1}}/><Text style={s.text}>{count===5?'這個地方已經亮起，會一直留在你的旅程裡。':count===0&&n<c*5?'完成前一章，就可以來到這裡。':`已點亮 ${count}／5 步`}</Text>{info.steps.slice(c*5,c*5+5).map((line,i)=><Text key={line} style={[s.step,i<count&&s.stepDone]}>{i<count?'✦':'○'} {i<count?line:`第 ${c*5+i+1} 步 · 完成一輪任務後揭曉`}</Text>)}</View>})}
  <View style={s.note}><Text style={s.text}>{journeyHint(journeys,world)}</Text>{n>=15&&world==='cosmos'?<Text style={s.title}>✦ 星海同行者</Text>:null}</View><Button label="前往世界地圖" onPress={onWorldMap}/>
  </ScrollView></SafeAreaView>;
 }
@@ -50,12 +33,12 @@ export function JourneyReveal({event,onDismiss,saving}:{event:JourneyEvent;reduc
  const [showBefore,setShowBefore]=useState(false);
  useEffect(()=>{setShowBefore(false);},[event.id]);
  const chapter=Math.floor((event.step-1)/5),complete=event.step%5===0;
- return <View style={s.revealOverlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',alignItems:'center'}} style={{width:'100%'}}><View style={s.reveal} accessibilityLiveRegion="polite" testID="journey-reveal"><Text style={s.small}>{worlds[event.world].name} · 第 {event.step} 步</Text><Text style={s.title}>{complete?'一章故事完成！':'世界亮了一點'}</Text><Text style={s.small}>{showBefore?'完成前':'這次完成後 · 新增一顆星光'}</Text><Image testID="chapter-reveal-scene" source={chapterScene(event.world,showBefore?event.step-1:event.step)} accessibilityLabel={showBefore?'完成前場景':'完成後場景'} resizeMode="cover" style={{width:'100%',height:160,borderRadius:12}}/>{complete&&event.step<15?<Text style={s.small}>新場景已開放：{worlds[event.world].chapters[event.step/5]}</Text>:null}<Landmark world={event.world} chapter={chapter} steps={(event.step-1)%5+(showBefore?0:1)}/><Button label={showBefore?'看點亮後':'對照完成前'} onPress={()=>setShowBefore(v=>!v)}/><Text style={s.text}>{worlds[event.world].steps[event.step-1]}</Text><Text style={s.small}>變化已保存在旅程圖，之後也能回去看。</Text><Button label="看到了，繼續旅程" onPress={onDismiss} disabled={saving}/></View></ScrollView></View>;
+ return <View style={s.revealOverlay}><ScrollView contentContainerStyle={{flexGrow:1,justifyContent:'center',alignItems:'center'}} style={{width:'100%'}}><View style={s.reveal} accessibilityLiveRegion="polite" testID="journey-reveal"><Text style={s.small}>{worlds[event.world].name} · 第 {event.step} 步</Text><Text style={s.title}>{complete?'一章故事完成！':'世界亮了一點'}</Text><Text style={s.small}>{showBefore?'完成前':'這次完成後 · 新的變化'}</Text><JourneyStageScene testID="chapter-reveal-scene" world={event.world} chapter={chapter} step={(event.step-1)%5+(showBefore?0:1)} label={`${showBefore?'完成前':'完成後'}場景 · ${worlds[event.world].chapters[chapter]}`}/>{complete&&event.step<15?<Text style={s.small}>新場景已開放：{worlds[event.world].chapters[event.step/5]}</Text>:null}<View style={{flexDirection:'row',gap:8,justifyContent:'center'}} accessibilityLabel={`本章已完成 ${(event.step-1)%5+(showBefore?0:1)}／5 步`}>{[0,1,2,3,4].map(i=><View key={i} style={{width:12,height:12,borderRadius:6,borderWidth:1,borderColor:'#dfc78e',backgroundColor:i<(event.step-1)%5+(showBefore?0:1)?'#ffe39a':'transparent'}}/>)}</View><Button label={showBefore?'看點亮後':'對照完成前'} onPress={()=>setShowBefore(v=>!v)}/><Text style={s.text}>{showBefore?`完成這一步，就會看到：${worlds[event.world].steps[event.step-1]}`:worlds[event.world].steps[event.step-1]}</Text><Text style={s.small}>變化已保存在旅程圖，之後也能回去看。</Text><Button label="看到了，繼續旅程" onPress={onDismiss} disabled={saving}/></View></ScrollView></View>;
 }
 export function JourneyHint({journeys,world,onPress}:{journeys:Journeys;world:WorldId;onPress:()=>void}) {
- const n=journeys.counts[world],chapter=Math.min(2,Math.floor(n/5));
+ const n=journeys.counts[world],{chapter,step}=journeyStage(n);
  return <Pressable accessibilityRole="button" accessibilityLabel="看看我的旅程" onPress={onPress} style={({pressed})=>[s.hint,pressed&&{opacity:.8}]} testID="journey-visible-landmark">
- <View style={s.journeyWindow}><Image source={chapterScene(world,n)} accessibilityLabel={`${worlds[world].name}目前旅程風景`} resizeMode="cover" style={{width:'100%',height:'100%'}}/><View style={s.windowCaption}><Text style={{color:'#fff4d3',fontSize:11,fontWeight:'700'}}>{worlds[world].name}</Text></View></View>
+ <View style={s.journeyWindow}><JourneyStageScene world={world} chapter={chapter} step={step} style={{borderRadius:0}}/><View style={s.windowCaption}><Text style={{color:'#fff4d3',fontSize:11,fontWeight:'700'}}>{worlds[world].name}</Text></View></View>
  <View style={{flex:1,minWidth:0,gap:2}}>
  <Text style={s.small}>我的旅程 · 第 {chapter+1} 章</Text>
  <Text style={{color:'#fff0c4',fontSize:15,lineHeight:22,fontWeight:'700'}}>{n>=15?'✓ 世界旅程完成':`已點亮 ${n}／15 步`}</Text>

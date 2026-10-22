@@ -1,0 +1,90 @@
+{
+  "tool": "built-in image_gen",
+  "layout": "3 columns x 2 rows, states0..5",
+  "basePrompt": "Generate ONE professional game sprite atlas with EXACTLY 3 columns and 2 rows of six EQUAL SQUARE panels, landscape canvas 1536x1024. No margins, gutters, borders, text, numbers, symbols, UI or characters. Read panels left-to-right, top-to-bottom as states0,1,2,3,4,5. Reference is visual STYLE only: detailed polished painterly 3D storybook fantasy with warm gold, teal and rich environments. EVERY panel uses IDENTICAL locked camera, perspective and geometry; only specified cumulative changes differ. Changes must be unmistakable on a small mobile screen, not just changing overall brightness. Each panel FULL BLEED to exact grid edges. ",
+  "prompts": [
+    {
+      "id": "forest-0",
+      "reference": "assets/worlds/chapters/forest-0.png",
+      "prompt": "Create ONE production game sprite atlas: exactly 3 columns by 2 rows, six equal SQUARE panels, no gutters, no borders, no text, no labels, total canvas landscape 3:2 ratio. Reference image is STYLE reference (lush magical forest, gold lights, painterly polished 3D fantasy), not an exact crop. All six panels show EXACTLY the same locked camera view and geometry of a forest path toward a treehouse. Read panels left to right then next row: 0 dormant path, vines blocking stair, no flowers, dark mushroom lamps; 1 add a large luminous star-shaped leaf on foreground branch left, keep all else; 2 retain leaf and turn on TWO large mushroom lanterns along path; 3 retain prior additions and bloom a prominent luminous pink flower in foreground right; 4 retain all and part the vines to reveal a CLEAR winding stone route to treehouse; 5 retain all and open treehouse door with warm golden glow pouring onto path. Changes must be large obvious features easily seen at 260px panel width. Do not add text, UI, circles, arrows, badges, people. Rich detailed environmental art, crisp readable shapes. Uniform panel dimensions exactly, no margins. This is a six-frame cumulative progression sheet, NOT six different camera views."
+    },
+    {
+      "id": "forest-1",
+      "reference": "assets/worlds/chapters/forest-0.png",
+      "prompt": "Generate ONE professional game sprite atlas with EXACTLY 3 columns and 2 rows of six EQUAL SQUARE panels, landscape canvas 1536x1024. No margins, gutters, borders, text, numbers, symbols, UI or characters. Read panels left-to-right, top-to-bottom as states0,1,2,3,4,5. Reference is visual STYLE only: detailed polished painterly 3D storybook fantasy with warm gold, teal and rich environments. EVERY panel uses IDENTICAL locked camera, perspective and geometry; only specified cumulative changes differ. Changes must be unmistakable on a small mobile screen, not just changing overall brightness. Each panel FULL BLEED to exact grid edges. Moonlit woodland watercourse, moss-covered stone aqueduct leading under a little arched bridge toward a giant distant tree. Locked camera. Frame0 dry abandoned channel, entrance concealed by moss rubble. Frame1 reveal a large stone arch water inlet on left, visibly open dark entrance. Frame2 restore first bright pale stone trough segment from inlet to middle. Frame3 flowing bright turquoise WATER now crosses beneath little stone bridge. Frame4 a LARGE luminous moon reflection and silver glints appear in foreground water, visibly new. Frame5 water fills entire channel and flows all the way to giant tree roots with golden glow. Cumulative changes, distinctly added big object each frame."
+    },
+    {
+      "id": "forest-2",
+      "reference": "assets/worlds/chapters/forest-0.png",
+      "prompt": "Generate ONE professional game sprite atlas with EXACTLY 3 columns and 2 rows of six EQUAL SQUARE panels, landscape canvas 1536x1024. No margins, gutters, borders, text, numbers, symbols, UI or characters. Read panels left-to-right, top-to-bottom as states0,1,2,3,4,5. Reference is visual STYLE only: detailed polished painterly 3D storybook fantasy with warm gold, teal and rich environments. EVERY panel uses IDENTICAL locked camera, perspective and geometry; only specified cumulative changes differ. Changes must be unmistakable on a small mobile screen, not just changing overall brightness. Each panel FULL BLEED to exact grid edges. A magnificent giant LIFE TREE filling a magical woodland clearing, very broad trunk, roots foreground, canopy fully visible. Fixed camera. Frame0 beautiful but dormant tree, dark bark and normal foliage, no flowers or magical lights. Frame1 one prominent root glows golden cyan from foreground to trunk. Frame2 glowing intricate GOLDEN STAR VEINS now run up entire trunk. Frame3 large luminous pink CRYSTAL FLOWERS grow among branches. Frame4 large gold star particles gather as a luminous crown halo above treetop. Frame5 a clearly visible winding glowing STAIRCASE made of clouds extends from tree canopy up to a small floating sky island. All earlier additions remain; big clear visible changes."
+    },
+    {
+      "id": "sky-0",
+      "reference": "assets/worlds/chapters/sky-0.png",
+      "prompt": "Generate ONE professional game sprite atlas with EXACTLY 3 columns and 2 rows of six EQUAL SQUARE panels, landscape canvas 1536x1024. No margins, gutters, borders, text, numbers, symbols, UI or characters. Read panels left-to-right, top-to-bottom as states0,1,2,3,4,5. Reference is visual STYLE only: detailed polished painterly 3D storybook fantasy with warm gold, teal and rich environments. EVERY panel uses IDENTICAL locked camera, perspective and geometry; only specified cumulative changes differ. Changes must be unmistakable on a small mobile screen, not just changing overall brightness. Each panel FULL BLEED to exact grid edges. A friendly fantasy floating sky island BASE with central blue crystal core, curved stone path foreground, lamp pillars, tall empty flagpole. Gold cream stone and cyan crystal, clouds. Same camera all frames. Frame0 sleeping base, all crystals and lamps dark, no flags. Frame1 small large-readable blue crystal at base gate foreground LEFT turns brightly cyan. Frame2 entire winding path glows gold blue toward plaza. Frame3 four large plaza lamps light up warm gold. Frame4 a BIG royal blue and gold flag unfurls on right pole, clear silhouette. Frame5 CENTRAL huge crystal core radiates brilliant turquoise golden energy; whole base awake. Retain all earlier additions."
+    },
+    {
+      "id": "sky-1",
+      "reference": "assets/worlds/chapters/sky-0.png",
+      "prompt": "Generate ONE professional game sprite atlas with EXACTLY 3 columns and 2 rows of six EQUAL SQUARE panels, landscape canvas 1536x1024. No margins, gutters, borders, text, numbers, symbols, UI or characters. Read panels left-to-right, top-to-bottom as states0,1,2,3,4,5. Reference is visual STYLE only: detailed polished painterly 3D storybook fantasy with warm gold, teal and rich environments. EVERY panel uses IDENTICAL locked camera, perspective and geometry; only specified cumulative changes differ. Changes must be unmistakable on a small mobile screen, not just changing overall brightness. Each panel FULL BLEED to exact grid edges. Floating island starlight bridge under reconstruction across a cloud canyon, starting island left foreground, far island right background. Locked wide camera, bridge dominates composition. Frame0 empty gap no bridge. Frame1 first huge luminous bridge stone at near edge. Frame2 several substantial golden stone SUPPORT PILLARS emerge across gap, no deck yet. Frame3 continuous stone BRIDGE DECK connects pillars toward far island. Frame4 clearly visible large golden lanterns light both bridge rails. Frame5 complete archway at far end and glittering blue starsea horizon open beyond bridge, strong magical glow along full crossing. Keep completed previous structure in each later frame."
+    },
+    {
+      "id": "sky-2",
+      "reference": "assets/worlds/chapters/sky-0.png",
+      "prompt": "Generate ONE professional game sprite atlas with EXACTLY 3 columns and 2 rows of six EQUAL SQUARE panels, landscape canvas 1536x1024. No margins, gutters, borders, text, numbers, symbols, UI or characters. Read panels left-to-right, top-to-bottom as states0,1,2,3,4,5. Reference is visual STYLE only: detailed polished painterly 3D storybook fantasy with warm gold, teal and rich environments. EVERY panel uses IDENTICAL locked camera, perspective and geometry; only specified cumulative changes differ. Changes must be unmistakable on a small mobile screen, not just changing overall brightness. Each panel FULL BLEED to exact grid edges. Large dormant circular STARGATE on floating sky island courtyard, gold carved frame, surrounding blue crystals, blank open sky within circle. Fixed camera. Frame0 unlit ring and dark crystal pedestal, no energy. Frame1 pedestal/base glows luminous gold blue. Frame2 an additional large thin cyan orbital energy RING surrounds stargate. Frame3 prominent crystals around the circular frame light blue and starry connections join them. Frame4 see deep indigo starsea through the portal rather than blue daylight, bright shimmering inner surface. Frame5 portal radiates fully brilliant turquoise golden glow with clear luminous stepping stones leading into galaxy. Each frame cumulative with distinct large structural/light differences."
+    },
+    {
+      "id": "cosmos-0",
+      "reference": "assets/worlds/chapters/cosmos-0.png",
+      "prompt": "Generate ONE professional game sprite atlas with EXACTLY 3 columns and 2 rows of six EQUAL SQUARE panels, landscape canvas 1536x1024. No margins, gutters, borders, text, numbers, symbols, UI or characters. Read panels left-to-right, top-to-bottom as states0,1,2,3,4,5. Reference is visual STYLE only: detailed polished painterly 3D storybook fantasy with warm gold, teal and rich environments. EVERY panel uses IDENTICAL locked camera, perspective and geometry; only specified cumulative changes differ. Changes must be unmistakable on a small mobile screen, not just changing overall brightness. Each panel FULL BLEED to exact grid edges. Orbital STAR STATION with glass observation dome, gold blue metal, curved planet horizon, dark violet space, folded solar panels and folded communication dish. Same locked camera. Frame0 dormant unlit station. Frame1 large cyan beacon lamp on front of station lights. Frame2 two BIG golden blue solar SAIL PANELS unfold to left and right. Frame3 dome observation WINDOWS light warmly amber so interior visible. Frame4 tall satellite communication DISH on roof extends and points at starsea. Frame5 colorful luminous signal arcs travel from dish into stars, station central core glowing blue. Cumulative, no text, no icons."
+    },
+    {
+      "id": "cosmos-1",
+      "reference": "assets/worlds/chapters/cosmos-0.png",
+      "prompt": "Generate ONE professional game sprite atlas with EXACTLY 3 columns and 2 rows of six EQUAL SQUARE panels, landscape canvas 1536x1024. No margins, gutters, borders, text, numbers, symbols, UI or characters. Read panels left-to-right, top-to-bottom as states0,1,2,3,4,5. Reference is visual STYLE only: detailed polished painterly 3D storybook fantasy with warm gold, teal and rich environments. EVERY panel uses IDENTICAL locked camera, perspective and geometry; only specified cumulative changes differ. Changes must be unmistakable on a small mobile screen, not just changing overall brightness. Each panel FULL BLEED to exact grid edges. Friendly cosmic STAR ROUTE connecting small orbital island platforms across deep violet starsea. Fixed camera, distant small dark asteroid at far right. Frame0 starting platform and separated dark islands, no path. Frame1 one giant golden NAVIGATION STAR lights ahead of start. Frame2 luminous blue bridge connects starting platform and SECOND station. Frame3 HUGE gold cyan NAVIGATION RING swings into position above route middle. Frame4 a tall distinct crystal LIGHTHOUSE structure appears on far dark asteroid. Frame5 fully connected continuous luminous path reaches lighthouse, lights all along entire bridge and welcoming golden halo. Keep earlier objects, every frame shows a clear new scene feature."
+    },
+    {
+      "id": "cosmos-2",
+      "reference": "assets/worlds/chapters/cosmos-0.png",
+      "prompt": "Generate ONE professional game sprite atlas with EXACTLY 3 columns and 2 rows of six EQUAL SQUARE panels, landscape canvas 1536x1024. No margins, gutters, borders, text, numbers, symbols, UI or characters. Read panels left-to-right, top-to-bottom as states0,1,2,3,4,5. Reference is visual STYLE only: detailed polished painterly 3D storybook fantasy with warm gold, teal and rich environments. EVERY panel uses IDENTICAL locked camera, perspective and geometry; only specified cumulative changes differ. Changes must be unmistakable on a small mobile screen, not just changing overall brightness. Each panel FULL BLEED to exact grid edges. A magnificent STARSEA LIGHTHOUSE with three circular tiers on an asteroid, huge crystal lens at summit, galaxy in distance. Fixed camera. Frame0 lighthouse dormant, all rings dark. Frame1 broad BASE ring lights turquoise gold. Frame2 second large orbital RING on mid tower lights bright cyan. Frame3 giant faceted CRYSTAL LENS at top becomes luminous gold. Frame4 a visible distant golden RESPONSE BEAM appears in starsea to right, approaching lighthouse. Frame5 huge warm golden blue lighthouse BEACON sweeps across space connecting three distant fantasy worlds with subtle celebratory starry trails. Cumulative progression, all earlier illuminated parts remain."
+    }
+  ],
+  "outputs": [
+    {
+      "id": "forest-0",
+      "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a162f6-f783-77e3-9c0d-130af8d8a9cb/exec-c7e4ec7e-8072-4eb3-84c9-387069a76eb1.png"
+    },
+    {
+      "id": "forest-1",
+      "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a162f6-f783-77e3-9c0d-130af8d8a9cb/exec-d0f358e7-a3bb-40a3-8f5c-288f480d3f50.png"
+    },
+    {
+      "id": "forest-2",
+      "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a162f6-f783-77e3-9c0d-130af8d8a9cb/exec-e941b188-2850-4447-b00c-87096987f3fd.png"
+    },
+    {
+      "id": "sky-0",
+      "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a162f6-f783-77e3-9c0d-130af8d8a9cb/exec-e8b4b319-ea38-4212-9cb0-b866782e9105.png"
+    },
+    {
+      "id": "sky-1",
+      "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a162f6-f783-77e3-9c0d-130af8d8a9cb/exec-df3de601-cc46-41f3-b8de-0db509dccf62.png"
+    },
+    {
+      "id": "sky-2",
+      "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a162f6-f783-77e3-9c0d-130af8d8a9cb/exec-d7b4ff94-1dbd-4f14-afcc-fb366f58db5e.png"
+    },
+    {
+      "id": "cosmos-0",
+      "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a162f6-f783-77e3-9c0d-130af8d8a9cb/exec-b10e4a3e-f199-48b7-b500-90309f4ef5ea.png"
+    },
+    {
+      "id": "cosmos-1",
+      "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a162f6-f783-77e3-9c0d-130af8d8a9cb/exec-91d29531-eff8-4be4-914a-0d1a504dc079.png"
+    },
+    {
+      "id": "cosmos-2",
+      "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a162f6-f783-77e3-9c0d-130af8d8a9cb/exec-dd533ba3-e100-46f4-93ac-d1beba8220fe.png"
+    }
+  ]
+}
