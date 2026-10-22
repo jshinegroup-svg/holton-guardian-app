@@ -3,11 +3,11 @@
 > npx expo export --platform web
 
 Starting Metro Bundler
-| (node:90022) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (node:26323) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 | (Use `node --trace-warnings ...` to show where the warning was created)
-Web Bundled 835ms node_modules/expo/AppEntry.js (558 modules)
+Web Bundled 854ms node_modules/expo/AppEntry.js (568 modules)
 
-› Assets (178):
+› Assets (187):
 assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage1.5ca17d014e88fb556df6f582f9ac044e.jpg (206 kB)
 assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage2.f780ebaa637998182b6280483dc10f63.jpg (211 kB)
 assets/cards-mobile/core-guardians/bramblefang/bramblefang-stage3.53af22916b41d0c2d33286f4196e0ed3.jpg (213 kB)
@@ -181,6 +181,15 @@ assets/worlds/chapters/forest-2.7791cbfbf4b0bfafff27a044fb16db7b.png (1.23 MB)
 assets/worlds/chapters/sky-0.0368a3a865fa4bf6d377a74a0c1db5ab.png (984 kB)
 assets/worlds/chapters/sky-1.0bc72257bbc1600f41a641666b6b3749.png (927 kB)
 assets/worlds/chapters/sky-2.ad5177916c2630f89781fba9db729ad8.png (1.11 MB)
+assets/worlds/journey-stages/cosmos-0.8088d6ea98158af05e5dccabaa8b6489.jpg (879 kB)
+assets/worlds/journey-stages/cosmos-1.f7ba21816908f6b481c71f938e6f1860.jpg (854 kB)
+assets/worlds/journey-stages/cosmos-2.b5279cd6b77d13e98c3db62a787535aa.jpg (875 kB)
+assets/worlds/journey-stages/forest-0.77173f1b97f04b58d057ccc453e7f8e8.jpg (904 kB)
+assets/worlds/journey-stages/forest-1.b8720548e8ddde4582be941505e3b718.jpg (883 kB)
+assets/worlds/journey-stages/forest-2.1a8c512464eda2820703484eb7948ab4.jpg (1.01 MB)
+assets/worlds/journey-stages/sky-0.43a72dcac69370feb6e2b05523c63163.jpg (828 kB)
+assets/worlds/journey-stages/sky-1.f33f6071c97accf4968d3a24ca98c4c1.jpg (796 kB)
+assets/worlds/journey-stages/sky-2.797dffc4d49db389adc2f3df3df15d9a.jpg (929 kB)
 assets/worlds/journeys/cosmos.8f4d4d27a6db4be46572b2d1c607f505.png (3.05 MB)
 assets/worlds/journeys/forest.6259e0e9b9b8a9ed80caa1ca7981d917.png (3.35 MB)
 assets/worlds/sky-base/card-pedestal.b38239f704f54a51fa774e4fcca11a06.png (2.28 MB)
@@ -188,7 +197,7 @@ assets/worlds/sky-base/island-v3.2967e08298506898bdaea542f7c933da.png (3.15 MB)
 assets/worlds/village/landmark-map.ea82839d5f3ffd13fced15501dc0904d.png (3.75 MB)
 
 › web bundles (1):
-_expo/static/js/web/AppEntry-9e9b6ac8932e10420ec0e8d3530d34d7.js (1.62 MB)
+_expo/static/js/web/AppEntry-517f848fa95796bcb44d4843c3b590a0.js (1.62 MB)
 
 › Files (3):
 favicon.ico (14.5 kB)

@@ -7,12 +7,12 @@ import assert from 'node:assert/strict';
 const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=path.resolve('dist','.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(path.resolve('dist')+path.sep)){res.writeHead(403).end();return;}const data=await readFile(file);const ext=path.extname(file);res.setHeader('Content-Type',ext==='.js'?'application/javascript':ext==='.html'?'text/html':ext==='.png'?'image/png':ext==='.jpg'?'image/jpeg':'application/octet-stream');res.end(data);}catch{res.writeHead(404).end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=process.env.TEST_BASE_URL||`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
-try{for(const width of [320,390,900]){
+try{for(const [width,height] of [[320,568],[390,600],[844,390],[900,700]]){
  const family=randomUUID(),user=randomUUID(),a=randomUUID(),b=randomUUID();
  const kids=[{id:a,family_id:family,nickname:'哥哥',age_years:8,age_recorded_at:new Date().toISOString()},{id:b,family_id:family,nickname:'妹妹',age_years:6,age_recorded_at:new Date().toISOString()}];
  const seed=name=>({version:1,starterChoiceVersion:1,starterCompanionId:'pip',onboardingDone:true,childName:name,title:name==='哥哥'?'數學作業':'閱讀',minutes:5,orbs:name==='哥哥'?10:30,phase:'ready',deadline:null,remaining:300,help:false,history:[],guardian:{},guardianCards:[],allowEarlyFinish:true,focusMusicEnabled:false});
  const saves=new Map(kids.map(c=>[c.id,{child_id:c.id,family_id:family,revision:1,state:seed(c.nickname),updated_at:new Date().toISOString()}]));const ops=new Map();let completions=0;
- const context=await browser.newContext({viewport:{width,height:850},hasTouch:true,isMobile:width<800});const p=await context.newPage();p.setDefaultTimeout(12000);p.setDefaultNavigationTimeout(15000);const errors=[];console.log('viewport',width);p.on('pageerror',e=>errors.push(e.message));
+ const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:width<800});const p=await context.newPage();p.setDefaultTimeout(12000);p.setDefaultNavigationTimeout(15000);const errors=[];console.log('viewport',width);p.on('pageerror',e=>errors.push(e.message));
  await context.route('https://hzihwjpjcbsuqipaeeit.supabase.co/**',async route=>{const req=route.request(),url=new URL(req.url()),pathname=url.pathname;let data;
   if(pathname.endsWith('/rpc/record_usage_event'))data=null;
   else if(pathname.includes('/auth/v1/user'))data={id:user,email:'fixture@example.invalid'};
@@ -28,9 +28,11 @@ try{for(const width of [320,390,900]){
  await p.goto(base);console.log('loaded',await p.locator('body').innerText());await p.getByLabel('6 位數家長密碼',{exact:true}).fill(String(randomInt(100000,999999)));const value=await p.getByLabel('6 位數家長密碼',{exact:true}).inputValue();await p.getByLabel('再次輸入家長密碼',{exact:true}).fill(value);await p.getByRole('button',{name:'繼續設定',exact:true}).click();await p.getByRole('button',{name:'已妥善保存，啟用家長密碼',exact:true}).click();
  await p.getByLabel('孩子 1 的名字',{exact:true}).fill('哥哥新版');await p.getByRole('button',{name:'儲存名字',exact:true}).click();await p.getByText('名字已儲存，原有進度保留。',{exact:true}).waitFor();assert.equal(kids[0].nickname,'哥哥新版');assert.equal(saves.get(a).state.orbs,10);assert.equal(await p.getByLabel('孩子 3 的名字',{exact:true}).count(),0);
  console.log('select children');await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await p.getByTestId('duo-child-task').nth(1).waitFor();console.log('duo ready');
- const panels=p.getByTestId('duo-child-task');await panels.nth(0).getByLabel('任務時間（分鐘）',{exact:true}).fill('5');await panels.nth(1).getByLabel('任務時間（分鐘）',{exact:true}).fill('10');await p.getByRole('button',{name:'兩人一起開始',exact:true}).click();
+ const panels=p.getByTestId('duo-child-task');
+ const fits=async(label)=>{const boxes=await panels.evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right};}));assert.equal(boxes.length,2);for(const box of boxes){assert(box.top>=0&&box.bottom<=height,`${label}: ${width}x${height} ${JSON.stringify(box)}`);assert(box.left>=0&&box.right<=width);}console.log('both fully visible',label,boxes);};
+ await fits('ready');await p.screenshot({path:`reports/family-v2/compact-ready-${width}.png`});await panels.nth(0).getByLabel('任務時間（分鐘）',{exact:true}).fill('5');await panels.nth(1).getByLabel('任務時間（分鐘）',{exact:true}).fill('10');await p.getByRole('button',{name:'兩人一起開始',exact:true}).click();
  await p.waitForFunction(()=>[...document.querySelectorAll('[data-testid="duo-child-task"]')].every(e=>e.textContent.includes('努力中')));
- assert.equal(saves.get(a).state.focusStartedAt,saves.get(b).state.focusStartedAt);assert.equal(saves.get(b).state.deadline-saves.get(a).state.deadline,300000);
+ await fits('active');await p.screenshot({path:`reports/family-v2/compact-active-${width}.png`});assert.equal(saves.get(a).state.focusStartedAt,saves.get(b).state.focusStartedAt);assert.equal(saves.get(b).state.deadline-saves.get(a).state.deadline,300000);
  const start=saves.get(a).state.focusStartedAt;await p.getByRole('button',{name:'兩人一起開始',exact:true}).click();await p.getByRole('alert').filter({hasText:'進行中的任務不會重啟'}).waitFor();assert.equal(saves.get(a).state.focusStartedAt,start);
 
  await panels.nth(1).getByRole('button',{name:'完成任務',exact:true}).click();await p.waitForFunction(()=>document.querySelectorAll('[data-testid="duo-child-task"]')[1]?.textContent.includes('準備收尾'));
@@ -41,5 +43,6 @@ try{for(const width of [320,390,900]){
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await p.screenshot({path:`reports/family-v2/duo-${process.env.TEST_BASE_URL?'public-':''}${width}.png`,fullPage:true});
  await p.reload();console.log('select children');await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await p.getByTestId('duo-child-task').nth(1).waitFor();console.log('duo ready');assert.equal(saves.get(b).state.orbs,32);assert.equal(completions,1);assert.deepEqual(errors,[]);
+ await panels.nth(1).getByRole('button',{name:'下一個任務',exact:true}).click();await panels.nth(1).getByLabel('任務時間（分鐘）',{exact:true}).fill('15');const siblingDeadline=saves.get(a).state.deadline;await panels.nth(1).getByRole('button',{name:'開始任務',exact:true}).click();await p.waitForFunction(()=>document.querySelectorAll('[data-testid="duo-child-task"]')[1]?.textContent.includes('努力中'));assert.equal(saves.get(a).state.deadline,siblingDeadline);assert.equal(saves.get(b).state.minutes,15);
  console.log(`PASS ${width}: sibling isolation, independent timers, completion once, expand/back, reload, V1 intact, no overflow/JS errors`);await context.close();
 }}finally{await browser.close();server.close();}
