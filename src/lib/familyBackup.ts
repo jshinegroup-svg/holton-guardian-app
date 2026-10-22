@@ -31,7 +31,8 @@ export function parseBackup(raw:string):Backup {
  return v as unknown as Backup;
 }
 export function createBackup(state:unknown,now=new Date()):string {
- const raw=JSON.stringify({format:'holton-hero-family',version:1,createdAt:now.toISOString(),state},null,2);
+ const exportState=obj(state)?Object.fromEntries(Object.entries(state).filter(([key])=>key!=='familyTaskId')):state;
+ const raw=JSON.stringify({format:'holton-hero-family',version:1,createdAt:now.toISOString(),state:exportState},null,2);
  parseBackup(raw);return raw;
 }
 export function backupSummary(b:Backup){return `${b.state.orbs} 能量球 · ${b.state.history.length} 筆任務 · ${b.state.guardianCards?.length??0} 張守護獸卡 · ${b.state.wishReceipts?.length??0} 筆心願紀錄`;}

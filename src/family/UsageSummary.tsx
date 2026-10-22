@@ -1,0 +1,12 @@
+import {timeChallenges,guardianBeasts} from '../data/holtonCatalog';
+import React,{useState} from 'react';
+import {View,Text,Pressable} from 'react-native';
+import {supabase} from './client';
+type Summary={days:number;returning_children:number;active_children:number;ages:{age_years:number;children:number;families:number;started:number;completed:number;cohort_completed:number;early_completed:number;task_seconds:number;screen_seconds:number}[];cards:{card_id:string;selections:number;tasks:number}[]};
+const cardLabel=(id:string)=>timeChallenges.find(c=>c.id===id)?.name??guardianBeasts.find(c=>id.startsWith(c.id+':'))?.name??({pip:'Pip 初始夥伴',hop:'HOP 初始夥伴',bomo:'BOMO 初始夥伴'} as Record<string,string>)[id]??'其他卡片';
+export default function UsageSummary(){
+ const [data,setData]=useState<Summary|null>(null),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);
+ async function load(all:boolean){if(busy)return;setBusy(true);setNotice('');setData(null);try{const r=await supabase.rpc('usage_summary',{p_all_families:all});if(r.error)throw r.error;setData(r.data);}catch{setNotice(all?'此帳號尚未開通營運管理權限。':'目前無法讀取統計，請稍後再試。');}finally{setBusy(false);}}
+ const btn=(label:string,all:boolean)=><Pressable accessibilityRole="button" accessibilityLabel={label} disabled={busy} onPress={()=>void load(all)} style={{padding:14,backgroundColor:'#1b5668',borderRadius:12}}><Text style={{color:'#fff2cf',fontSize:17}}>{label}</Text></Pressable>;
+ return <View style={{gap:12}}>{btn('查看家庭使用紀錄',false)}{btn('營運管理統計（管理員）',true)}{notice?<Text style={{color:'#ffd2b0'}}>{notice}</Text>:null}{data?<><Text style={{color:'#fff2cf',fontSize:18}}>最近 {data.days} 天</Text><Text style={{color:'#d5e5ea'}}>活躍孩子 {data.active_children} 位 · 至少兩天回訪 {data.returning_children} 位</Text>{data.ages.map(a=><Text key={a.age_years} style={{color:'#d5e5ea',lineHeight:24}}>{a.age_years} 歲 · {a.children} 位孩子 · 開始 {a.started} 次／完成 {a.completed} 次（提早 {a.early_completed} 次）{'\n'}本期開始任務完成率：{a.started?`${Math.round(a.cohort_completed/a.started*100)}%`:'尚無任務'}{ '\n' }完成任務累積 {Math.round(a.task_seconds/60)} 分鐘 · 畫面互動約 {Math.round(a.screen_seconds/60)} 分鐘</Text>)}<Text style={{color:'#a8bdc5'}}>完成率以本期開始的任務追蹤是否已完成；畫面互動時間不是孩子實際專注程度。</Text>{data.cards.slice(0,10).map(c=><Text key={c.card_id} style={{color:'#d5e5ea'}}>{cardLabel(c.card_id)} · 選用 {c.selections} 次／帶入任務 {c.tasks} 次</Text>)}{!data.ages.length?<Text style={{color:'#d5e5ea'}}>尚無使用紀錄。</Text>:null}</>:null}</View>;
+}

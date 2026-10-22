@@ -1,3 +1,4 @@
+import {useFamilyStorage,type ScopedStorage} from './family/context';
 import React,{useEffect,useRef,useState} from 'react';
 import {Platform} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -5,9 +6,9 @@ import {MUSIC_HINT_KEY} from './TaskMusicHint';
 import {createPortal} from 'react-dom';
 export const GUIDE_KEY='holton-guardian-app::spotlight-v1';
 type GuideStore={main:boolean;companions:boolean;wishes:boolean;parent:boolean;companionTap?:boolean;music?:boolean};
-export async function initializeGuide(fresh:boolean,force=false){
- if(force)await AsyncStorage.removeItem(MUSIC_HINT_KEY);
- if(force||!await AsyncStorage.getItem(GUIDE_KEY))await AsyncStorage.setItem(GUIDE_KEY,JSON.stringify({main:!fresh,companions:!fresh,wishes:!fresh,parent:!fresh}));
+export async function initializeGuide(fresh:boolean,force=false,storage:ScopedStorage=AsyncStorage){
+ if(force)await storage.removeItem(MUSIC_HINT_KEY);
+ if(force||!await storage.getItem(GUIDE_KEY))await storage.setItem(GUIDE_KEY,JSON.stringify({main:!fresh,companions:!fresh,wishes:!fresh,parent:!fresh}));
 }
 type Step={selector:string;text:string;delay?:number;action?:'mission'|'picker';info?:boolean;passThrough?:boolean};
 const companionStep:Step={selector:'[data-testid="guardian-companion"] [data-testid="companion-reaction"]',text:'點點你的夥伴，看看他想跟你說什麼！他會用文字泡泡回應，做任務時也可以點他陪你一下。',delay:1400};
@@ -33,16 +34,17 @@ const rooms:Record<string,Step[]>={
  parent:[{selector:'[aria-label="任務與目標"]',text:'先點「任務與目標」看看設定。也能切換其他分類；重看操作教學在「偏好與舊卡」。',info:true,passThrough:true}],
 };
 export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,hasTask,onMission,onPicker,onMusicDone}:{allowed:boolean;room:string;replay:number;phase:string;pickerOpen:boolean;hasTask:boolean;onMission:()=>void;onPicker:()=>void;onMusicDone:()=>void}){
+ const {storage}=useFamilyStorage();
  const [store,setStore]=useState<GuideStore|null>(null),[mode,setMode]=useState<string|null>(null),[index,setIndex]=useState(0),[rect,setRect]=useState<DOMRect|null>(null),[size,setSize]=useState({w:0,h:0,top:0,left:0}),[notice,setNotice]=useState(''),[tipHeight,setTipHeight]=useState(180);
  const target=useRef<HTMLElement|null>(null),tip=useRef<HTMLDivElement|null>(null),lastReplay=useRef(0),saveLock=useRef(false),advanceTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const steps=mode==='main'?main:rooms[mode??'']??[];const step=steps[index];
- useEffect(()=>{if(Platform.OS==='web')void AsyncStorage.getItem(GUIDE_KEY).then(raw=>{if(raw)setStore({...JSON.parse(raw),...(replay>0?{companionTap:false,music:false}:{})})});},[]);
+ useEffect(()=>{if(Platform.OS==='web')void storage.getItem(GUIDE_KEY).then(raw=>{if(raw)setStore({...JSON.parse(raw),...(replay>0?{companionTap:false,music:false}:{})})});},[]);
  useEffect(()=>{if(replay>0&&replay!==lastReplay.current){lastReplay.current=replay;setStore(old=>old?{...old,companionTap:false,music:false}:old);setMode('main');setIndex(0);setNotice('');}},[replay]);
  useEffect(()=>{if(!allowed||!store||mode)return;if(room==='village'&&!store.main&&phase==='ready'){setIndex(0);setMode('main');}else if(room==='mission'&&store.main&&!store.companionTap&&(phase==='ready'||phase==='preparing')){setIndex(0);setMode('companionTap');}else if(rooms[room]&&!store[room as keyof GuideStore]){setIndex(0);setMode(room);}},[allowed,store,mode,room,phase]);
  useEffect(()=>{if(mode&&mode!=='main'&&room!==(mode==='companionTap'?'mission':mode)){setMode(null);setIndex(0);}},[room,mode]);
  const finish=async()=>{
   if(!mode||!store||saveLock.current)return;saveLock.current=true;
-  try{if(advanceTimer.current){clearTimeout(advanceTimer.current);advanceTimer.current=null;}const next={...store,[mode]:true,...(mode==='main'?{companionTap:true}:{})};await AsyncStorage.setItem(GUIDE_KEY,JSON.stringify(next));setStore(next);if(mode==='music')onMusicDone();setMode(null);setIndex(0);setNotice('');}
+  try{if(advanceTimer.current){clearTimeout(advanceTimer.current);advanceTimer.current=null;}const next={...store,[mode]:true,...(mode==='main'?{companionTap:true}:{})};await storage.setItem(GUIDE_KEY,JSON.stringify(next));setStore(next);if(mode==='music')onMusicDone();setMode(null);setIndex(0);setNotice('');}
   catch{setNotice('教學紀錄尚未存好，請再按一次；遊戲進度沒有改變。');}
   finally{saveLock.current=false;}
  };

@@ -141,8 +141,9 @@ import type {
   PersistedAppState,
 } from "./src/types/holton";
 import LightApp from "./src/LightApp";
+import FamilyApp from "./src/family/FamilyApp";
 import ResponsiveStyles from "./src/ResponsiveStyles";
-export default function HoltonApp(){return <><ResponsiveStyles/><LightApp/></>;}
+export default function HoltonApp(){return <><ResponsiveStyles/><FamilyApp/></>;}
 
 export function LegacyApp() {
   const [childName, setChildName] = useState("Holton");

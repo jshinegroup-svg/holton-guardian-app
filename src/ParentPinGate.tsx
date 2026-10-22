@@ -1,14 +1,16 @@
+import {useFamilyStorage} from './family/context';
 import React,{useEffect,useRef,useState} from 'react';
 import {Modal,View,Text,TextInput,Pressable,ScrollView} from 'react-native';
 import {hasParentPin,recoveryCode,saveParentPin,verifyParentPin} from './lib/parentLock';
 export function ParentPinGate({visible,onConfirm,onCancel,change=false}:{visible:boolean;onConfirm:()=>void;onCancel:()=>void;change?:boolean}){
+ const {pinKey}=useFamilyStorage();
  const [mode,setMode]=useState<'loading'|'verify'|'setup'|'recovery'|'keep'>('loading');
  const [value,setValue]=useState(''),[repeat,setRepeat]=useState(''),[code,setCode]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false);const lock=useRef(false);
- useEffect(()=>{if(visible){setMode('loading');setValue('');setRepeat('');setCode('');setNotice('');void hasParentPin().then(exists=>setMode(exists?'verify':'setup')).catch(()=>setNotice('無法讀取家長鎖，請勿清除瀏覽器資料。'));}},[visible]);
+ useEffect(()=>{if(visible){setMode('loading');setValue('');setRepeat('');setCode('');setNotice('');void hasParentPin(pinKey).then(exists=>setMode(exists?'verify':'setup')).catch(()=>setNotice('無法讀取家長鎖，請勿清除瀏覽器資料。'));}},[visible]);
  const act=async()=>{if(lock.current)return;lock.current=true;setBusy(true);setNotice('');try{
  if(mode==='setup'){if(!/^\d{6}$/.test(value)||value!==repeat)throw Error('請輸入兩次相同的 6 位數字。');setCode(recoveryCode());setMode('keep');}
- else if(mode==='keep'){await saveParentPin(value,code);setValue('');setRepeat('');setCode('');onConfirm();}
- else if(await verifyParentPin(value,mode==='recovery')){setValue('');if(mode==='recovery'||change)setMode('setup');else onConfirm();}
+ else if(mode==='keep'){await saveParentPin(value,code,pinKey);setValue('');setRepeat('');setCode('');onConfirm();}
+ else if(await verifyParentPin(value,mode==='recovery',pinKey)){setValue('');if(mode==='recovery'||change)setMode('setup');else onConfirm();}
  else throw Error(mode==='recovery'?'復原碼不正確。':'家長密碼不正確。');
  }catch(e){setNotice(e instanceof Error?e.message:'操作失敗，請再試一次。');}finally{lock.current=false;setBusy(false);}};
  const button=(label:string,fn:()=>void)=><Pressable accessibilityRole="button" accessibilityLabel={label} disabled={busy} onPress={fn} style={{padding:15,backgroundColor:'#086b80',borderRadius:14,marginTop:12}}><Text style={{color:'#fff',textAlign:'center',fontSize:18}}>{label}</Text></Pressable>;
