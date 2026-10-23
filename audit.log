@@ -126,3 +126,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 
 2026-10-23 actor=bot approval=Jerry23240-and-followup trigger=help-sync-recovery-and-once-use | In-place persisted-operation retry/12s timeout preserves conflicts; rest120s/others60s, one use/card/task, instruction and disabled state. Typecheck/export/lint,9units,4viewport regression and2mobile failure-path suites PASS.
 2026-10-23 | actor=codex | approval=user:23246 | trigger=implement agreed timeout choices | completed/continue/unfinished outcomes; preserve history, exclude unfinished rewards/progress, backup compatibility; browser and unit verification passed
+
+2026-10-23 | actor=codex | approval=user:23252 | trigger=card-arrow-screen-shift | Stable overlay sync status in solo/expanded; fixed20px single-line compact slot. Typecheck/export,4viewport regression,320/390 delayed-save geometry and failure/retry PASS.
