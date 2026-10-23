@@ -338,7 +338,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const outcomeChoices=taskDue?<View testID="task-outcome-choices" style={{gap:8}}>
     <Text accessibilityLiveRegion="polite" style={styles.body}>{state.focusTargetMs!==undefined?'補上的時間到囉！你的任務完成了嗎？':state.minutes===0?'已努力 10 分鐘，你的任務完成了嗎？':'時間到囉！你的任務完成了嗎？'}</Text>
     {button('我完成了',()=>{setTaskAway(false);void change(enterFinishing);})}
-    {button('還差一點',()=>{setTaskAway(false);void change(s=>extendFocus(s,Date.now()));},true)}
+    {button('還差一點',()=>{setTaskAway(false);setSoundBlocked(false);void change(s=>extendFocus(s,Date.now()));},true)}
     <Text style={styles.caption}>再給自己 2 分鐘，按下就繼續倒數；幫忙卡次數不重置。</Text>
     {button('這次先到這裡',()=>{setTaskAway(false);void change(stopUnfinished);},true)}
     <Text style={styles.caption}>先到這裡會記錄「未完成」，不扣球，也不發完成獎勵或增加旅程步數。</Text>
