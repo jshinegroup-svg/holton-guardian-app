@@ -1,3 +1,5 @@
+import CustomTimeCard,{customTimeImage} from './CustomTimeCard';
+import {CUSTOM_TIME_CARD_ID,parseCustomMinutes,validCustomMinutes,rewardForMinutes} from './lib/taskTime';
 import {selectHelpCard,migrateHelpSession,helpDurations} from './lib/helpSession';
 import {syncErrorMessage} from './family/cloudRequest';
 import EnergyAmount from './EnergyAmount';
@@ -44,8 +46,8 @@ const RECOVERY_KEY = 'holton-guardian-app::before-replace-v1';
 type State=LightState;
 type RecordItem = { outcome?:'completed'|'unfinished';elapsedSeconds?:number; world?:WorldId; reward?: number; id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
 const worldEnergyReward=(id?:string)=>worldPointValues[id??'']?<><EnergyAmount kind="gain" value={worldPointValues[id!]} size={20}/> 可兌換</>:worldRewardLabel(id);
-export type LightState = { focusTargetMs?:number; taskOutcome?:'completed'|'unfinished';continueAfterDue?:boolean; guardianSundayOnly?:boolean; starterChoiceVersion?:1;starterCompanionId?:StarterCompanionId; focusMusicEnabled?:boolean;focusMusicTrackId?:FocusMusicId; childName?:string; allowEarlyFinish?:boolean;taskSoundEnabled?:boolean;taskReminderShown?:boolean; focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
-const rewardForMinutes = (minutes: number) => timeChallenges.find(card => card.minutes === minutes)?.orbs ?? 1;
+export type LightState = { lastCustomMinutes?:number; focusTargetMs?:number; taskOutcome?:'completed'|'unfinished';continueAfterDue?:boolean; guardianSundayOnly?:boolean; starterChoiceVersion?:1;starterCompanionId?:StarterCompanionId; focusMusicEnabled?:boolean;focusMusicTrackId?:FocusMusicId; childName?:string; allowEarlyFinish?:boolean;taskSoundEnabled?:boolean;taskReminderShown?:boolean; focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+const cardIdForMinutes=(minutes:number)=>timeChallenges.find(card=>card.minutes===minutes)?.id??CUSTOM_TIME_CARD_ID;
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, starterChoiceVersion:1,...(old?{starterCompanionId:'pip' as const}:{}),onboardingDone:!!old, shopEnabled: true, wishes: starterWishes(), title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
 
@@ -71,6 +73,10 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const {storage,pinKey,familyMode}=useFamilyStorage();
   const {width: viewportWidth, height: viewportHeight} = useWindowDimensions();
   const [state, setState] = useState<State | null>(null);
+  const [customDraft,setCustomDraft]=useState('10');
+  const [customNeedsApply,setCustomNeedsApply]=useState(false);
+  const selectedMinutes=state?.minutes,selectedTimeCardId=state?.cardId;
+  useEffect(()=>{if(selectedMinutes!==undefined)setCustomDraft(String(selectedMinutes||10));},[selectedMinutes,selectedTimeCardId]);
   const systemReduced = useSystemReducedMotion();
   const reduceMotion = systemReduced || !!state?.reduceMotion;
   const [mapOpen,setMapOpen]=useState(false);
@@ -195,19 +201,19 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       const data=await readState();
       if(!current.current){setRoom(['ready','done'].includes(data.phase)&&!data.journeys?.event?'village':'mission');setFreshTutorial(data.onboardingDone===false);}
       celebrate.current=false;current.current=data;setState(data);setTitle(data.title);setMinutes(String(data.minutes));setGoal(String(data.dailyGoal??3));setNow(Date.now());
-      syncBlocked.current=false;setNeedsSync(false);setError('');
+      syncBlocked.current=false;setNeedsSync(false);setCustomNeedsApply(false);setError('');
     }catch(e){setError(syncErrorMessage(e));}
     finally{busy.current=false;setSaving(false);}
   }
-  const duoReady=!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=60&&!saving&&!needsSync;
+  const duoReady=!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=60&&!saving&&!needsSync&&!customNeedsApply;
   async function startDuo(at:number){
     if(!duoReady||busy.current)return false;
     const n=Number(minutes);
-    if(!await change(s=>s.phase==='ready'?{...s,title:title.trim(),minutes:n,cardId:timeChallenges.find(c=>c.minutes===n)?.id,phase:'preparing',taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false,focusElapsedMs:0,focusStartedAt:null,taskReward:rewardForMinutes(n),supportCardId:undefined,supportUsed:[],breakDeadline:null,helpUsed:false,finishId:undefined,deadline:null,remaining:n*60}:s))return false;
+    if(!await change(s=>s.phase==='ready'?{...s,title:title.trim(),minutes:n,cardId:s.cardId===CUSTOM_TIME_CARD_ID&&n>0?CUSTOM_TIME_CARD_ID:cardIdForMinutes(n),lastCustomMinutes:n>0&&(s.cardId===CUSTOM_TIME_CARD_ID||cardIdForMinutes(n)===CUSTOM_TIME_CARD_ID)?n:s.lastCustomMinutes,phase:'preparing',taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false,focusElapsedMs:0,focusStartedAt:null,taskReward:rewardForMinutes(n),supportCardId:undefined,supportUsed:[],breakDeadline:null,helpUsed:false,finishId:undefined,deadline:null,remaining:n*60}:s))return false;
     armChime();
     return change(s=>s.phase==='preparing'?{...s,phase:'active',focusElapsedMs:0,focusStartedAt:at,help:false,deadline:s.minutes===0?null:at+s.minutes*60000}:s);
   }
-  useEffect(()=>{duoControl?.({ready:duoReady,start:startDuo});return()=>duoControl?.(null);},[duoControl,state,title,minutes,saving]);
+  useEffect(()=>{duoControl?.({ready:duoReady,start:startDuo});return()=>duoControl?.(null);},[duoControl,state,title,minutes,saving,customNeedsApply]);
   useEffect(()=>{
     if(!state||state.phase!=='active'||state.help||state.taskReminderShown||reminderBusy.current)return;
     const target=focusTargetMs(state);
@@ -233,9 +239,24 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const activeCategory = taskCategories.find(item => item.id === state.taskCategory || item.title === state.title || item.tasks.includes(state.title));
   const scene = state.help ? 'rest' : state.phase === 'active' || state.phase === 'finishing' ? 'focus' : 'home';
   const homePhase = ['ready', 'done'].includes(state.phase);
-  const selectedCard = timeChallenges.find(card => card.id === state.cardId);
+  const customSelected=state.cardId===CUSTOM_TIME_CARD_ID||!timeChallenges.some(card=>card.minutes===state.minutes);
+  const customCard={...timeChallenges[0],id:CUSTOM_TIME_CARD_ID,name:'自訂時間 · Master Mode Legendary',minutes:state.minutes,orbs:rewardForMinutes(state.minutes),imageSource:customTimeImage};
+  const selectedCard = customSelected?customCard:timeChallenges.find(card => card.id === state.cardId);
   const displayCard = selectedCard ?? timeChallenges.find(card => card.minutes === state.minutes) ?? timeChallenges[1];
-  const stepCard = (delta: number) => { const index = timeChallenges.indexOf(displayCard); const card = timeChallenges[(index + delta + timeChallenges.length) % timeChallenges.length]; void change(s => s.phase !== 'ready' ? s : ({ ...s, cardId: card.id, minutes: card.minutes, remaining: card.minutes * 60 })); };
+  const stepCard = (delta:number) => {
+    const index=customSelected?timeChallenges.length:timeChallenges.indexOf(displayCard);
+    const next=(index+delta+timeChallenges.length+1)%(timeChallenges.length+1);
+    const card=timeChallenges[next];
+    const n=card?.minutes??(validCustomMinutes(state.lastCustomMinutes??0)?state.lastCustomMinutes!:10);
+    void change(s=>s.phase!=='ready'?s:{...s,cardId:card?.id??CUSTOM_TIME_CARD_ID,minutes:n,remaining:n*60}).then(saved=>{if(saved){setMinutes(String(n));setCustomDraft(String(n));setCustomNeedsApply(!card);}});
+  };
+  const customValue=parseCustomMinutes(customDraft);
+  const customPending=customSelected&&(customNeedsApply||customValue!==state.minutes);
+  const applyCustomTime=async()=>{
+    if(customValue===null)return;
+    const n=customValue;
+    if(await change(s=>s.phase!=='ready'?s:{...s,cardId:CUSTOM_TIME_CARD_ID,minutes:n,lastCustomMinutes:n,remaining:n*60})){setMinutes(String(n));setCustomNeedsApply(false);}
+  };
   const durationLabel = (n: number) => n === 0 ? '不限時' : `${n} 分鐘`;
   const todayAttempts = state.history.filter(item => day(new Date(item.at)) === day(new Date(now)));
   const today = state.history.filter(item => item.outcome!=='unfinished' && day(new Date(item.at)) === day(new Date(now)));
@@ -266,7 +287,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   }
   const challenge = state.guardianChallenge;
   const battleGuardian = guardianCards.find(card => card.id === (challenge?.cardId ?? battlePreviewId));
-  const battleHero = timeChallenges.find(card => card.id === challenge?.heroCardId) ?? displayCard;
+  const battleHero = [...timeChallenges,customCard].find(card => card.id === challenge?.heroCardId) ?? displayCard;
   const confirmGuardian = guardianCards.find(card => card.id === challengeConfirmId);
   const challengeBlocked = (card: typeof guardianCards[number]) => !homePhase || !exchangeOpen || ownedIds.has(card.id) || state.orbs < card.cost || (card.index > 0 && !ownedIds.has(`${card.beastId}:${card.index - 1}`));
   const closeBattle = async (asCompanion = false) => {
@@ -394,15 +415,15 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     if (!Number.isInteger(target) || target < 1 || target > 20) { setNotice('今日任務數請填 1～20 次。'); return; }
     if (!title.trim() || !Number.isInteger(n) || n < 0 || n > 60) { setNotice('請填任務名稱，時間為 1～60 分鐘，或填 0 表示不限時。'); return; }
     setNotice('');
-    void change(s => ['preparing', 'active', 'finishing'].includes(s.phase) ? s : ({ ...s, title: title.trim(), taskCategory: undefined, dailyGoal: target, minutes: n, cardId: timeChallenges.find(card => card.minutes === n)?.id, phase: 'ready', remaining: n * 60, deadline: null, help: false }));
+    void change(s => ['preparing', 'active', 'finishing'].includes(s.phase) ? s : ({ ...s, title: title.trim(), taskCategory: undefined, dailyGoal: target, minutes: n, cardId: cardIdForMinutes(n), lastCustomMinutes:cardIdForMinutes(n)===CUSTOM_TIME_CARD_ID?n:s.lastCustomMinutes, phase: 'ready', remaining: n * 60, deadline: null, help: false }));
   }
   if(pinReady!==true)return <SafeAreaView style={styles.root}><Text style={styles.body}>請先由家長設定這台裝置的家長小屋密碼。</Text>{button('設定家長密碼',()=>setPinSetupVisible(true),true)}<ParentPinGate visible={pinReady===false&&pinSetupVisible} onConfirm={()=>setPinReady(true)} onCancel={()=>setPinSetupVisible(false)}/></SafeAreaView>;
   const duoButton = (label:string, action:()=>void, secondary=false, disabled=false) => <Pressable testID={secondary?"secondary-action":"primary-action"} accessibilityRole="button" accessibilityLabel={label} disabled={disabled||saving} onPress={action} style={{flex:1,minHeight:44,justifyContent:'center',alignItems:'center',paddingHorizontal:6,borderRadius:12,backgroundColor:secondary?'#173f50':'#08748a',borderWidth:1,borderColor:'#bca66d',opacity:disabled||saving ? .45 : 1}}><Text style={{color:'#fff0c1',fontSize:16,fontWeight:'700',textAlign:'center'}}>{label}</Text></Pressable>;
   if(compact)return <View testID="duo-child-task" style={{padding:10,borderRadius:16,backgroundColor:'#103448',borderWidth:1,borderColor:'#bca66d',gap:6,marginHorizontal:8,marginVertical:3}}>
     <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}><Text numberOfLines={1} style={{color:'#fff0c1',fontSize:21,fontWeight:'800',flex:1}}>{childNickname||state.childName}</Text><EnergyAmount value={state.orbs} size={20} style={{fontSize:15}}/></View>
-    <View style={{flexDirection:'row',alignItems:'center',gap:12,zIndex:1}}>{companion||starterId?<CompanionReaction compact adventurerName={normalizeChildName(childNickname??state.childName)} name={companionName} character={companion?companion.beastId:starterId!} mood={state.taskOutcome==='unfinished'&&state.phase==='done'?'ready':state.help?'rest':state.phase==='done'||state.phase==='finishing'?'done':state.phase==='active'?'focus':'ready'} reduced={reduceMotion}>{companion?<Image source={companion.image} style={{width:44,height:62}} resizeMode="contain"/>:<StarterCompanionArt id={starterId!} width={44}/>}</CompanionReaction>:null}<View style={{flex:1}}><Text numberOfLines={1} style={{color:'#fff0c1',fontSize:17,fontWeight:'700'}}>{state.title||'還沒選今天的任務'}</Text><Text accessibilityLabel="任務倒數" style={{color:'#fff0b3',fontSize:32,fontWeight:'bold'}}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text><Text style={{color:'#c7e1e7',fontSize:13}}>{state.help?'休息中':state.phase==='active'?'努力中':state.phase==='finishing'?'準備收尾':state.phase==='done'?(unfinished?'這次先到這裡':'完成了！'):'準備中'}</Text></View></View>
+    <View style={{flexDirection:'row',alignItems:'center',gap:12,zIndex:1}}>{companion||starterId?<CompanionReaction compact adventurerName={normalizeChildName(childNickname??state.childName)} name={companionName} character={companion?companion.beastId:starterId!} mood={state.taskOutcome==='unfinished'&&state.phase==='done'?'ready':state.help?'rest':state.phase==='done'||state.phase==='finishing'?'done':state.phase==='active'?'focus':'ready'} reduced={reduceMotion}>{companion?<Image source={companion.image} style={{width:44,height:62}} resizeMode="contain"/>:<StarterCompanionArt id={starterId!} width={44}/>}</CompanionReaction>:null}<View style={{flex:1}}><Text numberOfLines={1} style={{color:'#fff0c1',fontSize:17,fontWeight:'700'}}>{state.title||'還沒選今天的任務'}</Text><Text accessibilityLabel="任務倒數" style={{color:'#fff0b3',fontSize:32,fontWeight:'bold'}}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text><Text style={{color:'#c7e1e7',fontSize:13}}>{state.help?'休息中':state.phase==='active'?'努力中':state.phase==='finishing'?'準備收尾':state.phase==='done'?(unfinished?'這次先到這裡':'完成了！'):'準備中'}{state.phase==='ready'&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=60?<> · 完成 <EnergyAmount kind="gain" value={rewardForMinutes(Number(minutes))} size={12} style={{fontSize:13,lineHeight:16}}/></>:null}</Text></View></View>
     {error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}
-    {state.phase==='ready'?<View style={{flexDirection:'row',gap:8}}><TextInput accessibilityLabel="任務名稱" value={title} onChangeText={setTitle} maxLength={80} placeholder="任務名稱" placeholderTextColor="#a8bdc5" style={{flex:1,minWidth:0,height:44,borderWidth:1,borderColor:'#72909a',borderRadius:8,paddingHorizontal:8,color:'#fff',fontSize:16}}/><View style={{flexDirection:'row',alignItems:'center',gap:4}}><TextInput accessibilityLabel="任務時間（分鐘）" value={minutes} onChangeText={setMinutes} keyboardType="number-pad" style={{width:48,height:44,borderWidth:1,borderColor:'#72909a',borderRadius:8,textAlign:'center',color:'#fff',fontSize:16}}/><Text style={{color:'#c7e1e7',fontSize:13}}>分</Text></View></View>:null}
+    {state.phase==='ready'?<View style={{flexDirection:'row',gap:8}}><TextInput accessibilityLabel="任務名稱" value={title} onChangeText={setTitle} maxLength={80} placeholder="任務名稱" placeholderTextColor="#a8bdc5" style={{flex:1,minWidth:0,height:44,borderWidth:1,borderColor:'#72909a',borderRadius:8,paddingHorizontal:8,color:'#fff',fontSize:16}}/><View style={{flexDirection:'row',alignItems:'center',gap:4}}><TextInput accessibilityLabel="任務時間（分鐘）" value={minutes} onChangeText={text=>{setMinutes(text);setCustomNeedsApply(false);}} keyboardType="number-pad" style={{width:48,height:44,borderWidth:1,borderColor:'#72909a',borderRadius:8,textAlign:'center',color:'#fff',fontSize:16}}/><Text style={{color:'#c7e1e7',fontSize:13}}>分</Text></View></View>:null}
     <View style={{flexDirection:'row',gap:8}}>
     {!starterId?duoButton('選擇自己的夥伴',()=>onExpand?.()):['ready','preparing'].includes(state.phase)?duoButton('開始任務',()=>void startDuo(Date.now()),false,!duoReady):state.phase==='active'?!taskDue&&duoButton('完成任務',()=>void change(enterFinishing),false,!focusReady):state.phase==='finishing'?duoButton(finish.button,()=>void change(completeTask)):state.phase==='done'?duoButton('下一個任務',()=>void change(s=>({...s,phase:'ready',deadline:null,remaining:s.minutes*60,help:false,focusElapsedMs:0,focusStartedAt:null}))):null}
     {!taskDue&&['active','finishing'].includes(state.phase)?duoButton('這次先到這裡',stopEarly,true):null}
@@ -453,7 +474,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
         <Text style={styles.caption}>柔和三音，不循環。限時任務倒數到零時提醒；不限時滿 10 分鐘提醒，不會自動完成或發點數。</Text>
         {button('試聽到時提示音',()=>{armChime();setTimeout(()=>void playChime().then(ok=>setNotice(ok?'已播放提示音':'裝置暫時無法播放，請確認媒體音量後再試。')),100);},true)}
         <Text style={styles.caption}>手機靜音、鎖定或切換 App 時可能聽不到；回到這裡仍會顯示到時提醒。</Text>
-        <Text style={styles.caption}>原卡獎勵：3／5 分鐘＋1、10 分鐘＋2、15 分鐘＋3、20 分鐘＋4、25 分鐘／不限時＋5。其他自訂時間＋1。休息與求助不扣獎勵。</Text>
+        <Text style={styles.caption}>時間獎勵：1～9 分鐘＋1、10～14 分鐘＋2、15～19 分鐘＋3、20～24 分鐘＋4、25～60 分鐘／不限時＋5。休息與求助不扣獎勵。</Text>
       </View>
       </>:null}
       {parentTab==='records'?<View style={styles.card}><Text style={styles.section}>世界卡兌換紀錄</Text><Text style={styles.body}>今天已兌換 <EnergyAmount kind="gain" value={todayExchangePoints}/>。每天最多一次，可留到明天一起換。</Text>{button('查看世界卡兌換', () => setWorldExchangeOpen(true), true)}</View>:null}
@@ -497,11 +518,13 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       {state.phase === 'ready' ? <>
         <View style={styles.cardStage}>
           <Pressable accessibilityRole="button" accessibilityLabel="上一張時間卡" onPress={() => stepCard(-1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>‹</Text></Pressable>
-          <CardLift selected reduced={reduceMotion}><CardPedestal source={displayCard.imageSource} label={displayCard.name} deck={timeChallenges} selectedId={displayCard.id} /></CardLift>
+          <CardLift selected reduced={reduceMotion}><CardPedestal source={displayCard.imageSource} label={displayCard.name} deck={[...timeChallenges,customCard]} selectedId={displayCard.id} /></CardLift>
           <Pressable accessibilityRole="button" accessibilityLabel="下一張時間卡" onPress={() => stepCard(1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>›</Text></Pressable>
         </View>
-        <Text style={styles.cardPlaque}>{durationLabel(state.minutes)} · 完成 <EnergyAmount kind="gain" value={rewardForMinutes(state.minutes)} size={20} style={styles.cardPlaque}/></Text>
-        {button('準備出發', () => void change(s => s.phase !== 'ready' || !s.title.trim() ? s : ({ ...s, phase: 'preparing', taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false, focusElapsedMs:0,focusStartedAt:null, cardId: s.cardId ?? timeChallenges.find(c => c.minutes === s.minutes)?.id, taskReward: rewardForMinutes(s.minutes), supportCardId: undefined, supportUsed: [], breakDeadline: null, helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })), false, !state.title.trim())}
+        {customSelected?<CustomTimeCard draft={customDraft} onChange={text=>{setCustomDraft(text);setCustomNeedsApply(true);}} onApply={()=>void applyCustomTime()} disabled={saving}/>:null}
+        {customPending?<Text accessibilityLiveRegion="polite" style={styles.caption}>調整好後，按「用這個時間」再出發。</Text>:null}
+        <Text style={styles.cardPlaque}>{customSelected?'自訂 · ':''}{durationLabel(state.minutes)} · 完成 <EnergyAmount kind="gain" value={rewardForMinutes(state.minutes)} size={20} style={styles.cardPlaque}/></Text>
+        {button('準備出發', () => void change(s => s.phase !== 'ready' || !s.title.trim() ? s : ({ ...s, phase: 'preparing', taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false, focusElapsedMs:0,focusStartedAt:null, cardId: customSelected?CUSTOM_TIME_CARD_ID:s.cardId??cardIdForMinutes(s.minutes), taskReward: rewardForMinutes(s.minutes), supportCardId: undefined, supportUsed: [], breakDeadline: null, helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })), false, !state.title.trim()||customPending)}
       </> : state.phase === 'preparing' ? <>
         <PortalCue reduced={reduceMotion} />
         <Image source={sopCards.find(card => card.id === 'task-starter')!.imageSource} accessibilityLabel="Task Starter 任務啟動卡" style={[styles.ritualArt,{height:252,width:'90%',alignSelf:'center'}]} resizeMode="contain" />
