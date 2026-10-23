@@ -34,9 +34,16 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  await p.getByRole('button',{name:'只有 哥哥 玩',exact:true}).click();
  await p.getByTestId('task-outcome-choices').waitFor();
  await p.getByRole('button',{name:'進入專注介面',exact:true}).click();await p.getByTestId('task-away-panel').getByTestId('task-outcome-choices').waitFor();
- await p.getByRole('button',{name:'還差一點',exact:true}).click();await p.getByText('繼續努力中 · 同一個任務，幫忙卡次數不重置',{exact:true}).waitFor();
+ await p.getByRole('button',{name:'還差一點',exact:true}).click();await p.getByText('已補上 2 分鐘 · 繼續努力中',{exact:true}).waitFor();
  assert.equal(saves.get(a).state.phase,'active');assert.deepEqual(saves.get(a).state.supportUsed,['rest']);assert.equal(saves.get(a).state.history.length,0);
- await p.reload();await p.getByTestId('task-outcome-choices').waitFor();assert.equal(await p.getByRole('button',{name:'還差一點',exact:true}).count(),0);
+ await p.screenshot({path:`reports/family-v2/extension-${width}.png`,fullPage:true});const extended=saves.get(a).state;assert.equal(extended.remaining,120);assert(extended.deadline>Date.now()+115000);assert.equal(extended.minutes,5);
+ await p.reload();await p.getByTestId('crystal-clock').waitFor();assert.equal(await p.getByTestId('task-outcome-choices').count(),0);assert.match(await p.getByTestId('crystal-clock').innerText(),/0[12]:[0-5][0-9]/);
+ // Expire first extension, then verify repeat extension and its once-only recovery.
+ saves.get(a).state.focusElapsedMs=extended.focusTargetMs;saves.get(a).state.focusStartedAt=Date.now();saves.get(a).state.deadline=Date.now()-1;
+ await p.reload();await p.getByTestId('task-outcome-choices').waitFor();failure='after';await p.getByRole('button',{name:'還差一點',exact:true}).click();await p.getByTestId('sync-recovery').waitFor();const retryTarget=saves.get(a).state.focusTargetMs;
+ await p.getByRole('button',{name:'重試同步',exact:true}).click();await p.getByTestId('crystal-clock').waitFor();assert.equal(saves.get(a).state.focusTargetMs,retryTarget);
+ saves.get(a).state.focusElapsedMs=retryTarget;saves.get(a).state.focusStartedAt=Date.now();saves.get(a).state.deadline=Date.now()-1;
+ await p.reload();await p.getByTestId('task-outcome-choices').waitFor();
  const before=structuredClone(saves.get(a).state);failure='after';await p.getByRole('button',{name:'這次先到這裡',exact:true}).click();await p.getByTestId('sync-recovery').waitFor();
  await p.getByRole('button',{name:'重試同步',exact:true}).click();await p.getByTestId('unfinished-result').waitFor();
  const after=saves.get(a).state;assert.equal(after.orbs,10);assert.equal(after.rewardProgress,2);assert.equal(after.history.length,1);assert.equal(after.history[0].outcome,'unfinished');assert.equal(after.history[0].reward,0);assert(after.history[0].elapsedSeconds>=300);assert.deepEqual(after.history[0].supportUsed,['rest']);assert.deepEqual(after.journeys.counts,before.journeys.counts);assert.equal(after.draws?.length??0,0);assert.equal(completions,0);assert.equal(saves.get(b).state.orbs,30);
@@ -47,8 +54,11 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  saves.get(a).state.focusElapsedMs=300000;saves.get(a).state.deadline=Date.now()-1000;
  await p.reload();await p.getByRole('button',{name:'我完成了',exact:true}).click();await p.getByRole('button',{name:'還有一點，回去繼續',exact:true}).waitFor();await p.getByTestId('mission-stage').getByTestId('primary-action').click();
  await p.waitForTimeout(500);assert.equal(saves.get(a).state.history.length,2);assert.equal(saves.get(a).state.history[1].outcome,'completed');assert.equal(saves.get(a).state.orbs,11);assert.equal(completions,1);assert.equal(saves.get(b).state.history.length,0);
- const siblingBefore=structuredClone(saves.get(a).state);
- await p.evaluate(family=>localStorage.removeItem(`holton-family-v2::${family}::solo-child`),family);await p.reload();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();const panels=p.getByTestId('duo-child-task');await panels.nth(1).getByTestId('task-outcome-choices').waitFor();
+ const siblingBefore=structuredClone(saves.get(a).state);saves.get(b).state.minutes=0;saves.get(b).state.focusElapsedMs=60000;saves.get(b).state.allowEarlyFinish=false;
+ await p.evaluate(family=>localStorage.removeItem(`holton-family-v2::${family}::solo-child`),family);await p.reload();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();const panels=p.getByTestId('duo-child-task');await panels.nth(1).getByRole('button',{name:'完成任務',exact:true}).waitFor();assert.equal(await panels.nth(1).getByRole('button',{name:'完成任務',exact:true}).isEnabled(),true);
+ saves.get(b).state.focusElapsedMs=600000;await p.reload();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await panels.nth(1).getByTestId('task-outcome-choices').waitFor();
+ await panels.nth(1).getByRole('button',{name:'還差一點',exact:true}).click();await p.waitForTimeout(500);assert.equal(saves.get(b).state.remaining,120);assert.equal(saves.get(b).state.minutes,0);assert.deepEqual(saves.get(a).state,siblingBefore);assert.match(await panels.nth(1).getByLabel('任務倒數',{exact:true}).innerText(),/0[12]:[0-5][0-9]/);
+ saves.get(b).state.focusElapsedMs=saves.get(b).state.focusTargetMs;saves.get(b).state.focusStartedAt=Date.now();await p.reload();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await panels.nth(1).getByTestId('task-outcome-choices').waitFor();
  await panels.nth(1).getByRole('button',{name:'這次先到這裡',exact:true}).click();await panels.nth(1).getByRole('button',{name:'下一個任務',exact:true}).waitFor();assert.equal(saves.get(b).state.orbs,30);assert.equal(saves.get(b).state.history[0].outcome,'unfinished');assert.equal(saves.get(a).state.orbs,siblingBefore.orbs);assert.deepEqual(saves.get(a).state.history,siblingBefore.history);assert.equal(completions,1);
  await p.screenshot({path:`reports/family-v2/outcome-duo-${width}.png`,fullPage:true});
  console.log('PASS due choices, away, continue/reload, unfinished lost response idempotency, no rewards/progress, reset, completed branch',width);assert.deepEqual(errors,[]);await context.close();

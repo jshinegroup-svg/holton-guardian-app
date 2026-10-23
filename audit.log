@@ -128,3 +128,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-23 | actor=codex | approval=user:23246 | trigger=implement agreed timeout choices | completed/continue/unfinished outcomes; preserve history, exclude unfinished rewards/progress, backup compatibility; browser and unit verification passed
 
 2026-10-23 | actor=codex | approval=user:23252 | trigger=card-arrow-screen-shift | Stable overlay sync status in solo/expanded; fixed20px single-line compact slot. Typecheck/export,4viewport regression,320/390 delayed-save geometry and failure/retry PASS.
+2026-10-23 | actor=codex | approval=user:23255-and-followup | trigger=continue-task-extra-time | Add repeatable2min extension with persistent focus target and original rewards/help usage; untimed completion threshold1min. Typecheck/export/model/boundary,320/390 mock-cloud continuation/reload/retry/duo/untimed checks and4viewport regression PASS.
