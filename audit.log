@@ -123,3 +123,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-22 actor=bot approval=Jerry23232 trigger=remove-intro-replay-button | Remove only 再看新手帶領 from parent settings; retain 重新觀看操作教學 and first-run onboarding.
 
 2026-10-22 actor=bot approval=Jerry23237 trigger=energy-icon-display | Shared original blue orb with balance×/gain+/cost− across player amounts; no arithmetic or persistence changes. Typecheck/export/lint,4viewport mock-cloud regression and wish debit checks PASS.
+
+2026-10-23 actor=bot approval=Jerry23240-and-followup trigger=help-sync-recovery-and-once-use | In-place persisted-operation retry/12s timeout preserves conflicts; rest120s/others60s, one use/card/task, instruction and disabled state. Typecheck/export/lint,9units,4viewport regression and2mobile failure-path suites PASS.

@@ -1,3 +1,4 @@
+import {cloudRequest,syncErrorMessage} from './cloudRequest';
 import {createClient} from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY} from './publicConfig';
@@ -16,8 +17,8 @@ export async function listChildren(familyId:string):Promise<ChildProfile[]>{
  return data.map(c=>({id:c.id,familyId:c.family_id,nickname:c.nickname,ageYears:c.age_years,ageRecordedAt:c.age_recorded_at}));
 }
 export const cloud:FamilyCloud={
- async load<T>(childId:string){const {data,error}=await supabase.from('child_saves').select('*').eq('child_id',childId).maybeSingle();if(error)throw error;return data?{childId:data.child_id,familyId:data.family_id,revision:data.revision,state:data.state as T,updatedAt:data.updated_at} satisfies ChildSave<T>:null;},
- async save(p){const {data,error}=await supabase.rpc('save_child_progress',{p_child_id:p.childId,p_expected_revision:p.expectedRevision,p_operation_id:p.operationId,p_state:p.state,p_events:p.events});if(error)throw error;return data;}
+ async load<T>(childId:string){const {data,error}=await cloudRequest(signal=>supabase.from('child_saves').select('*').eq('child_id',childId).abortSignal(signal).maybeSingle());if(error)throw error;return data?{childId:data.child_id,familyId:data.family_id,revision:data.revision,state:data.state as T,updatedAt:data.updated_at} satisfies ChildSave<T>:null;},
+ async save(p){const {data,error}=await cloudRequest(signal=>supabase.rpc('save_child_progress',{p_child_id:p.childId,p_expected_revision:p.expectedRevision,p_operation_id:p.operationId,p_state:p.state,p_events:p.events}).abortSignal(signal));if(error)throw error;return data;}
 };
 export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>void):ScopedStorage {
  const repo=new ProgressRepository<Record<string,unknown>>(child.familyId,child.id,AsyncStorage,cloud,()=>crypto.randomUUID());
@@ -26,9 +27,9 @@ export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>voi
  return {
  async getItem(key){
   if(key!=='holton-guardian-app::light-v1')return AsyncStorage.getItem(prefix+key);
-  let saved=await repo.load();
+  try{let saved=await repo.load();
   if(saved?.pending){onSync('正在重試尚未同步的進度…');await repo.retry();saved=await repo.load();}
-  previous=saved?.state??null;onSync('雲端已同步');return previous?JSON.stringify(previous):null;
+  previous=saved?.state??null;onSync('雲端已同步');return previous?JSON.stringify(previous):null;}catch(e){onSync(syncErrorMessage(e));throw e;}
  },
  async setItem(key,value){
   if(key!=='holton-guardian-app::light-v1')return AsyncStorage.setItem(prefix+key,value);
@@ -41,7 +42,7 @@ export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>voi
   if(previous&&next.cardId!==previous.cardId&&next.cardId)events.push({id:crypto.randomUUID(),kind:'card_selected',occurredAt:at,cardId:next.cardId});
   onSync('正在儲存到雲端…');
   try{await repo.save(next,events);previous=next;onSync('雲端已同步');}
-  catch(e){onSync('尚未同步，請重新開啟此孩子重試；不要清除資料。');throw e;}
+  catch(e){onSync(syncErrorMessage(e));throw e;}
  },
  async removeItem(key){if(key==='holton-guardian-app::light-v1')throw Error('Protected child save');return AsyncStorage.removeItem(prefix+key);}
  };

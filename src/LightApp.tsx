@@ -1,3 +1,5 @@
+import {selectHelpCard,migrateHelpSession,helpDurations} from './lib/helpSession';
+import {syncErrorMessage} from './family/cloudRequest';
 import EnergyAmount from './EnergyAmount';
 import {useFamilyStorage} from './family/context';
 import {hasParentPin} from './lib/parentLock';
@@ -81,6 +83,8 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const celebrate = useRef(false);
   const current = useRef<State | null>(null);
   const busy = useRef(false);
+  const syncBlocked=useRef(false);
+  const [needsSync,setNeedsSync]=useState(false);
   const pageScroll = useRef<ScrollView>(null);
   const taskTop = useRef(0);
   const lastPhase = useRef<State['phase'] | undefined>(undefined);
@@ -134,10 +138,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const musicTrack=validFocusMusicId(state?.focusMusicTrackId)?state.focusMusicTrackId:DEFAULT_FOCUS_MUSIC;
   const musicActive=state?.phase==='active'&&!state.help&&!settingsOpen&&(compact||room==='mission');
   const music=useFocusMusic({enabled:musicOwner&&state?.focusMusicEnabled===true,active:musicActive,trackId:musicTrack,previewAllowed:musicOwner&&settingsOpen&&parentTab==='music'});
-  useEffect(() => {
-    let live = true;
-    (async () => {
-      try {
+  async function readState(){
         const raw = await storage.getItem(KEY);
         let data: State = raw ? JSON.parse(raw) : {...initial(familyMode?null:await loadPersistedAppState()),...(childNickname?{childName:childNickname}:{}),...(familyMode?{onboardingDone:true}: {})};
         if (data.version !== 1 || !Array.isArray(data.history) || !['ready', 'preparing', 'active', 'finishing', 'done'].includes(data.phase) || !Number.isFinite(data.orbs)) throw new Error('Invalid state');
@@ -155,9 +156,18 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
         const needsJourneyMigration=data.journeys?.version!==2;
         data=migrateJourneys(data);
         if(needsJourneyMigration||focusMigration||starterMigration) await storage.setItem(KEY,JSON.stringify(data));
+        const helpMigration=migrateHelpSession(data,Date.now());
+        if(helpMigration!==data){data=helpMigration;await storage.setItem(KEY,JSON.stringify(data));}
         await initializeGuide(data.onboardingDone===false,false,storage).catch(()=>{});
+    return data;
+  }
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const data=await readState();
         if (live) { setFreshTutorial(data.onboardingDone===false);setMapOpen(false);setRoom(['ready','done'].includes(data.phase)&&!data.journeys?.event?'village':'mission'); current.current = data; setState(data); setTitle(data.title); setMinutes(String(data.minutes)); setGoal(String(data.dailyGoal ?? 3)); }
-      } catch { if (live) setError('資料暫時無法讀取，請重新整理。原有紀錄未變更。'); }
+      } catch(e) { if (live){setError(familyMode?syncErrorMessage(e):'資料暫時無法讀取，請重新整理。原有紀錄未變更。');if(familyMode){syncBlocked.current=true;setNeedsSync(true);}} }
     })();
     const timer = setInterval(() => setNow(Date.now()), 1000);
     const wake=()=>setNow(Date.now());
@@ -165,7 +175,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     return () => { live = false; clearInterval(timer);if(typeof document!=='undefined')document.removeEventListener('visibilitychange',wake); };
   }, []);
   async function change(transform: (s: State) => State) {
-    if (busy.current || !current.current) return false;
+    if (busy.current || syncBlocked.current || !current.current) return false;
     busy.current = true; setSaving(true); setError('');
     try {
       const next = transform(current.current);
@@ -173,10 +183,23 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       if (next.phase === 'done' && current.current.phase === 'finishing') celebrate.current = true;
       if (next.phase !== 'done') celebrate.current = false;
       current.current = next; setState(next); setNow(Date.now()); return true;
-    } catch { setError('尚未儲存成功，請再試一次；點數與收藏尚未變更。'); return false; }
+    } catch(e) { if(familyMode){syncBlocked.current=true;setNeedsSync(true);setError(syncErrorMessage(e));}else setError('尚未儲存成功，請再試一次；點數與收藏尚未變更。');return false; }
     finally { busy.current = false; setSaving(false); }
   }
-  const duoReady=!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=60&&!saving;
+  async function retrySync(){
+    if(busy.current)return;
+    busy.current=true;setSaving(true);
+    try{
+      // readState retries the persisted operation ID, then reads the acknowledged cloud state.
+      // Never reapply the failed transform to an old on-screen snapshot.
+      const data=await readState();
+      if(!current.current){setRoom(['ready','done'].includes(data.phase)&&!data.journeys?.event?'village':'mission');setFreshTutorial(data.onboardingDone===false);}
+      celebrate.current=false;current.current=data;setState(data);setTitle(data.title);setMinutes(String(data.minutes));setGoal(String(data.dailyGoal??3));setNow(Date.now());
+      syncBlocked.current=false;setNeedsSync(false);setError('');
+    }catch(e){setError(syncErrorMessage(e));}
+    finally{busy.current=false;setSaving(false);}
+  }
+  const duoReady=!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=60&&!saving&&!needsSync;
   async function startDuo(at:number){
     if(!duoReady||busy.current)return false;
     const n=Number(minutes);
@@ -197,6 +220,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     })();
   },[state,now,playChime]); // change uses only stable refs and setters.
   const button = (label: string, action: () => void, secondary = false, disabled = false, content?:React.ReactNode) => <Pressable testID={secondary ? "secondary-action" : "primary-action"} accessibilityRole="button" accessibilityLabel={label} disabled={disabled || saving} onPress={action} style={[styles.button, secondary && styles.secondary, (disabled || saving) && styles.disabled]}><Text style={[styles.buttonText, secondary && styles.secondaryText]}>{content??label}</Text></Pressable>;
+  if(needsSync)return <SafeAreaView testID="sync-recovery" style={[styles.root,{padding:16}]}><View style={styles.card}><Text style={styles.section}>{childNickname||state?.childName||'冒險者'} · 同步暫停</Text><Text accessibilityRole="alert" style={styles.body}>{error}</Text><Text style={styles.caption}>保留這次操作，確認同步後再繼續；不會重複發放或扣除能量球。</Text>{button(saving?'正在重試同步…':'重試同步',()=>void retrySync())}{familyNavigation?button('回冒險小隊',familyNavigation.onMenu,true):null}</View></SafeAreaView>;
   if (!state) return <SafeAreaView style={styles.root}><Text style={styles.body}>{error || '正在準備你的夥伴…'}</Text></SafeAreaView>;
   const journey=migrateJourneys(state).journeys;
   const world=state.activeWorld??'forest';
@@ -271,8 +295,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     return { ...pauseFocus(s,Date.now()), help: true, helpUsed: true, supportCardId: undefined, breakDeadline: null, remaining: s.deadline ? Math.max(0, Math.ceil((s.deadline - Date.now()) / 1000)) : s.remaining, deadline: null };
   }
   function selectHelp(s: State, id: string): State {
-    if (s.phase !== 'active' || !s.help || !helpCards.some(card => card.id === id)) return s;
-    return { ...s, supportCardId: id, supportUsed: [...new Set([...(s.supportUsed ?? []), id])], breakDeadline: id === 'rest' ? Date.now() + 120000 : null };
+    return selectHelpCard(s,id,Date.now());
   }
   function resumeHelp(s: State): State {
     if (s.phase !== 'active' || !s.help) return s;
@@ -473,15 +496,16 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
         {!state.help?<>{state.minutes===0?<Text style={styles.caption}>不限時 · 已進行</Text>:null}<Pressable testID="focus-time-panel" accessibilityRole="button" accessibilityLabel="進入專注介面" accessibilityHint="放大任務與時間，計時繼續" onPress={()=>{armChime();setTaskAway(true);requestAnimationFrame(()=>pageScroll.current?.scrollTo({y:0,animated:false}));}}><Text testID="crystal-clock" style={[styles.timer,{fontSize:60}]}>{clockText(state.minutes===0?Math.floor(focusElapsed/1000):remaining)}</Text></Pressable>{musicControl}</>:null}
         <Text style={styles.body}>{state.help ? '任務已暫停' : state.minutes !== 0 && remaining === 0 ? '時間到了。還沒做好也沒關係，可以慢慢完成。' : '照自己的速度來。'}</Text>
         {state.help ? <>
-          {!helpCard ? <Text style={styles.body}>拿出你的幫忙卡，再選同一張。</Text> : null}
+          <View testID="help-rules">{helpCard?<Text style={styles.caption}>{helpCard.title} · {helpCard.id==='rest'?2:1} 分鐘 · 本次已使用</Text>:<><Text style={styles.section}>幫忙卡怎麼用？</Text><Text style={styles.body}>休息卡 2 分鐘；其他三張各 1 分鐘。每次任務每張限用一次，提早結束也算一次；下一個任務重新開放。</Text><Text style={styles.caption}>任務暫停、不扣能量球。時間到後，準備好了再按繼續。</Text></>}</View>
+          {!helpCard ? <Text style={styles.body}>選一張還沒用過的幫忙卡。</Text> : null}
           {helpCard ? <>
             <CardPedestal source={helpCard.image} label={helpCard.title} />
             {helpCard.id !== 'rest' ? <Text style={styles.body}>{helpCard.guide}</Text> : null}
-            {helpCard.id === 'rest' ? <><Text testID="crystal-clock" style={styles.timer}>{String(Math.floor(breakRemaining / 60)).padStart(2, '0')}:{String(breakRemaining % 60).padStart(2, '0')}</Text><Text style={styles.body}>{breakRemaining === 0 ? '休息時間到了，準備好了再繼續；任務仍然暫停。' : '這是休息時間，任務時間不會減少。'}</Text></> : null}
+            {<><Text testID="crystal-clock" style={styles.timer}>{String(Math.floor(breakRemaining / 60)).padStart(2, '0')}:{String(breakRemaining % 60).padStart(2, '0')}</Text><Text style={styles.body}>{breakRemaining === 0 ? '幫忙時間到了，準備好了再繼續；任務仍然暫停。' : '幫忙倒數中，任務時間不會減少。'}</Text></>}
             {button(helpCard.resume, () => void change(resumeHelp))}
             {button('換一張幫忙卡', () => void change(s => s.phase !== 'active' || !s.help ? s : ({ ...s, supportCardId: undefined, breakDeadline: null })), true)}
           </> : <>
-            <View style={styles.helpGrid}>{helpCards.map(card => <Pressable key={card.id} accessibilityRole="button" accessibilityLabel={`選擇${card.title}`} disabled={saving} onPress={() => void change(s => selectHelp(s, card.id))} style={[styles.helpChoice, saving && styles.disabled]}><Image source={card.image} accessibilityLabel={card.title} style={styles.helpArt} resizeMode="contain" /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{card.line}</Text></Pressable>)}</View>
+            <View style={styles.helpGrid}>{helpCards.map(card => <Pressable key={card.id} accessibilityRole="button" accessibilityLabel={`選擇${card.title}`} accessibilityState={{disabled:saving||(state.supportUsed??[]).includes(card.id)}} disabled={saving||(state.supportUsed??[]).includes(card.id)} onPress={() => void change(s => selectHelp(s, card.id))} style={[styles.helpChoice, (saving||(state.supportUsed??[]).includes(card.id)) && styles.disabled]}><Image source={card.image} accessibilityLabel={card.title} style={styles.helpArt} resizeMode="contain" /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{card.line}</Text><Text style={styles.caption}>{helpDurations[card.id as keyof typeof helpDurations]/60000} 分鐘 · {(state.supportUsed??[]).includes(card.id)?'本次已使用':'本次可用 1 次'}</Text></Pressable>)}</View>
             {button('我準備好了，繼續', () => void change(resumeHelp), true)}
           </>}
         </> : <Pressable testID="focus-help" accessibilityRole="button" accessibilityLabel="我需要幫忙" disabled={saving} onPress={()=>void change(openHelp)} style={[styles.button,styles.secondary,saving&&styles.disabled]}><Text style={[styles.buttonText,styles.secondaryText]}>我需要幫忙</Text></Pressable>}

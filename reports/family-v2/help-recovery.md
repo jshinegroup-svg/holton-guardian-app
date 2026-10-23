@@ -1,0 +1,7 @@
+# Help timers and failed-save recovery — 2026-10-23
+
+Screenshot showed cloud-save error, not proof of a countdown-render crash. Reproduced architecture defect: pending write blocks every later save, but only remount/load retried it. Added bounded12s cloud load/save requests, in-place retry screen, shared read/migration path, and local change guard until reconciliation. Retry retains operation ID and reads acknowledged state, never reapplies stale transform or rewrites a revision conflict. The original network failure cause is unknown.
+
+Rest120s; pause/energy/breathe60s. Selection consumes one use per task, including early exit/switch. Used cards disabled+labelled; new-task existing reset restores uses. Non-rest old in-flight cards without deadline migrate once. Expiry does not resume or write; user resumes. Rules shown before selection and first welcome explanation.
+
+Validation: typecheck/export/targeted lint,9unit/repository tests pass. Four-viewport existing mocked-cloud family suite passes. Dedicated320/390 mobile mocked-cloud browser tests pass: expiry/paused duration, failure before commit, committed-but-lost response, same operation ID retry without refresh, once-only completion/reward/sibling unchanged; all3one-minute deadlines and reload preservation, used-card disable, new-task reset, hung-request12s exit/retry, actual rest selection120s. Recovery screenshot320 visually inspected. Scripts help-recovery-check.mjs, help-rules-check.cjs; logs /tmp/holton-help-recovery-final.log and /tmp/holton-help-regression.log. No physical iPhone test.
