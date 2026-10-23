@@ -61,5 +61,23 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  saves.get(b).state.focusElapsedMs=saves.get(b).state.focusTargetMs;saves.get(b).state.focusStartedAt=Date.now();await p.reload();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await panels.nth(1).getByTestId('task-outcome-choices').waitFor();
  await panels.nth(1).getByRole('button',{name:'這次先到這裡',exact:true}).click();await panels.nth(1).getByRole('button',{name:'下一個任務',exact:true}).waitFor();assert.equal(saves.get(b).state.orbs,30);assert.equal(saves.get(b).state.history[0].outcome,'unfinished');assert.equal(saves.get(a).state.orbs,siblingBefore.orbs);assert.deepEqual(saves.get(a).state.history,siblingBefore.history);assert.equal(completions,1);
  await p.screenshot({path:`reports/family-v2/outcome-duo-${width}.png`,fullPage:true});
+
+ // Early abandonment is available before eligibility, in help/away, and after entering finishing.
+ for(const mode of ['active','help','away','finishing']){
+  const previous=saves.get(a);saves.set(a,{...previous,state:{...seed('哥哥'),minutes:0,allowEarlyFinish:false,focusElapsedMs:mode==='finishing'?60000:0,focusStartedAt:Date.now()}});
+  const sibling=structuredClone(saves.get(b).state);
+  await p.evaluate(({family,a})=>localStorage.setItem(`holton-family-v2::${family}::solo-child`,a),{family,a});await p.reload();await p.getByTestId('focus-complete').waitFor();
+  if(mode==='active')assert.equal(await p.getByTestId('focus-complete').isDisabled(),true);
+  if(mode==='help')await p.getByRole('button',{name:'我需要幫忙',exact:true}).click();
+  if(mode==='away')await p.getByRole('button',{name:'進入專注介面',exact:true}).click();
+  if(mode==='finishing'){await p.getByTestId('focus-complete').click();await p.getByRole('button',{name:'還有一點，回去繼續',exact:true}).waitFor();}
+  await p.getByRole('button',{name:'這次先到這裡',exact:true}).click();await p.getByTestId('unfinished-result').waitFor();
+  const stopped=saves.get(a).state;assert.equal(stopped.history.length,1);assert.equal(stopped.history[0].outcome,'unfinished');assert.equal(stopped.history[0].reward,0);assert.equal(stopped.orbs,10);assert.equal(stopped.rewardProgress,2);assert.equal(completions,1);assert.deepEqual(saves.get(b).state,sibling);
+ }
+
+ const lastSave=saves.get(a);saves.set(a,{...lastSave,state:{...seed('哥哥'),focusElapsedMs:0,focusStartedAt:Date.now(),allowEarlyFinish:false}});const bBeforeStop=structuredClone(saves.get(b).state);
+ await p.evaluate(family=>localStorage.removeItem(`holton-family-v2::${family}::solo-child`),family);await p.reload();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();
+ await panels.nth(0).getByRole('button',{name:'這次先到這裡',exact:true}).click();await panels.nth(0).getByRole('button',{name:'下一個任務',exact:true}).waitFor();assert.equal(saves.get(a).state.history[0].outcome,'unfinished');assert.equal(saves.get(a).state.orbs,10);assert.equal(completions,1);assert.deepEqual(saves.get(b).state,bBeforeStop);
+ console.log('PASS early stop before1min, help, away, finishing: no reward or sibling changes',width);
  console.log('PASS due choices, away, continue/reload, unfinished lost response idempotency, no rewards/progress, reset, completed branch',width);assert.deepEqual(errors,[]);await context.close();
 }}finally{await browser.close();server.close();}

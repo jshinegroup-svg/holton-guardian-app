@@ -331,10 +331,12 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const taskDue=state.phase==='active'&&!state.help&&focusElapsed>=focusTargetMs(state);
   function stopUnfinished(s:State):State {
     const at=Date.now();
-    if(s.phase!=='active'||s.help||elapsedFocusMs(s,at)<focusTargetMs(s))return s;
+    if(!['active','finishing'].includes(s.phase))return s;
     const paused=pauseFocus(s,at);
     return {...paused,phase:'done',taskOutcome:'unfinished',deadline:null,remaining:0,help:false,supportCardId:undefined,breakDeadline:null,history:[...s.history,{id:`${at}-${Math.random().toString(36).slice(2,8)}`,outcome:'unfinished',title:s.title,at:new Date(at).toISOString(),minutes:s.minutes,elapsedSeconds:Math.floor((paused.focusElapsedMs??0)/1000),reward:0,world:s.activeWorld??'forest',cardId:s.cardId,helpUsed:s.helpUsed,supportUsed:[...(s.supportUsed??[])]}]};
   }
+  const stopEarly=()=>{setTaskAway(false);setSoundBlocked(false);void change(stopUnfinished);};
+  const earlyStopAction=!taskDue&&['active','finishing'].includes(state.phase)?<View testID="early-stop-choice" style={{gap:6}}>{button('這次先到這裡',stopEarly,true)}<Text style={styles.caption}>還沒完成也可以先停下來；記錄未完成，不扣球、不發獎勵。</Text></View>:null;
   const outcomeChoices=taskDue?<View testID="task-outcome-choices" style={{gap:8}}>
     <Text accessibilityLiveRegion="polite" style={styles.body}>{state.focusTargetMs!==undefined?'補上的時間到囉！你的任務完成了嗎？':state.minutes===0?'已努力 10 分鐘，你的任務完成了嗎？':'時間到囉！你的任務完成了嗎？'}</Text>
     {button('我完成了',()=>{setTaskAway(false);void change(enterFinishing);})}
@@ -403,6 +405,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     {state.phase==='ready'?<View style={{flexDirection:'row',gap:8}}><TextInput accessibilityLabel="任務名稱" value={title} onChangeText={setTitle} maxLength={80} placeholder="任務名稱" placeholderTextColor="#a8bdc5" style={{flex:1,minWidth:0,height:44,borderWidth:1,borderColor:'#72909a',borderRadius:8,paddingHorizontal:8,color:'#fff',fontSize:16}}/><View style={{flexDirection:'row',alignItems:'center',gap:4}}><TextInput accessibilityLabel="任務時間（分鐘）" value={minutes} onChangeText={setMinutes} keyboardType="number-pad" style={{width:48,height:44,borderWidth:1,borderColor:'#72909a',borderRadius:8,textAlign:'center',color:'#fff',fontSize:16}}/><Text style={{color:'#c7e1e7',fontSize:13}}>分</Text></View></View>:null}
     <View style={{flexDirection:'row',gap:8}}>
     {!starterId?duoButton('選擇自己的夥伴',()=>onExpand?.()):['ready','preparing'].includes(state.phase)?duoButton('開始任務',()=>void startDuo(Date.now()),false,!duoReady):state.phase==='active'?!taskDue&&duoButton('完成任務',()=>void change(enterFinishing),false,!focusReady):state.phase==='finishing'?duoButton(finish.button,()=>void change(completeTask)):state.phase==='done'?duoButton('下一個任務',()=>void change(s=>({...s,phase:'ready',deadline:null,remaining:s.minutes*60,help:false,focusElapsedMs:0,focusStartedAt:null}))):null}
+    {!taskDue&&['active','finishing'].includes(state.phase)?duoButton('這次先到這裡',stopEarly,true):null}
     {duoButton('進入個人畫面',()=>onExpand?.(),true)}
     </View>
     {outcomeChoices}
@@ -486,7 +489,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       <Text testID="away-clock" style={[styles.timer,{fontSize:viewportWidth<360?72:88,lineHeight:112,fontWeight:'800',paddingHorizontal:4,paddingVertical:24}]}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text>
       {musicControl}
       {state.taskReminderShown?<Text testID="away-due" accessibilityLiveRegion="polite" style={styles.body}>{state.minutes===0?'已滿 10 分鐘，可以回任務確認是否完成。':'任務時間到了，可以回去確認是否完成。'}</Text>:null}
-      {button('回到任務',()=>{armChime();setTaskAway(false);})}
+      {button('回到任務',()=>{armChime();setTaskAway(false);})}{earlyStopAction}
     </View> : !inVillage ? <>
 
       
@@ -508,7 +511,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       </> : state.phase === 'finishing' ? <>
         <Image source={finishImage} accessibilityLabel={`${finish.title} 收尾鼓勵卡`} style={[styles.ritualArt,{width:'85%',height:238,alignSelf:'center'}]} resizeMode="contain" />
         <Text style={styles.section}>{finish.title}</Text>{usedHelpNames ? <Text style={styles.caption}>這輪你選了{usedHelpNames}，表達自己的需要也是重要的一步。</Text> : null}<Text style={styles.quote}>{finish.line}</Text>
-        {button(finish.button, () => void change(completeTask))}
+        {button(finish.button, () => void change(completeTask))}{earlyStopAction}
         {button('還有一點，回去繼續', () => void change(s => s.phase !== 'finishing' ? s : ({ ...s, phase: 'active', focusStartedAt:Date.now(), deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000, help: false })), true)}
       </> : state.phase === 'active' ? <>
         {companionScene}
@@ -534,6 +537,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
           {taskDue?outcomeChoices:<Pressable testID="focus-complete" accessibilityRole="button" accessibilityLabel="完成" accessibilityState={{disabled:!focusReady||saving}} disabled={!focusReady||saving} onPress={()=>void change(enterFinishing)} style={[styles.button,(!focusReady||saving)&&styles.focusLocked]}><Text style={styles.buttonText}>完成</Text></Pressable>}
 
         </> : null}
+        {earlyStopAction}
       </> : unfinished ? <View testID="unfinished-result"><Text style={styles.body}>已記錄這次的努力，下次再一起來。</Text><Text style={styles.caption}>未完成 · 能量球不變 · 旅程進度不變</Text>{button('再選一張任務卡',()=>void change(s=>({...s,phase:'ready',deadline:null,help:false,remaining:s.minutes*60})),true)}</View> : <><Text style={styles.section}>{finish.title}</Text><Text style={styles.quote}>你完成了，也把這一輪收好了。每一小步都值得被看見。</Text><RewardArrival reward={state.taskReward ?? 1} balance={state.orbs} reduced={reduceMotion} animate={celebrate.current && !pending} /><Text testID="completion-task-label" style={[styles.body,{alignSelf:'center',width:'100%',maxWidth:220,textAlign:'center'}]}>{state.title}</Text><JourneyHint journeys={journey} world={world} onPress={()=>setJourneyOpen(true)}/><View testID="completion-next-card" style={{alignSelf:'center',width:'100%',maxWidth:220}}>{button('再選一張任務卡', () => void change(s => ({ ...s, phase: 'ready', deadline: null, help: false, remaining: s.minutes * 60 })), true)}</View></>}
       </View>
       {state.phase !== 'active' ? companionScene : null}</View>
