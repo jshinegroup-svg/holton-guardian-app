@@ -2,7 +2,7 @@ export type WorldId = 'sky' | 'forest' | 'cosmos';
 export const worldIds:WorldId[] = ['forest','sky','cosmos'];
 export type JourneyEvent = {id:string;world:WorldId;step:number};
 export type Journeys = {version:1|2;retainedWorlds?:WorldId[];counts:Record<WorldId,number>;lastCompletionId?:string;event?:JourneyEvent;legacyCredit:number};
-export type JourneyState = {journeys?:Journeys;activeWorld?:WorldId;history:{id:string;at:string;world?:WorldId}[]};
+export type JourneyState = {journeys?:Journeys;activeWorld?:WorldId;history:{outcome?:'completed'|'unfinished';id:string;at:string;world?:WorldId}[]};
 export const worlds = {
  sky:{name:'天空基地',symbol:'✧',intro:'這座基地睡了好久。我們一起把五顆星光點亮，讓它醒過來吧！',chapters:['喚醒天空基地','修復星光橋','啟動星際傳送門'],landmarks:['基地','星光橋','傳送門'],steps:['基地門前的水晶亮起了。','通往廣場的小路亮起了。','廣場的燈被點亮了。','基地旗幟升起了。','中央核心亮起，天空基地醒來了！','找到了第一塊星光橋石。','橋墩穩穩站好了。','橋面向對岸延伸。','橋邊的引路燈亮起了。','星光橋修好了，遠方的星海出現了！','傳送門的底座亮起。','星環環繞起傳送門。','門框的水晶接上星光。','星海的光芒穿過了門。','傳送門亮起，通往宇宙的航程準備好了！']},
  forest:{name:'森林秘境',symbol:'❧',intro:'生命樹的光散落在森林裡。一起走小路、修水道，讓森林重新發亮。',chapters:['喚醒林間小徑','修復月光水道','點亮生命樹'],landmarks:['林間小徑','月光水道','生命樹'],steps:['一片星光葉亮起。','小路旁的蘑菇燈亮起了。','小路旁開出一朵花。','藤蔓讓出通往樹屋的小路。','林間小徑亮起，樹屋重新打開了！','找到了水道的入口。','第一段石槽修好了。','清水流過小石橋。','月光倒映在水面。','月光水道恢復了，清水流向生命樹！','生命樹的第一條根發亮。','樹幹上出現星光紋路。','枝葉間長出水晶花。','樹冠接住了遠方的星光。','生命樹伸展出雲梯，天空基地開放了！']},
@@ -17,7 +17,7 @@ export function migrateJourneys<T extends JourneyState>(s:T):T & {journeys:Journ
   const retainedWorlds:WorldId[]=previous.version===1?['sky',...(counts.sky>=15?['forest' as const]:[]),...(counts.sky>=15&&counts.forest>=15?['cosmos' as const]:[])]:previous.retainedWorlds??[];
   return {...s,activeWorld:worldIds.includes(s.activeWorld as WorldId)?s.activeWorld!:(previous.version===1?'sky':'forest'),journeys:{...previous,version:2,retainedWorlds,counts}};
  }
- const ids=new Set(s.history.filter(r=>r.id&&Number.isFinite(Date.parse(r.at))).map(r=>r.id));
+ const ids=new Set(s.history.filter(r=>r.outcome!=='unfinished'&&r.id&&Number.isFinite(Date.parse(r.at))).map(r=>r.id));
  const credit=Math.min(15,ids.size);
  return {...s,activeWorld:'forest',journeys:{version:2,counts:{sky:0,forest:credit,cosmos:0},legacyCredit:credit}};
 }

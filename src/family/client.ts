@@ -37,6 +37,7 @@ export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>voi
   if(next.phase==='active'&&previous?.phase==='preparing'){
    next.familyTaskId=crypto.randomUUID();events.push({id:crypto.randomUUID(),kind:'task_started',occurredAt:at,taskId:next.familyTaskId,cardId:next.cardId,plannedSeconds:next.minutes*60});
   }else if(previous?.familyTaskId)next.familyTaskId=previous.familyTaskId;
+  if(next.phase==='done'&&next.taskOutcome==='unfinished'&&previous?.phase==='active')events.push({id:crypto.randomUUID(),kind:'task_cancelled',occurredAt:at,taskId:next.familyTaskId,cardId:next.cardId,plannedSeconds:next.minutes*60,elapsedSeconds:Math.floor((next.focusElapsedMs??0)/1000)});
   if(next.phase==='done'&&previous?.phase==='finishing')events.push({id:crypto.randomUUID(),kind:'task_completed',occurredAt:at,taskId:next.familyTaskId,cardId:next.cardId,plannedSeconds:next.minutes*60,elapsedSeconds:Math.floor((next.focusElapsedMs??0)/1000),earlyFinish:!!next.allowEarlyFinish&&(next.focusElapsedMs??0)<next.minutes*60000});
   if(previous&&next.companionCardId!==previous.companionCardId&&next.companionCardId)events.push({id:crypto.randomUUID(),kind:'card_selected',occurredAt:at,cardId:next.companionCardId});
   if(previous&&next.cardId!==previous.cardId&&next.cardId)events.push({id:crypto.randomUUID(),kind:'card_selected',occurredAt:at,cardId:next.cardId});
