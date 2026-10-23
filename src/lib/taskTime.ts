@@ -1,4 +1,5 @@
 export const CUSTOM_TIME_CARD_ID='custom-time';
+export const DEFAULT_CUSTOM_MINUTES=30;
 export const validCustomMinutes=(value:number)=>Number.isInteger(value)&&value>=1&&value<=60;
 export function parseCustomMinutes(text:string):number|null {
  if(!/^\d+$/.test(text.trim()))return null;

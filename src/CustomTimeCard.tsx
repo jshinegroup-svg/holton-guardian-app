@@ -1,13 +1,13 @@
 import React from 'react';
 import {View,Text,TextInput,Pressable,StyleSheet} from 'react-native';
 import EnergyAmount from './EnergyAmount';
-import {parseCustomMinutes,rewardForMinutes} from './lib/taskTime';
+import {DEFAULT_CUSTOM_MINUTES,parseCustomMinutes,rewardForMinutes} from './lib/taskTime';
 
 export const customTimeImage=require('../assets/cards/custom/master-mode-legendary.jpg');
 
 export default function CustomTimeCard({draft,onChange,onApply,disabled}:{draft:string;onChange:(text:string)=>void;onApply:()=>void;disabled:boolean}){
  const minutes=parseCustomMinutes(draft);
- const step=(delta:number)=>onChange(String(Math.max(1,Math.min(60,(minutes??10)+delta))));
+ const step=(delta:number)=>onChange(String(Math.max(1,Math.min(60,(minutes??DEFAULT_CUSTOM_MINUTES)+delta))));
  const control=(label:string,symbol:string,delta:number,locked:boolean)=><Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled||locked} onPress={()=>step(delta)} style={[s.step,(disabled||locked)&&{opacity:.4}]}><Text style={s.symbol}>{symbol}</Text></Pressable>;
  return <View testID="custom-time-card" style={s.card}>
   <Text style={s.title}>自訂時間</Text><Text style={s.caption}>我來決定今天的步調</Text>

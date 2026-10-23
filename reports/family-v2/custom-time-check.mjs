@@ -36,7 +36,7 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  const previous=p.getByRole('button',{name:'上一張時間卡',exact:true}),next=p.getByRole('button',{name:'下一張時間卡',exact:true});
  await previous.click();await p.waitForTimeout(100);await previous.click();await p.getByTestId('custom-time-card').waitFor();
  const input=p.getByLabel('自訂時間（分鐘）',{exact:true}),apply=p.getByRole('button',{name:'用這個時間',exact:true}),prepare=p.getByRole('button',{name:'準備出發',exact:true});
- assert.equal(await input.inputValue(),'10');assert.equal(await prepare.isDisabled(),true);
+ assert.equal(await input.inputValue(),'30');assert.equal(await prepare.isDisabled(),true);
  const art=p.getByTestId('time-card-image-custom-time');assert.equal(await art.evaluate(e=>getComputedStyle(e).opacity),'1');await art.scrollIntoViewIfNeeded();await p.screenshot({path:'reports/family-v2/custom-art-'+width+'.png'});
  const sibling=structuredClone(saves.get(b).state);
  for(const invalid of ['','0','61','-1','1.5','abc']){await input.fill(invalid);assert.equal(await apply.isDisabled(),true);assert.equal(await prepare.isDisabled(),true);}
@@ -58,5 +58,5 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  await panels.nth(0).getByLabel('任務時間（分鐘）',{exact:true}).fill('11');await panels.nth(1).getByLabel('任務時間（分鐘）',{exact:true}).fill('24');await p.getByRole('button',{name:'兩人一起開始',exact:true}).click();await p.waitForTimeout(400);
  assert.equal(saves.get(a).state.taskReward,2);assert.equal(saves.get(b).state.taskReward,4);assert.equal(saves.get(a).state.lastCustomMinutes,11);assert.equal(saves.get(b).state.lastCustomMinutes,24);assert.equal(saves.get(b).state.cardId,'custom-time');
  const beforeDeadline=saves.get(a).state.deadline;await p.reload();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();assert.equal(saves.get(a).state.deadline,beforeDeadline);
- assert.deepEqual(errors,[]);console.log('PASS custom image,1-60 input,default10,plus/minus,apply gating,remember/reload,16min3orbs,duo11/24 isolated',width);await context.close();
+ assert.deepEqual(errors,[]);console.log('PASS custom image,1-60 input,default30,plus/minus,apply gating,remember/reload,16min3orbs,duo11/24 isolated',width);await context.close();
 }}finally{await browser.close();server.close();}

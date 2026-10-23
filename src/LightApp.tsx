@@ -1,5 +1,5 @@
 import CustomTimeCard,{customTimeImage} from './CustomTimeCard';
-import {CUSTOM_TIME_CARD_ID,parseCustomMinutes,validCustomMinutes,rewardForMinutes} from './lib/taskTime';
+import {CUSTOM_TIME_CARD_ID,DEFAULT_CUSTOM_MINUTES,parseCustomMinutes,validCustomMinutes,rewardForMinutes} from './lib/taskTime';
 import {selectHelpCard,migrateHelpSession,helpDurations} from './lib/helpSession';
 import {syncErrorMessage} from './family/cloudRequest';
 import EnergyAmount from './EnergyAmount';
@@ -73,10 +73,10 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const {storage,pinKey,familyMode}=useFamilyStorage();
   const {width: viewportWidth, height: viewportHeight} = useWindowDimensions();
   const [state, setState] = useState<State | null>(null);
-  const [customDraft,setCustomDraft]=useState('10');
+  const [customDraft,setCustomDraft]=useState(String(DEFAULT_CUSTOM_MINUTES));
   const [customNeedsApply,setCustomNeedsApply]=useState(false);
   const selectedMinutes=state?.minutes,selectedTimeCardId=state?.cardId;
-  useEffect(()=>{if(selectedMinutes!==undefined)setCustomDraft(String(selectedMinutes||10));},[selectedMinutes,selectedTimeCardId]);
+  useEffect(()=>{if(selectedMinutes!==undefined)setCustomDraft(String(selectedMinutes||DEFAULT_CUSTOM_MINUTES));},[selectedMinutes,selectedTimeCardId]);
   const systemReduced = useSystemReducedMotion();
   const reduceMotion = systemReduced || !!state?.reduceMotion;
   const [mapOpen,setMapOpen]=useState(false);
@@ -247,7 +247,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     const index=customSelected?timeChallenges.length:timeChallenges.indexOf(displayCard);
     const next=(index+delta+timeChallenges.length+1)%(timeChallenges.length+1);
     const card=timeChallenges[next];
-    const n=card?.minutes??(validCustomMinutes(state.lastCustomMinutes??0)?state.lastCustomMinutes!:10);
+    const n=card?.minutes??(validCustomMinutes(state.lastCustomMinutes??0)?state.lastCustomMinutes!:DEFAULT_CUSTOM_MINUTES);
     void change(s=>s.phase!=='ready'?s:{...s,cardId:card?.id??CUSTOM_TIME_CARD_ID,minutes:n,remaining:n*60}).then(saved=>{if(saved){setMinutes(String(n));setCustomDraft(String(n));setCustomNeedsApply(!card);}});
   };
   const customValue=parseCustomMinutes(customDraft);
