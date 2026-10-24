@@ -9,3 +9,6 @@ export function parseCustomMinutes(text:string):number|null {
 }
 /** New tasks only: active tasks keep their captured taskReward. Untimed remains five. */
 export const rewardForMinutes=(minutes:number)=>minutes===0?5:Math.max(1,Math.min(5,Math.floor(minutes/5)));
+
+/** Untimed rewards use active focus only, captured before finishing. */
+export const rewardForFocusMs=(ms:number)=>!Number.isFinite(ms)||ms<60000?0:Math.min(5,Math.max(1,Math.floor(ms/300000)));
