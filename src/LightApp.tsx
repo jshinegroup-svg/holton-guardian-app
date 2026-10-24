@@ -537,7 +537,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
         {!state.help?<>{state.focusTargetMs!==undefined?<Text accessibilityLiveRegion="polite" style={styles.caption}>已補上 2 分鐘 · 繼續努力中</Text>:state.minutes===0?<Text style={styles.caption}>不限時 · 滿 1 分鐘即可完成</Text>:null}<Pressable testID="focus-time-panel" accessibilityRole="button" accessibilityLabel="進入專注介面" accessibilityHint="放大任務與時間，計時繼續" onPress={()=>{armChime();setTaskAway(true);requestAnimationFrame(()=>pageScroll.current?.scrollTo({y:0,animated:false}));}}><Text testID="crystal-clock" style={[styles.timer,{fontSize:60}]}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text></Pressable>{musicControl}</>:null}
         {state.help?<Text style={styles.body}>任務已暫停</Text>:!taskDue?<Text style={styles.body}>照自己的速度來。</Text>:null}
         {state.help ? <>
-          <View testID="help-rules">{helpCard?<Text style={styles.caption}>{helpCard.title} · {helpCard.id==='rest'?2:1} 分鐘 · 本次已使用</Text>:<><Text style={styles.section}>幫忙卡怎麼用？</Text><Text style={styles.body}>休息卡 2 分鐘；其他三張各 1 分鐘。每次任務每張限用一次，提早結束也算一次；下一個任務重新開放。</Text><Text style={styles.caption}>任務暫停、不扣能量球。時間到後，準備好了再按繼續。</Text></>}</View>
+          <View testID="help-rules">{helpCard?<Text style={styles.caption}>{helpCard.title} · {helpCard.id==='rest'?2:1} 分鐘 · 本次已使用</Text>:<><Text style={styles.section}>幫忙卡怎麼用？</Text><Text style={styles.body}>每次任務每張限用一次，提早結束也算一次；下一次任務重新開放。</Text></>}</View>
           {!helpCard ? <Text style={styles.body}>選一張還沒用過的幫忙卡。</Text> : null}
           {helpCard ? <>
             <CardPedestal source={helpCard.image} label={helpCard.title} />
