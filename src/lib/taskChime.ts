@@ -21,6 +21,8 @@ export function useTaskChime(enabled:boolean,sound:ReminderSound='bell',level:So
  useEffect(()=>{if(typeof document==='undefined')return;const hide=()=>{if(document.hidden)stop();};document.addEventListener('visibilitychange',hide);return()=>document.removeEventListener('visibilitychange',hide);},[stop]);
  useEffect(()=>()=>{stop();void context.current?.close().catch(()=>{});},[stop]);
  const play=useCallback(async(previewSound?:ReminderSound)=>{
+  // Resume inside the actual tap and await it, rather than guessing a 100ms delay.
+  if(previewSound){arm();try{await context.current?.resume();}catch{return false;}}
   const ctx=context.current,config=options.current;
   if((!config.enabled&&!previewSound)||!ctx||ctx.state!=='running')return false;
   try{
@@ -34,6 +36,6 @@ export function useTaskChime(enabled:boolean,sound:ReminderSound='bell',level:So
    }
    window.dispatchEvent(new Event('holton-task-chime'));return true;
   }catch{stop();return false;}
- },[stop]);
+ },[stop,arm]);
  return {arm,play,stop};
 }

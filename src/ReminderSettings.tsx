@@ -6,7 +6,7 @@ export default function ReminderSettings({enabled,sound,level,busy,notice,onTogg
 <Text style={s.title}>時間到提醒</Text>
 <Pressable accessibilityRole="switch" accessibilityLabel="任務到時提示音" aria-checked={enabled} accessibilityState={{checked:enabled}} disabled={busy} onPress={onToggle} style={s.button}><Text style={s.text}>到時提醒：{enabled?'開啟':'關閉'}</Text></Pressable>
 <VolumeChoices label="提醒音量" value={level} busy={busy} onChange={onLevel}/>
-{reminderSounds.map(item=><View key={item.id} style={s.row}><Pressable accessibilityRole="radio" accessibilityLabel={`選用${item.name}`} aria-checked={sound===item.id} accessibilityState={{checked:sound===item.id}} disabled={busy} onPress={()=>onSound(item.id)} style={[s.button,{flex:1},sound===item.id&&s.selected]}><Text style={s.text}>{item.name}{sound===item.id?' ✓':''}</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel={`試聽${item.name}`} disabled={busy} onPress={()=>onPreview(item.id)} style={s.button}><Text style={s.text}>試聽</Text></Pressable></View>)}
+{reminderSounds.map(item=><View key={item.id} style={s.row}><Pressable accessibilityRole="radio" accessibilityLabel={`選用${item.name}`} aria-checked={sound===item.id} accessibilityState={{checked:sound===item.id}} disabled={busy} onPress={()=>onSound(item.id)} style={[s.button,{flex:1},sound===item.id&&s.selected]}><Text style={s.text}>{item.name}{sound===item.id?' ✓':''}</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel={`試聽${item.name}`} onPress={()=>onPreview(item.id)} style={s.button}><Text style={s.text}>試聽</Text></Pressable></View>)}
 <Text style={s.note}>約 3 秒，不循環。試聽不會開啟提醒或改變任務。</Text>
 {notice?<Text accessibilityLiveRegion="polite" style={s.note}>{notice}</Text>:null}
 </View>;}
