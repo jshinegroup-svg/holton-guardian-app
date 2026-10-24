@@ -1,6 +1,6 @@
 import CustomTimeCard,{customTimeImage} from './CustomTimeCard';
 import {CUSTOM_TIME_CARD_ID,DEFAULT_CUSTOM_MINUTES,MAX_CUSTOM_MINUTES,parseCustomMinutes,validCustomMinutes,rewardForMinutes} from './lib/taskTime';
-import {selectHelpCard,migrateHelpSession,helpDurations} from './lib/helpSession';
+import {selectHelpCard,migrateHelpSession,helpDurationLabel,type HelpCardId} from './lib/helpSession';
 import {syncErrorMessage} from './family/cloudRequest';
 import EnergyAmount from './EnergyAmount';
 import {useFamilyStorage} from './family/context';
@@ -56,7 +56,7 @@ const guardianCards = guardianBeasts.flatMap(beast => beast.stages.map((stage, i
   image: coreGuardianStageImages[beast.id as keyof typeof coreGuardianStageImages][(['stage1', 'stage2', 'stage3', 'stage4'] as const)[index]],
 })));
 const helpCards = [
-  { id: 'pause', title: '暫停卡', line: '我想先停一下。', guide: '先停住，不用急。準備好了，再回到原本那一步。', resume: '我準備好了，繼續', image: supportTools.find(card => card.id === 'time-freeze')!.imageSource },
+  { id: 'pause', title: '暫停卡', line: '我想先停一下。', guide: '由父母決定何時繼續，按「回到任務」恢復計時。', resume: '回到任務', image: supportTools.find(card => card.id === 'time-freeze')!.imageSource },
   { id: 'rest', title: '休息卡', line: '我想休息一下。', guide: '休息 2 分鐘，讓自己喘口氣。時間到只提醒，你準備好再回來。', resume: '休息好了，繼續', image: transitionCards.find(card => card.id === 'break-time')!.imageSource },
   { id: 'energy', title: '加油卡', line: '我需要補充能量。', guide: '可以喝口水、伸展一下，或請大人說一句加油。選一個適合你的方式。', resume: '補充好了，繼續', image: supportTools.find(card => card.id === 'energy-boost')!.imageSource },
   { id: 'breathe', title: '深呼吸卡', line: '我想先慢慢呼吸。', guide: '試試 3 次舒服的慢呼吸：輕輕吸氣，慢慢吐氣，不用憋氣。不用趕，照自己的節奏。', resume: '我準備好了，繼續', image: activeSkills.find(card => card.id === 'breather-1')!.imageSource },
@@ -551,16 +551,16 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
         {!state.help?<>{state.focusTargetMs!==undefined?<Text accessibilityLiveRegion="polite" style={styles.caption}>已補上 2 分鐘 · 繼續努力中</Text>:state.minutes===0?<Text style={styles.caption}>不限時 · 滿 1 分鐘即可完成</Text>:null}<Pressable testID="focus-time-panel" accessibilityRole="button" accessibilityLabel="進入專注介面" accessibilityHint="放大任務與時間，計時繼續" onPress={()=>{armChime();setTaskAway(true);requestAnimationFrame(()=>pageScroll.current?.scrollTo({y:0,animated:false}));}}><Text testID="crystal-clock" style={[styles.timer,{fontSize:60}]}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text></Pressable>{musicControl}</>:null}
         {state.help?<Text style={styles.body}>任務已暫停</Text>:!taskDue?<Text style={styles.body}>照自己的速度來。</Text>:null}
         {state.help ? <>
-          <View testID="help-rules">{helpCard?<Text style={styles.caption}>{helpCard.title} · {helpCard.id==='rest'?2:1} 分鐘 · 本次已使用</Text>:<><Text style={styles.section}>幫忙卡怎麼用？</Text><Text style={styles.body}>每次任務每張限用一次，提早結束也算一次；下一次任務重新開放。</Text></>}</View>
+          <View testID="help-rules">{helpCard?<Text style={styles.caption}>{helpCard.title} · {helpDurationLabel(helpCard.id as HelpCardId)} · 本次已使用</Text>:<><Text style={styles.section}>幫忙卡怎麼用？</Text><Text style={styles.body}>每次任務每張限用一次，提早結束也算一次；下一次任務重新開放。</Text></>}</View>
           {!helpCard ? <Text style={styles.body}>選一張還沒用過的幫忙卡。</Text> : null}
           {helpCard ? <>
             <CardPedestal source={helpCard.image} label={helpCard.title} />
             {helpCard.id !== 'rest' ? <Text style={styles.body}>{helpCard.guide}</Text> : null}
-            {<><Text testID="crystal-clock" style={styles.timer}>{String(Math.floor(breakRemaining / 60)).padStart(2, '0')}:{String(breakRemaining % 60).padStart(2, '0')}</Text><Text style={styles.body}>{breakRemaining === 0 ? '幫忙時間到了，準備好了再繼續；任務仍然暫停。' : '幫忙倒數中，任務時間不會減少。'}</Text></>}
+            {helpCard.id!=='pause'?<><Text testID="crystal-clock" style={styles.timer}>{String(Math.floor(breakRemaining / 60)).padStart(2, '0')}:{String(breakRemaining % 60).padStart(2, '0')}</Text><Text style={styles.body}>{breakRemaining === 0 ? '幫忙時間到了，準備好了再繼續；任務仍然暫停。' : '幫忙倒數中，任務時間不會減少。'}</Text></>:null}
             {button(helpCard.resume, () => void change(resumeHelp))}
             {button('換一張幫忙卡', () => void change(s => s.phase !== 'active' || !s.help ? s : ({ ...s, supportCardId: undefined, breakDeadline: null })), true)}
           </> : <>
-            <View style={styles.helpGrid}>{helpCards.map(card => <Pressable key={card.id} accessibilityRole="button" accessibilityLabel={`選擇${card.title}`} accessibilityState={{disabled:saving||(state.supportUsed??[]).includes(card.id)}} disabled={saving||(state.supportUsed??[]).includes(card.id)} onPress={() => void change(s => selectHelp(s, card.id))} style={[styles.helpChoice, (saving||(state.supportUsed??[]).includes(card.id)) && styles.disabled]}><Image source={card.image} accessibilityLabel={card.title} style={styles.helpArt} resizeMode="contain" /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{card.line}</Text><Text style={styles.caption}>{helpDurations[card.id as keyof typeof helpDurations]/60000} 分鐘 · {(state.supportUsed??[]).includes(card.id)?'本次已使用':'本次可用 1 次'}</Text></Pressable>)}</View>
+            <View style={styles.helpGrid}>{helpCards.map(card => <Pressable key={card.id} accessibilityRole="button" accessibilityLabel={`選擇${card.title}`} accessibilityState={{disabled:saving||(state.supportUsed??[]).includes(card.id)}} disabled={saving||(state.supportUsed??[]).includes(card.id)} onPress={() => void change(s => selectHelp(s, card.id))} style={[styles.helpChoice, (saving||(state.supportUsed??[]).includes(card.id)) && styles.disabled]}><Image source={card.image} accessibilityLabel={card.title} style={styles.helpArt} resizeMode="contain" /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{card.line}</Text><Text style={styles.caption}>{helpDurationLabel(card.id as HelpCardId)} · {(state.supportUsed??[]).includes(card.id)?'本次已使用':'本次可用 1 次'}</Text></Pressable>)}</View>
             {button('我準備好了，繼續', () => void change(resumeHelp), true)}
           </>}
         </> : <View testID="focus-secondary-actions" style={{flexDirection:'row',gap:10}}>
