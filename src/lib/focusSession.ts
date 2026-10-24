@@ -16,7 +16,8 @@ export function migrateFocus<T extends FocusSession>(s:T,now:number):T {
 export const clockText=(seconds:number)=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
 
 export const focusTargetMs=(s:FocusSession)=>s.focusTargetMs??(s.minutes===0?600000:s.minutes*60000);
-export function extendFocus<T extends FocusSession>(s:T,now:number):T {
+export function extendFocus<T extends FocusSession>(s:T,now:number,minutes=2):T {
+ if(!Number.isInteger(minutes)||minutes<1||minutes>999)return s;
  if(s.phase!=='active'||s.help||elapsedFocusMs(s,now)<focusTargetMs(s))return s;
- return {...s,focusTargetMs:elapsedFocusMs(s,now)+120000,remaining:120,deadline:now+120000,taskReminderShown:false,continueAfterDue:true};
+ return {...s,focusTargetMs:elapsedFocusMs(s,now)+minutes*60000,remaining:minutes*60,deadline:now+minutes*60000,taskReminderShown:false,continueAfterDue:true};
 }

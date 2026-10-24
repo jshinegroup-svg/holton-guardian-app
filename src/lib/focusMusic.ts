@@ -1,10 +1,15 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {Platform} from 'react-native';
 import {focusMusicUrl,type FocusMusicId} from './focusMusicCatalog';
+import {musicGain,type SoundLevel} from './reminderSounds';
 type Status='idle'|'loading'|'playing'|'blocked'|'error';
 /** One player shared by task playback and previews. Never changes task data. */
-export function useFocusMusic({enabled,active,trackId,previewAllowed}:{enabled:boolean;active:boolean;trackId:FocusMusicId;previewAllowed:boolean}) {
+export function useFocusMusic({enabled,active,trackId,previewAllowed,level='normal'}:{enabled:boolean;active:boolean;trackId:FocusMusicId;previewAllowed:boolean;level?:SoundLevel}) {
  const player=useRef<HTMLAudioElement|null>(null),context=useRef<AudioContext|null>(null),gain=useRef<GainNode|null>(null),loaded=useRef<FocusMusicId|null>(null),generation=useRef(0);
+ const levelRef=useRef(level);levelRef.current=level;const duckUntil=useRef(0);
+ const applyVolume=useCallback(()=>{const volume=musicGain[levelRef.current]*(Date.now()<duckUntil.current ? .18 : 1);if(gain.current&&context.current){gain.current.gain.cancelScheduledValues(context.current.currentTime);gain.current.gain.setTargetAtTime(volume,context.current.currentTime,.08);}else if(player.current)player.current.volume=volume;},[]);
+ useEffect(()=>{applyVolume();},[level,applyVolume]);
+ useEffect(()=>{if(typeof window==='undefined')return;let timer:ReturnType<typeof setTimeout>;const duck=()=>{duckUntil.current=Date.now()+3200;applyVolume();clearTimeout(timer);timer=setTimeout(applyVolume,3250);};window.addEventListener('holton-task-chime',duck);return()=>{window.removeEventListener('holton-task-chime',duck);clearTimeout(timer);};},[applyVolume]);
  const [previewId,setPreviewId]=useState<FocusMusicId|null>(null),[status,setStatus]=useState<Status>('idle');
  const desired=previewAllowed&&previewId?previewId:active&&enabled?trackId:null;
  const desiredRef=useRef(desired);desiredRef.current=desired;
@@ -16,7 +21,7 @@ export function useFocusMusic({enabled,active,trackId,previewAllowed}:{enabled:b
     // Keep an inspectable, non-interactive media element; only the visible app controls it.
     audio.style.display='none';document.body.appendChild(audio);player.current=audio;
     const Constructor=window.AudioContext||(window as unknown as {webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
-    if(Constructor){context.current=new Constructor();gain.current=context.current.createGain();gain.current.gain.value=.25;context.current.createMediaElementSource(audio).connect(gain.current);gain.current.connect(context.current.destination);}else{audio.volume=.25;}
+    if(Constructor){context.current=new Constructor();gain.current=context.current.createGain();gain.current.gain.value=musicGain[levelRef.current];context.current.createMediaElementSource(audio).connect(gain.current);gain.current.connect(context.current.destination);}else{audio.volume=musicGain[levelRef.current];}
     audio.onerror=()=>{generation.current++;audio.pause();setStatus('error');};
    }
   return player.current;
@@ -47,6 +52,16 @@ export function useFocusMusic({enabled,active,trackId,previewAllowed}:{enabled:b
   return()=>{document.removeEventListener('pointerdown',arm,true);document.removeEventListener('keydown',arm,true);};
  },[enabled,prepare]);
  useEffect(()=>{if(desired&&typeof document!=='undefined'&&!document.hidden)play(desired);else stop();},[desired,play,stop]);
+ useEffect(()=>{
+  const audio=player.current;if(!audio||!desired)return;
+  const ended=()=>{if(desiredRef.current&&typeof document!=='undefined'&&!document.hidden){audio.currentTime=0;play(desiredRef.current);}};
+  const paused=()=>{if(desiredRef.current&&typeof document!=='undefined'&&!document.hidden&&audio.paused)setStatus('blocked');};
+  audio.addEventListener('ended',ended);audio.addEventListener('pause',paused);
+  let lastTime=audio.currentTime,stalledAt=Date.now();
+  const watch=setInterval(()=>{if(typeof document==='undefined'||document.hidden||!desiredRef.current)return;if(audio.paused||(context.current&&context.current.state!=='running')){setStatus('blocked');return;}if(audio.currentTime!==lastTime){lastTime=audio.currentTime;stalledAt=Date.now();}else if(Date.now()-stalledAt>10000)setStatus('blocked');},2000);
+  const playing=()=>{stalledAt=Date.now();setStatus('playing');};audio.addEventListener('playing',playing);
+  return()=>{clearInterval(watch);audio.removeEventListener('ended',ended);audio.removeEventListener('pause',paused);audio.removeEventListener('playing',playing);};
+ },[desired,play]);
  useEffect(()=>{if(!previewAllowed)setPreviewId(null);},[previewAllowed]);
  useEffect(()=>{if(!previewAllowed||!previewId)return;const timer=setTimeout(()=>{setPreviewId(null);stop();},20000);return()=>clearTimeout(timer);},[previewAllowed,previewId,stop]);
  useEffect(()=>{
