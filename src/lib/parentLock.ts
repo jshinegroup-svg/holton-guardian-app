@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const KEY='holton-parent-lock-v1';
 type RecordData={salt:string;pin:string;recovery:string;failures:number;until:number};
 const hex=(b:ArrayBuffer)=>Array.from(new Uint8Array(b),n=>n.toString(16).padStart(2,'0')).join('');
+export const normalizeParentPin=(value:string)=>value.trim().replace(/[０-９]/g,char=>String(char.charCodeAt(0)-0xff10));
 export function recoveryCode(){return hex(crypto.getRandomValues(new Uint8Array(16)).buffer);}
 async function hash(value:string,salt:string){
  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(value),'PBKDF2',false,['deriveBits']);
@@ -19,6 +20,7 @@ async function exclusive<T>(storageKey:string,action:()=>Promise<T>):Promise<T>{
  queues.set(storageKey,pending);return pending;
 }
 export async function saveParentPin(pin:string,code:string,storageKey=KEY){
+ pin=normalizeParentPin(pin);
  if(!/^\d{6}$/.test(pin))throw Error('請輸入 6 位數字。');
  return exclusive(storageKey,async()=>{
   const previous=await read(storageKey);
@@ -31,6 +33,7 @@ export async function saveParentPin(pin:string,code:string,storageKey=KEY){
  });
 }
 export async function verifyParentPin(value:string,recovery=false,storageKey=KEY){
+ if(!recovery){value=normalizeParentPin(value);if(!/^\d{6}$/.test(value))throw Error('請完整輸入 6 位數字；這次不計入錯誤次數。');}
  return exclusive(storageKey,async()=>{
   authorized.delete(storageKey);
   const r=await read(storageKey);if(!r)throw Error('請先設定家長密碼。');
