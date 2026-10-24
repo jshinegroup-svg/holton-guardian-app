@@ -1,5 +1,5 @@
 import CustomTimeCard,{customTimeImage} from './CustomTimeCard';
-import {CUSTOM_TIME_CARD_ID,DEFAULT_CUSTOM_MINUTES,parseCustomMinutes,validCustomMinutes,rewardForMinutes} from './lib/taskTime';
+import {CUSTOM_TIME_CARD_ID,DEFAULT_CUSTOM_MINUTES,MAX_CUSTOM_MINUTES,parseCustomMinutes,validCustomMinutes,rewardForMinutes} from './lib/taskTime';
 import {selectHelpCard,migrateHelpSession,helpDurations} from './lib/helpSession';
 import {syncErrorMessage} from './family/cloudRequest';
 import EnergyAmount from './EnergyAmount';
@@ -205,7 +205,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     }catch(e){setError(syncErrorMessage(e));}
     finally{busy.current=false;setSaving(false);}
   }
-  const duoReady=!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=60&&!saving&&!needsSync&&!customNeedsApply;
+  const duoReady=!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=MAX_CUSTOM_MINUTES&&!saving&&!needsSync&&!customNeedsApply;
   async function startDuo(at:number){
     if(!duoReady||busy.current)return false;
     const n=Number(minutes);
@@ -413,7 +413,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     const n = Number(minutes);
     const target = Number(goal);
     if (!Number.isInteger(target) || target < 1 || target > 20) { setNotice('今日任務數請填 1～20 次。'); return; }
-    if (!title.trim() || !Number.isInteger(n) || n < 0 || n > 60) { setNotice('請填任務名稱，時間為 1～60 分鐘，或填 0 表示不限時。'); return; }
+    if (!title.trim() || !Number.isInteger(n) || n < 0 || n > MAX_CUSTOM_MINUTES) { setNotice('請填任務名稱，時間為 1～999 分鐘，或填 0 表示不限時。'); return; }
     setNotice('');
     void change(s => ['preparing', 'active', 'finishing'].includes(s.phase) ? s : ({ ...s, title: title.trim(), taskCategory: undefined, dailyGoal: target, minutes: n, cardId: cardIdForMinutes(n), lastCustomMinutes:cardIdForMinutes(n)===CUSTOM_TIME_CARD_ID?n:s.lastCustomMinutes, phase: 'ready', remaining: n * 60, deadline: null, help: false }));
   }
@@ -421,7 +421,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const duoButton = (label:string, action:()=>void, secondary=false, disabled=false) => <Pressable testID={secondary?"secondary-action":"primary-action"} accessibilityRole="button" accessibilityLabel={label} disabled={disabled||saving} onPress={action} style={{flex:1,minHeight:44,justifyContent:'center',alignItems:'center',paddingHorizontal:6,borderRadius:12,backgroundColor:secondary?'#173f50':'#08748a',borderWidth:1,borderColor:'#bca66d',opacity:disabled||saving ? .45 : 1}}><Text style={{color:'#fff0c1',fontSize:16,fontWeight:'700',textAlign:'center'}}>{label}</Text></Pressable>;
   if(compact)return <View testID="duo-child-task" style={{padding:10,borderRadius:16,backgroundColor:'#103448',borderWidth:1,borderColor:'#bca66d',gap:6,marginHorizontal:8,marginVertical:3}}>
     <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}><Text numberOfLines={1} style={{color:'#fff0c1',fontSize:21,fontWeight:'800',flex:1}}>{childNickname||state.childName}</Text><EnergyAmount value={state.orbs} size={20} style={{fontSize:15}}/></View>
-    <View style={{flexDirection:'row',alignItems:'center',gap:12,zIndex:1}}>{companion||starterId?<CompanionReaction compact adventurerName={normalizeChildName(childNickname??state.childName)} name={companionName} character={companion?companion.beastId:starterId!} mood={state.taskOutcome==='unfinished'&&state.phase==='done'?'ready':state.help?'rest':state.phase==='done'||state.phase==='finishing'?'done':state.phase==='active'?'focus':'ready'} reduced={reduceMotion}>{companion?<Image source={companion.image} style={{width:44,height:62}} resizeMode="contain"/>:<StarterCompanionArt id={starterId!} width={44}/>}</CompanionReaction>:null}<View style={{flex:1}}><Text numberOfLines={1} style={{color:'#fff0c1',fontSize:17,fontWeight:'700'}}>{state.title||'還沒選今天的任務'}</Text><Text accessibilityLabel="任務倒數" style={{color:'#fff0b3',fontSize:32,fontWeight:'bold'}}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text><Text style={{color:'#c7e1e7',fontSize:13}}>{state.help?'休息中':state.phase==='active'?'努力中':state.phase==='finishing'?'準備收尾':state.phase==='done'?(unfinished?'這次先到這裡':'完成了！'):'準備中'}{state.phase==='ready'&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=60?<> · 完成 <EnergyAmount kind="gain" value={rewardForMinutes(Number(minutes))} size={12} style={{fontSize:13,lineHeight:16}}/></>:null}</Text></View></View>
+    <View style={{flexDirection:'row',alignItems:'center',gap:12,zIndex:1}}>{companion||starterId?<CompanionReaction compact adventurerName={normalizeChildName(childNickname??state.childName)} name={companionName} character={companion?companion.beastId:starterId!} mood={state.taskOutcome==='unfinished'&&state.phase==='done'?'ready':state.help?'rest':state.phase==='done'||state.phase==='finishing'?'done':state.phase==='active'?'focus':'ready'} reduced={reduceMotion}>{companion?<Image source={companion.image} style={{width:44,height:62}} resizeMode="contain"/>:<StarterCompanionArt id={starterId!} width={44}/>}</CompanionReaction>:null}<View style={{flex:1}}><Text numberOfLines={1} style={{color:'#fff0c1',fontSize:17,fontWeight:'700'}}>{state.title||'還沒選今天的任務'}</Text><Text accessibilityLabel="任務倒數" style={{color:'#fff0b3',fontSize:32,fontWeight:'bold'}}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text><Text style={{color:'#c7e1e7',fontSize:13}}>{state.help?'休息中':state.phase==='active'?'努力中':state.phase==='finishing'?'準備收尾':state.phase==='done'?(unfinished?'這次先到這裡':'完成了！'):'準備中'}{state.phase==='ready'&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=MAX_CUSTOM_MINUTES?<> · 完成 <EnergyAmount kind="gain" value={rewardForMinutes(Number(minutes))} size={12} style={{fontSize:13,lineHeight:16}}/></>:null}</Text></View></View>
     {error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}
     {state.phase==='ready'?<View style={{flexDirection:'row',gap:8}}><TextInput accessibilityLabel="任務名稱" value={title} onChangeText={setTitle} maxLength={80} placeholder="任務名稱" placeholderTextColor="#a8bdc5" style={{flex:1,minWidth:0,height:44,borderWidth:1,borderColor:'#72909a',borderRadius:8,paddingHorizontal:8,color:'#fff',fontSize:16}}/><View style={{flexDirection:'row',alignItems:'center',gap:4}}><TextInput accessibilityLabel="任務時間（分鐘）" value={minutes} onChangeText={text=>{setMinutes(text);setCustomNeedsApply(false);}} keyboardType="number-pad" style={{width:48,height:44,borderWidth:1,borderColor:'#72909a',borderRadius:8,textAlign:'center',color:'#fff',fontSize:16}}/><Text style={{color:'#c7e1e7',fontSize:13}}>分</Text></View></View>:null}
     <View style={{flexDirection:'row',gap:8}}>
@@ -474,7 +474,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
         <Text style={styles.caption}>柔和三音，不循環。限時任務倒數到零時提醒；不限時滿 10 分鐘提醒，不會自動完成或發點數。</Text>
         {button('試聽到時提示音',()=>{armChime();setTimeout(()=>void playChime().then(ok=>setNotice(ok?'已播放提示音':'裝置暫時無法播放，請確認媒體音量後再試。')),100);},true)}
         <Text style={styles.caption}>手機靜音、鎖定或切換 App 時可能聽不到；回到這裡仍會顯示到時提醒。</Text>
-        <Text style={styles.caption}>時間獎勵：1～9 分鐘＋1、10～14 分鐘＋2、15～19 分鐘＋3、20～24 分鐘＋4、25～60 分鐘／不限時＋5。休息與求助不扣獎勵。</Text>
+        <Text style={styles.caption}>時間獎勵：1～9 分鐘＋1、10～14 分鐘＋2、15～19 分鐘＋3、20～24 分鐘＋4、25～999 分鐘／不限時＋5。休息與求助不扣獎勵。</Text>
       </View>
       </>:null}
       {parentTab==='records'?<View style={styles.card}><Text style={styles.section}>世界卡兌換紀錄</Text><Text style={styles.body}>今天已兌換 <EnergyAmount kind="gain" value={todayExchangePoints}/>。每天最多一次，可留到明天一起換。</Text>{button('查看世界卡兌換', () => setWorldExchangeOpen(true), true)}</View>:null}
@@ -507,7 +507,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       {companionScene}<View style={styles.card}><Text style={styles.section}>你的夥伴與收藏</Text><Text style={styles.body}>已收藏 {ownedIds.size} 張守護獸卡 · {state.collection?.length??0} 張世界卡</Text>{button('我的守護獸收藏',()=>setCollectionOpen(true))}{button('世界卡換點數',()=>setWorldExchangeOpen(true),true)}{button(showWorldAlbum?'收起世界卡收藏':'打開世界卡收藏',()=>setShowWorldAlbum(!showWorldAlbum),true)}{!state.collection?.length?<Text style={styles.caption}>完成任務，慢慢收集你的第一張世界卡。</Text>:null}<Text style={styles.caption}>初始夥伴會一直保留。取得守護獸後，可在收藏中選擇「今天陪我」。</Text></View>
     </> : taskAway&&state.phase==='active'?<View testID="task-away-panel" style={styles.card}>
       {outcomeChoices}<Text style={styles.heading}>專注時間</Text><Text testID="away-task-title" style={[styles.section,{fontSize:viewportWidth<360?32:36,lineHeight:48,textAlign:'center'}]}>{state.title}</Text>
-      <Text testID="away-clock" style={[styles.timer,{fontSize:viewportWidth<360?72:88,lineHeight:112,fontWeight:'800',paddingHorizontal:4,paddingVertical:24}]}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text>
+      <Text testID="away-clock" style={[styles.timer,{fontSize:(state.minutes===0&&state.focusTargetMs===undefined?focusElapsed/1000:remaining)>=6000?(viewportWidth<360?52:64):(viewportWidth<360?72:88),lineHeight:112,fontWeight:'800',paddingHorizontal:4,paddingVertical:24}]}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text>
       {musicControl}
       {state.taskReminderShown?<Text testID="away-due" accessibilityLiveRegion="polite" style={styles.body}>{state.minutes===0?'已滿 10 分鐘，可以回任務確認是否完成。':'任務時間到了，可以回去確認是否完成。'}</Text>:null}
       {button('回到任務',()=>{armChime();setTaskAway(false);})}{earlyStopAction}
