@@ -499,7 +499,6 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       </>:null}
       {parentTab==='records'?<View style={styles.card}><Text style={styles.section}>世界卡兌換紀錄</Text><Text style={styles.body}>今天已兌換 <EnergyAmount kind="gain" value={todayExchangePoints}/>。每天最多一次，可留到明天一起換。</Text>{button('查看世界卡兌換', () => setWorldExchangeOpen(true), true)}</View>:null}
       {parentTab==='preferences'?<>
-      {button('修改家長密碼',()=>setChangePin(true),true)}
       <View style={styles.card}><Text style={styles.section}>守護獸收藏與舊卡恢復</Text><Text style={styles.body}>目前收藏 {ownedIds.size} 張。舊版能確認的卡片會自動帶入；更換已取得的陪伴夥伴不扣點，也不改變初始夥伴。</Text>{button('查看守護獸收藏', () => setCollectionOpen(true), true)}
         {starterMissing.length > 0 && !state.starterRestoreAt ? <><Text style={styles.caption}>若孩子以前已兌換完五隻 Mini 初階卡，可補回以前已取得的 {starterMissing.length} 張。只補卡，不扣點、不重複發卡。</Text>{button('補回已兌換的五隻初階卡', restoreStarters, true)}</> : <Text style={styles.caption}>初階收藏已保留，不需要重新購買。</Text>}
         <Text style={styles.caption}>{state.guardianSundayOnly===false?'守護獸不限星期幾，隨時可兌換。':'星期日兌換以台北時間為準。'}Mini 10、Mid 20、Final 40、Legendary 60 點；每張扣完整標示點數，按階段取得，舊卡仍保留。</Text>
