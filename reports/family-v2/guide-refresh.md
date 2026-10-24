@@ -1,0 +1,7 @@
+# Onboarding refresh — 2026-10-24
+
+User requested onboarding aligned with newer features. Welcome is now five short pages with back/next and confirmed skip: task/custom duration/finish eligibility; help-card rules; outcomes/extensions; music/reminders/focus view; rewards and parent records. No version bump or forced replay for returning users.
+
+Explicit replay resets only scoped guide flags, opens the five-page overview, then continues the existing seven-step task walkthrough. The final step remains informational and cannot auto-start a task. Parent tour introduces tasks, music and records without activating settings. Music tour introduces independent reminder controls, saved 1–30 seconds and three variants per style before the existing background-music flow. Background preview/selection selectors are scoped to its own panel so reminder controls cannot capture them.
+
+Verification: typecheck and static export; targeted lint has no errors (existing hook warnings remain). Browser fixture uses synthetic per-child cloud data and mocked audio; covers 320/390 viewports, existing-user no forced tour, five-page replay/back/skip confirmation, full main tour without auto-start, parent and seven-step music tour, correct background preview target, reminder settings unchanged, no reward/history changes, sibling isolation, reload persistence, and fresh-user welcome/skip/resume. Physical iPhone untested.

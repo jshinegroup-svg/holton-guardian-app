@@ -2,17 +2,29 @@ import React,{useEffect,useRef,useState} from 'react';
 import {Modal,Platform,Pressable,ScrollView,Share,StyleSheet,Text,TextInput,View} from 'react-native';
 import {ChildNameInput,normalizeChildName} from './ChildProfile';
 import {BACKUP_LIMIT,backupSummary,createBackup,parseBackup,weeklyFootprints,type Backup,type FamilySnapshot} from './lib/familyBackup';
+const welcomePages=[
+ {title:'選一件小事，選適合的時間',lines:['收玩具、閱讀或寫作業，從今天做得到的一步開始。','左右切換時間卡；最後一張「自訂時間」可設定 1～999 分鐘，首次預設 30 分鐘，按「用這個時間」才套用。每位冒險者各自記住上次設定。','「不限時」也能選。預設滿 1 分鐘即可完成；限時任務進行一半後可完成，家長也能開啟「允許提早完成」。']},
+ {title:'累了、卡住了，都可以求助',lines:['「我需要幫忙」有四張卡：休息 2 分鐘，加油與深呼吸各 1 分鐘。暫停卡不限時，由父母決定何時按「回到任務」。','每次任務每張限用一次，提早結束也算一次；用過的卡會變淡，下一次任務恢復。','幫忙時任務計時暫停，不扣能量球；幫忙時間到也不會自動開始，準備好再繼續。']},
+ {title:'時間到，照自己的狀況選',lines:['「我完成了」：完成收尾後，才領取這次能量球。','「還差一點」：由父母設定補時 1～999 分鐘，預設 2 分鐘；確認後繼續原任務，幫忙卡次數不重置。','「這次先到這裡」：先確認再結束，記錄未完成，不扣已有能量球，也不發這次獎勵或增加旅程。時間未到或收尾中也可以選。']},
+ {title:'音樂陪伴，提醒由你決定',lines:['到「家長小屋 → 音樂」，背景音樂與時間到提醒可分別開關、調整音量。','背景音樂先試聽、再選用，任務中會循環；也能在時間旁開關。點倒數可進入簡潔專注介面，完成或補時請先「回到任務」。','時間到提醒有鈴聲、鐘聲、遊戲音效各 3 款。單次播放可設 1～30 秒，預設 3 秒；按「儲存秒數」後，試聽也使用這個長度。時間到只提醒一次。']},
+ {title:'一起累積，也一起回顧',lines:['點點小夥伴，聽聽他的文字鼓勵；完成並收尾後累積能量球，再到心願小屋看看。','家長小屋可調整任務與目標、心願獎勵，並查看完成與未完成紀錄；每位冒險者的進度分開保存。','之後想複習，可到「設定與教學 → 重新觀看操作教學」。接著只帶你選任務與準備，不會替你開始計時。']},
+];
 function Action({label,onPress,disabled=false}:{label:string;onPress:()=>void;disabled?:boolean}){return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={[s.button,disabled&&{opacity:.4}]}><Text style={s.buttonText}>{label}</Text></Pressable>;}
 export function WelcomeGuide({visible,busy,error,onClose,childName='',askName=false}:{visible:boolean;busy:boolean;error:string;childName?:string;askName?:boolean;onClose:(start:boolean,name?:string)=>void}) {
- const [name,setName]=useState(childName),[nameStep,setNameStep]=useState(askName),[confirmSkip,setConfirmSkip]=useState(false);
- useEffect(()=>{if(visible){setName(childName);setNameStep(askName);setConfirmSkip(false);}},[visible,childName,askName]);
+ const [name,setName]=useState(childName),[nameStep,setNameStep]=useState(askName),[confirmSkip,setConfirmSkip]=useState(false),[page,setPage]=useState(0);
+ useEffect(()=>{if(visible){setName(childName);setNameStep(askName);setConfirmSkip(false);setPage(0);}},[visible,childName,askName]);
  const close=(start:boolean)=>onClose(start,askName?normalizeChildName(name):undefined);
  if(visible&&confirmSkip)return <Modal visible transparent animationType="fade" onRequestClose={()=>!busy&&setConfirmSkip(false)}><View style={s.overlay}><ScrollView contentContainerStyle={s.modalScroll}><View testID="welcome-skip-confirm" style={s.panel}><Text style={s.title}>✨ 想先自己探索嗎？</Text><Text style={s.text}>教學還沒結束喔！接下來還會帶你認識其他功能，讓第一次冒險更順手。你可以繼續跟著操作，也可以先自己試試看。</Text><Text style={s.note}>之後想再看，可以到「家長小屋 → 設定與教學 → 重新觀看操作教學」。</Text>{error?<Text accessibilityRole="alert" style={s.note}>{error}</Text>:null}<Action label="繼續帶我玩" onPress={()=>setConfirmSkip(false)} disabled={busy}/><Action label="先自己探索" onPress={()=>close(false)} disabled={busy}/></View></ScrollView></View></Modal>;
  if(visible&&nameStep)return <Modal visible transparent animationType="fade" onRequestClose={()=>!busy&&setConfirmSkip(true)}><View style={s.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.modalScroll}><View testID="welcome-name" style={s.panel}><Text style={s.title}>我們怎麼稱呼小冒險家？</Text><ChildNameInput value={name} onChange={setName} busy={busy}/><Text style={s.note}>之後也能到「家長小屋 → 小朋友資料」修改。</Text>{error?<Text accessibilityRole="alert" style={s.note}>{error}</Text>:null}<Action label="繼續新手帶領" onPress={()=>setNameStep(false)} disabled={busy}/><Action label="先跳過命名" onPress={()=>{setName('');setNameStep(false);}} disabled={busy}/></View></ScrollView></View></Modal>;
- return <Modal visible={visible} transparent animationType="fade" onRequestClose={()=>!busy&&setConfirmSkip(true)}><View style={s.overlay}><ScrollView contentContainerStyle={s.modalScroll}><View testID="welcome-guide" style={s.panel}>
- <Text style={s.title}>一起開始第一個小冒險</Text><Text style={s.text}>不用先設定一大堆，從一件小事開始。</Text>
- {[['① 選一件小事','收玩具、閱讀或寫作業，選今天做得到的一步。'],['② 和夥伴一起完成','時間卡最後可選「自訂時間」，用＋／－或輸入設定 1～999 分鐘，按「用這個時間」；每位冒險者會記住上次設定。準備好再開始；卡住可以用幫忙卡，不扣點。暫停卡不限時，由父母決定何時按「回到任務」恢復；休息 2 分鐘，加油和深呼吸各 1 分鐘；每次任務每張限用一次。'],['時間到了怎麼選？','完成了就收尾；按「還差一點」由父母填入補時分鐘，確認後繼續倒數，幫忙卡不重置。時間未到或收尾時也可以選「這次先到這裡」記錄未完成，不扣球、不發完成獎勵。'],['③ 累積能量，實現心願','完成並收尾後獲得能量球，再到心願小屋看看。']].map(([title,note])=><View key={title} style={s.row}><Text style={s.section}>{title}</Text><Text style={s.text}>{note}</Text></View>)}
- <Text style={s.note}>預設每日目標 3 次，心願點數已填好。家長之後都能調整。</Text>{error?<Text accessibilityRole="alert" style={s.note}>{error}</Text>:null}<Action label="選我的第一個任務" onPress={()=>close(true)} disabled={busy}/><Action label="先逛村莊，跳過說明" onPress={()=>setConfirmSkip(true)} disabled={busy}/>
+ return <Modal visible={visible} transparent animationType="fade" onRequestClose={()=>!busy&&setConfirmSkip(true)}><View style={s.overlay}><ScrollView key={`welcome-page-${page}`} contentContainerStyle={s.modalScroll}><View testID="welcome-guide" style={s.panel}>
+ <Text style={s.note}>新手導入 · {page+1}／{welcomePages.length}</Text>
+ <Text style={s.title}>{welcomePages[page].title}</Text>
+ {welcomePages[page].lines.map(line=><View key={line} style={s.row}><Text style={s.text}>{line}</Text></View>)}
+ {error?<Text accessibilityRole="alert" style={s.note}>{error}</Text>:null}
+ {page>0?<Action label="上一頁" onPress={()=>setPage(n=>n-1)} disabled={busy}/>:null}
+ {page<welcomePages.length-1?<Action label="下一頁" onPress={()=>setPage(n=>n+1)} disabled={busy}/>:<Action label="選我的第一個任務" onPress={()=>close(true)} disabled={busy}/>}
+ <Action label="先逛村莊，跳過說明" onPress={()=>setConfirmSkip(true)} disabled={busy}/>
+
  </View></ScrollView></View></Modal>;
 }
 export {ParentPinGate as ParentGate} from './ParentPinGate';

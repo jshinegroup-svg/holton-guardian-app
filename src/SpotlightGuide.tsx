@@ -14,24 +14,27 @@ type Step={selector:string;text:string;delay?:number;action?:'mission'|'picker';
 const companionStep:Step={selector:'[data-testid="guardian-companion"] [data-testid="companion-reaction"]',text:'點點你的夥伴，看看他想跟你說什麼！他會用文字泡泡回應，做任務時也可以點他陪你一下。',delay:1400};
 const main:Step[]=[
  {selector:'[aria-label="開始任務"]',text:'先點這裡，進入今天的任務。',action:'mission'},
- {selector:'[aria-label="上一張時間卡"]',text:'點一下左箭頭，換一張時間卡。左右箭頭都可以選時間。'},
+ {selector:'[aria-label="上一張時間卡"]',text:'點一下左箭頭，換一張時間卡。最後一張是「自訂時間」，可填 1～999 分鐘再按「用這個時間」；也可選「不限時」。'},
  {selector:'[data-testid="task-title-entry"]',text:'點這裡，挑今天想完成的一件小事。',action:'picker'},
  {selector:'[data-testid="tutorial-task-categories"]',text:'從亮起的五種類別中，點一件今天想做的事。'},
  companionStep,
  {selector:'[aria-label="準備出發"]',text:'時間與任務選好了，點「準備出發」。現在還不會開始計時。'},
- {selector:'[aria-label="我準備好了，開始！"]',text:'準備好才按這裡，計時就會開始。也可以先結束教學，等一下再開始。',info:true},
+ {selector:'[aria-label="我準備好了，開始！"]',text:'準備好才按這裡開始計時。需要時可求助；時間到可完成、補時或先結束。「完成教學，先不開始」不會啟動任務。',info:true},
 ];
 const rooms:Record<string,Step[]>={
  companionTap:[companionStep],
  music:[
+  {selector:'[data-testid="reminder-settings"] [aria-label="任務到時提示音"]',text:'到時提醒和背景音樂分開控制，音量也各自設定。教學不會替你切換開關。',info:true},
+  {selector:'[data-testid="reminder-duration"]',text:'填入 1～30 秒，再按「儲存秒數」。預設 3 秒，時間到只播放一次，不會每隔幾秒重複提醒。',info:true},
+  {selector:'[data-testid="reminder-style-0"]',text:'鈴聲、鐘聲、遊戲音效各有 3 款。先「試聽」再點音效選用；試聽依已儲存秒數播放，不會打開已關閉的提醒。',info:true},
   {selector:'[data-testid="music-categories"]',text:'先選一個音樂分類：專注或放鬆。安靜做任務也很好。'},
   {selector:'[data-testid^="music-track-"] [aria-label^="展開"]',text:'點一首曲名，展開試聽與選用。'},
-  {selector:'[aria-label^="試聽"]',text:'點這裡試聽 20 秒。試聽不等於選用，也不會開啟任務自動播放。'},
-  {selector:'[role="radio"][aria-label^="選用"]',text:'喜歡這首就按「選用」。任務開始是否播放，由「任務開始時播放」開關決定；也能在計時器旁開關。'},
+  {selector:'[data-testid="focus-music-settings"] [aria-label^="試聽"]',text:'點這裡試聽 20 秒。試聽不等於選用，也不會開啟任務自動播放。'},
+  {selector:'[data-testid="focus-music-settings"] [role="radio"][aria-label^="選用"]',text:'喜歡這首就按「選用」。任務開始是否播放，由「任務開始時播放」開關決定；也能在計時器旁開關。'},
  ],
  companions:[{selector:'[data-testid="guardian-companion"] [aria-label^="摸摸"]',text:'點一下夥伴，他會發光、用文字泡泡陪你，不會花點數。'},{selector:'[aria-label="我的守護獸收藏"]',text:'點這裡打開收藏；點已擁有的角色，就能選他今天陪你。',info:true,passThrough:true}],
  wishes:[{selector:'[data-testid="wish-guide-card"], [data-testid="wish-guide-empty"]',text:'這是心願卡與需要的點數。點數足夠時可以選取，最後確認才扣點；教學不會替你兌換。',info:true}],
- parent:[{selector:'[aria-label="任務與目標"]',text:'先點「任務與目標」看看設定。也能切換其他分類；重看操作教學在「設定與教學」。',info:true,passThrough:true}],
+ parent:[{selector:'[aria-label="任務與目標"]',text:'在這裡設定任務、每日目標與是否允許提早完成。每位冒險者各自保存設定與進度。',info:true},{selector:'[aria-label="音樂"]',text:'背景音樂與時間到提醒分開設定。可試聽、選音效、調音量，並設定提醒播放幾秒。',info:true},{selector:'[aria-label="完成紀錄"]',text:'查看完成、未完成與使用幫忙卡的紀錄。想重看這套導覽，到「設定與教學 → 重新觀看操作教學」。',info:true}],
 };
 export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,hasTask,onMission,onPicker,onMusicDone,onResumeChange}:{allowed:boolean;room:string;replay:number;phase:string;pickerOpen:boolean;hasTask:boolean;onMission:()=>void;onPicker:()=>void;onMusicDone:()=>void;onResumeChange:(available:boolean)=>void}){
  const {storage}=useFamilyStorage();
