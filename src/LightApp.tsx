@@ -103,6 +103,8 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); };
   }, [state?.phase, reduceMotion]);
   const [taskAway,setTaskAway]=useState(false);
+  const [stopConfirmOpen,setStopConfirmOpen]=useState(false);
+  const stopConfirmArmed=useRef(false);
   const [soundBlocked,setSoundBlocked]=useState(false);
   const reminderBusy=useRef(false);
   const {arm:armChime,play:playChime}=useTaskChime(state?.taskSoundEnabled!==false);
@@ -356,12 +358,20 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     const paused=pauseFocus(s,at);
     return {...paused,phase:'done',taskOutcome:'unfinished',deadline:null,remaining:0,help:false,supportCardId:undefined,breakDeadline:null,history:[...s.history,{id:`${at}-${Math.random().toString(36).slice(2,8)}`,outcome:'unfinished',title:s.title,at:new Date(at).toISOString(),minutes:s.minutes,elapsedSeconds:Math.floor((paused.focusElapsedMs??0)/1000),reward:0,world:s.activeWorld??'forest',cardId:s.cardId,helpUsed:s.helpUsed,supportUsed:[...(s.supportUsed??[])]}]};
   }
-  const stopEarly=()=>{setTaskAway(false);setSoundBlocked(false);void change(stopUnfinished);};
-  const earlyStopAction=!state.help&&!taskDue&&['active','finishing'].includes(state.phase)?<View testID="early-stop-choice" style={{gap:6}}>{button('這次先到這裡',stopEarly,true)}</View>:null;
+  const cancelStop=()=>{stopConfirmArmed.current=false;setStopConfirmOpen(false);};
+  const stopEarly=()=>{if(busy.current||syncBlocked.current)return;stopConfirmArmed.current=true;setStopConfirmOpen(true);};
+  const confirmStop=()=>{if(!stopConfirmArmed.current||busy.current||syncBlocked.current)return;cancelStop();setTaskAway(false);setSoundBlocked(false);void change(stopUnfinished);};
+  const stopConfirmation=<Modal visible={stopConfirmOpen&&['active','finishing'].includes(state.phase)} transparent animationType={reduceMotion?'none':'fade'} onRequestClose={cancelStop}><View style={styles.overlay}><ScrollView contentContainerStyle={styles.modalScroll}><View testID="stop-confirmation" accessibilityViewIsModal style={styles.card}>
+    <Text style={styles.heading}>這次先到這裡嗎？</Text>
+    <Text style={styles.body}>{normalizeChildName(childNickname??state.childName)} · {state.title}</Text>
+    <Text style={styles.body}>已有的能量球不會扣除。這次會記錄為未完成，不發完成獎勵，也不增加旅程步數。</Text>
+    {button('繼續任務',cancelStop)}
+    {button('確認結束',confirmStop,true)}
+  </View></ScrollView></View></Modal>;
   const outcomeChoices=taskDue?<View testID="task-outcome-choices" style={{gap:8}}>
     {button('我完成了',()=>{setTaskAway(false);void change(enterFinishing);})}
     {button('還差一點',()=>{setTaskAway(false);setSoundBlocked(false);void change(s=>extendFocus(s,Date.now()));},true)}
-    {button('這次先到這裡',()=>{setTaskAway(false);void change(stopUnfinished);},true)}
+    {button('這次先到這裡',stopEarly,true)}
   </View>:null;
   const unfinished=state.phase==='done'&&state.taskOutcome==='unfinished';
   const companionScene = (<View testID={focusActive?"focus-companion-panel":"guardian-companion"} style={[styles.companionRow,state.phase==='finishing'&&{paddingVertical:6},focusActive&&styles.focusCompanionPanel]}>{companion||starterId?<CompanionReaction adventurerName={normalizeChildName(childNickname??state.childName)} alignTop={focusActive} key={`${companion?.id??starterId}:${state.phase}:${state.help}`} character={companion?companion.beastId:starterId!} mood={state.taskOutcome==='unfinished'&&state.phase==='done'?'ready':state.help?'rest':state.phase==='done'||state.phase==='finishing'?'done':state.phase==='active'?'focus':'ready'} name={companionName} reduced={reduceMotion}>{companion?<Image source={companion.image} accessibilityLabel="今日夥伴陪你做任務" style={[styles.companionThumb,focusActive&&{width:102,height:144}]} resizeMode="contain" />:starterId?<StarterCompanionArt id={starterId} width={focusActive?102:136}/>:null}</CompanionReaction>:null}<View testID="companion-details" style={{flex:1,minWidth:0,alignSelf:focusActive?'flex-start':undefined,gap:focusActive?6:8}}><Text style={[styles.guardianName,focusActive&&{fontSize:17}]}>{companionName}</Text><Text style={[styles.body,focusActive&&{fontSize:15,lineHeight:23}]}>{state.help ? '我陪你休息，準備好再一起走。' : state.phase === 'done' ? unfinished?`${normalizeChildName(childNickname??state.childName)}，謝謝你願意試試，我們下次再一起來。`:'我們一起完成了！' : '我在這裡，陪你一起做。'}</Text>{state.phase === 'active' && selectedCard && !state.help ? <Image testID="companion-time-card" source={selectedCard.imageSource} accessibilityLabel={selectedCard.name} style={{width:focusActive?'88%':70.4,maxWidth:focusActive?98.56:70.4,height:focusActive?137.28:98.56,alignSelf:'center'}} resizeMode="contain" /> : null}</View></View>);
@@ -427,6 +437,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     {duoButton('進入個人畫面',()=>onExpand?.(),true)}
     </View>
     {outcomeChoices}
+    {stopConfirmation}
     {unfinished?<Text style={styles.body}>{normalizeChildName(childNickname??state.childName)}，謝謝你願意試試，我們下次再一起來。</Text>:null}
   </View>;
   if(!starterId&&homePhase&&!state.guardianChallenge) return <StarterCompanionPicker busy={saving} error={error} onChoose={id=>{void change(s=>isStarterCompanion(s.starterCompanionId)?s:{...s,starterCompanionId:id});}}/>;
@@ -530,8 +541,11 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       </> : state.phase === 'finishing' ? <>
         <Image source={finishImage} accessibilityLabel={`${finish.title} 收尾鼓勵卡`} style={[styles.ritualArt,{width:'85%',height:238,alignSelf:'center'}]} resizeMode="contain" />
         <Text style={styles.section}>{finish.title}</Text>{usedHelpNames ? <Text style={styles.caption}>這輪你選了{usedHelpNames}，表達自己的需要也是重要的一步。</Text> : null}<Text style={styles.quote}>{finish.line}</Text>
-        {button(finish.button, () => void change(completeTask))}{earlyStopAction}
-        {button('還有一點，回去繼續', () => void change(s => s.phase !== 'finishing' ? s : ({ ...s, phase: 'active', focusStartedAt:Date.now(), deadline: s.minutes === 0 ? null : Date.now() + s.remaining * 1000, help: false })), true)}
+        {button(finish.button, () => void change(completeTask))}
+        <View testID="finishing-secondary-actions" style={{flexDirection:'row',gap:10}}>
+          <Pressable accessibilityRole="button" accessibilityLabel="還有一點，回去繼續" disabled={saving} onPress={()=>void change(s=>s.phase!=='finishing'?s:({...s,phase:'active',focusStartedAt:Date.now(),deadline:s.minutes===0?null:Date.now()+s.remaining*1000,help:false}))} style={[styles.button,styles.secondary,{flex:1,minWidth:0,paddingHorizontal:6},saving&&styles.disabled]}><Text style={[styles.buttonText,styles.secondaryText,{fontSize:16}]}>還有一點，回去繼續</Text></Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel="這次先到這裡" disabled={saving} onPress={stopEarly} style={[styles.button,styles.secondary,{flex:1,minWidth:0,paddingHorizontal:6},saving&&styles.disabled]}><Text style={[styles.buttonText,styles.secondaryText,{fontSize:16}]}>這次先到這裡</Text></Pressable>
+        </View>
       </> : state.phase === 'active' ? <>
         {companionScene}
         {!state.help?<>{state.focusTargetMs!==undefined?<Text accessibilityLiveRegion="polite" style={styles.caption}>已補上 2 分鐘 · 繼續努力中</Text>:state.minutes===0?<Text style={styles.caption}>不限時 · 滿 1 分鐘即可完成</Text>:null}<Pressable testID="focus-time-panel" accessibilityRole="button" accessibilityLabel="進入專注介面" accessibilityHint="放大任務與時間，計時繼續" onPress={()=>{armChime();setTaskAway(true);requestAnimationFrame(()=>pageScroll.current?.scrollTo({y:0,animated:false}));}}><Text testID="crystal-clock" style={[styles.timer,{fontSize:60}]}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text></Pressable>{musicControl}</>:null}
@@ -572,6 +586,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     {!inVillage && showWorldReminder ? <View style={styles.reminder} accessibilityLiveRegion="polite"><Text style={styles.section}>你有世界卡可以換點數！</Text><Text style={styles.body}>目前可領 <EnergyAmount kind="gain" value={exchangePlan.points}/>，現在領取嗎？</Text><Text style={styles.caption}>先看明細，再確認。下次再換也不會過期。</Text>{button('去兌換', () => setWorldExchangeOpen(true))}{button('下次再說', () => void change(s => ({ ...s, worldReminderDismissedDay: worldExchangeDay(Date.now()) })), true)}</View> : null}
       {!settingsOpen && showWorldAlbum && !!state.collection?.length ? <View style={styles.card}><Text style={styles.section}>我的世界卡</Text><Text style={styles.body}>{exchangePlan.blocked ? '今天已兌換，新卡留到明天。' : <>目前可換 <EnergyAmount kind="gain" value={exchangePlan.points}/></>}</Text>{button('查看兌換明細', () => setWorldExchangeOpen(true), true)}<ScrollView horizontal contentContainerStyle={styles.deck}>{state.collection.map(item => { const card = worldEvents.find(c => c.id === item.cardId); return card ? <View key={item.id} style={styles.taskCard}><Image source={card.imageSource} accessibilityLabel={card.title} resizeMode="contain" style={styles.cardArt} /><Text style={styles.cardName}>{card.title}</Text><Text style={styles.caption}>{item.redeemedAt ? '✓ 已兌換 · 保留收藏' : worldEnergyReward(item.cardId)}</Text></View> : null; })}</ScrollView></View> : null}
   </ScrollView>
+    {stopConfirmation}
     <WelcomeGuide childName={normalizeChildName(childNickname??state.childName)} askName={state.onboardingDone===false} error={error} visible={(state.onboardingDone===false||introReplay)&&homePhase&&!pending&&!challenge} busy={saving} onClose={(start,name)=>void finishGuide(start,name)}/>
     <SpotlightGuide key={`guide-${tutorialReplay}`} allowed={!compact&&!freshTutorial&&state.onboardingDone!==false&&!introReplay&&!pending&&!challenge&&!journey.event&&parentGateTab===null&&!collectionOpen&&!worldExchangeOpen&&(settingsOpen||state.phase==='ready'||state.phase==='preparing')} room={settingsOpen?(parentTab==='music'?'music':'parent'):room} replay={tutorialReplay} phase={state.phase} pickerOpen={taskPickerOpen} hasTask={!!state.title} onMission={()=>navigateRoom('mission')} onPicker={()=>{setDetailCustom(false);setTaskPickerOpen(true);}} onMusicDone={music.stopPreview} onResumeChange={setResumeTutorial}/>
     <ParentPinGate visible={changePin} change onConfirm={()=>setChangePin(false)} onCancel={()=>setChangePin(false)}/>
