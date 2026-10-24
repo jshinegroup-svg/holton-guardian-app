@@ -55,3 +55,6 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  await p.getByLabel('6 位數家長密碼',{exact:true}).fill(' '+next.replace(/[0-9]/g,c=>String.fromCharCode(0xff10+Number(c)))+' ');await tap('確認');await p.getByTestId('parent-content').waitFor();assert.equal(await failures(),0);
  assert.deepEqual(saves.get(a).state,original);assert.deepEqual(saves.get(b).state,sibling);assert.deepEqual(errors,[]);console.log('PASS DOM-only fill verifies and changes PIN, reload uses new PIN, wrong PIN rejected, blank not counted, fullwidth+spaces accepted, progress untouched',width);await context.close();
 }}finally{await browser.close();server.close();server.closeAllConnections();}
+
+// All assertions and browser cleanup are awaited above; stop leftover fixture keepalive handles.
+process.exit(0);

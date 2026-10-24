@@ -14,6 +14,7 @@ type Cached<T>={schema:2;revision:number;state:T;pending?:Pending<T>};
 export class ProgressRepository<T> {
   private key:string;
   private busy=false;
+  private revision:number|undefined;
   constructor(private familyId:string,private childId:string,private local:LocalStore,private cloud:FamilyCloud,private newId:()=>string){
     this.key=childStorageKey(familyId,childId);
   }
@@ -27,11 +28,12 @@ export class ProgressRepository<T> {
   async load():Promise<{state:T;revision:number;pending:boolean}|null>{
     const cached=await this.cached();
     // Never overwrite unsent progress by loading an older cloud snapshot.
-    if(cached?.pending)return {...cached,pending:true};
+    if(cached?.pending){this.revision=cached.revision;return {...cached,pending:true};}
     const saved=await this.cloud.load<T>(this.childId);
-    if(!saved)return cached?{...cached,pending:false}:null;
+    if(!saved){this.revision=cached?.revision??0;return cached?{...cached,pending:false}:null;}
     if(saved.familyId!==this.familyId||saved.childId!==this.childId)throw Error('save_owner_mismatch');
     await this.local.setItem(this.key,JSON.stringify({schema:2,revision:saved.revision,state:saved.state}));
+    this.revision=saved.revision;
     return {state:saved.state,revision:saved.revision,pending:false};
   }
   async save(state:T,events:FamilyEvent[]=[]):Promise<void>{
@@ -40,7 +42,7 @@ export class ProgressRepository<T> {
     try{
       const previous=await this.cached();
       if(previous?.pending)throw Error('pending_save_requires_retry');
-      const pending:Pending<T>={operationId:this.newId(),expectedRevision:previous?.revision??0,state,events};
+      const pending:Pending<T>={operationId:this.newId(),expectedRevision:this.revision??previous?.revision??0,state,events};
       const next:Cached<T>={schema:2,revision:pending.expectedRevision,state,pending};
       await this.local.setItem(this.key,JSON.stringify(next));
       await this.flush(next);
@@ -51,10 +53,26 @@ export class ProgressRepository<T> {
     this.busy=true;
     try{const cached=await this.cached();if(cached?.pending)await this.flush(cached);}finally{this.busy=false;}
   }
+  /** Explicit user-selected conflict resolution. Never writes the server or loses the pending snapshot. */
+  async useCloud():Promise<void>{
+    if(this.busy)throw Error('save_in_progress');
+    this.busy=true;
+    try{
+      const cached=await this.cached();
+      const saved=await this.cloud.load<T>(this.childId);
+      if(!saved)throw Error('cloud_save_missing');
+      if(saved.familyId!==this.familyId||saved.childId!==this.childId)throw Error('save_owner_mismatch');
+      if(!Number.isSafeInteger(saved.revision)||saved.revision<0||!saved.state)throw Error('invalid_cloud_save');
+      if(cached?.pending)await this.local.setItem(`${this.key}::conflict-backup::${cached.pending.operationId}`,JSON.stringify(cached));
+      await this.local.setItem(this.key,JSON.stringify({schema:2,revision:saved.revision,state:saved.state}));
+      this.revision=saved.revision;
+    }finally{this.busy=false;}
+  }
   private async flush(cached:Cached<T>):Promise<void>{
     const p=cached.pending!;
     const result=await this.cloud.save({childId:this.childId,...p});
     if(result.revision!==p.expectedRevision+1)throw Error('unexpected_revision');
     await this.local.setItem(this.key,JSON.stringify({schema:2,revision:result.revision,state:p.state}));
+    this.revision=result.revision;
   }
 }

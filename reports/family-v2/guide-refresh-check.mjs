@@ -60,3 +60,6 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  saves.get(a).state={...saves.get(a).state,phase:'ready',onboardingDone:false};await p.evaluate(({family,a})=>localStorage.removeItem(`holton-family-v2::${family}::${a}::holton-guardian-app::spotlight-v1`),{family,a});await p.reload();await p.getByTestId('welcome-name').waitFor();await tap('先跳過命名');await p.getByTestId('welcome-guide').waitFor();assert((await p.getByTestId('welcome-guide').innerText()).includes('1／5'));await tap('先逛村莊，跳過說明');await tap('先自己探索');await p.waitForTimeout(500);assert.equal(saves.get(a).state.onboardingDone,true);assert.equal(saves.get(a).state.phase,'ready');await p.getByRole('button',{name:'繼續新手教學',exact:true}).waitFor();assert.equal(await p.getByTestId('spotlight-guide').count(),0);assert.deepEqual(saves.get(b).state,sibling);
  assert.deepEqual(errors,[]);console.log('PASS refreshed five-page replay, skip confirmation/back, full main tour, no auto start, parent/music targeted tour, no reminder mutation, persistence/sibling/viewport',width);await context.close();
 }}finally{await browser.close();server.close();server.closeAllConnections();}
+
+// All assertions and browser cleanup are awaited above; stop leftover fixture keepalive handles.
+process.exit(0);

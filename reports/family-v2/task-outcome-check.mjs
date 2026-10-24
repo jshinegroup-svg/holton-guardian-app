@@ -85,4 +85,7 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  await panels.nth(0).getByRole('button',{name:'這次先到這裡',exact:true}).click();await p.getByTestId('stop-confirmation').waitFor();await p.getByRole('button',{name:'確認結束',exact:true}).click();await panels.nth(0).getByRole('button',{name:'下一個任務',exact:true}).waitFor();assert.equal(saves.get(a).state.history[0].outcome,'unfinished');assert.equal(saves.get(a).state.orbs,10);assert.equal(completions,1);assert.deepEqual(saves.get(b).state,bBeforeStop);
  console.log('PASS early stop before1min, help, away, finishing: no reward or sibling changes',width);
  console.log('PASS due choices, away, continue/reload, unfinished lost response idempotency, no rewards/progress, reset, completed branch',width);assert.deepEqual(errors,[]);await context.close();
-}}finally{await browser.close();server.close();}
+}}finally{await browser.close();server.close();server.closeAllConnections();}
+
+// All assertions and browser cleanup are awaited above; stop leftover fixture keepalive handles.
+process.exit(0);

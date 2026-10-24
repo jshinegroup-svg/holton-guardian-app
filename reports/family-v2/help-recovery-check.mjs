@@ -55,4 +55,7 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  assert.equal(await p.getByRole('button',{name:'選擇休息卡',exact:true}).getAttribute('aria-disabled'),null);
  const beforeRest=Date.now();await p.getByRole('button',{name:'選擇休息卡',exact:true}).click();await p.getByRole('button',{name:'休息好了，繼續',exact:true}).waitFor();assert(saves.get(a).state.breakDeadline>=beforeRest+120000&&saves.get(a).state.breakDeadline<=Date.now()+120000);
  console.log('PASS rest expiry, no-refresh retry before/after commit, no duplicate rewards, one-use all cards, minute deadlines/reload, new-task reset, hung-request timeout',width);assert.deepEqual(errors,[]);await context.close();
-}}finally{await browser.close();server.close();}
+}}finally{await browser.close();server.close();server.closeAllConnections();}
+
+// All assertions and browser cleanup are awaited above; stop leftover fixture keepalive handles.
+process.exit(0);

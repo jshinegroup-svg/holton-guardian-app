@@ -56,3 +56,6 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  saves.get(a).state={...original,minutes:0,taskReward:5,focusElapsedMs:1500000,focusStartedAt:await p.evaluate(()=>Date.now()),deadline:null};await p.reload();await p.getByRole('button',{name:'這次先到這裡',exact:true}).click();await p.getByRole('button',{name:'確認結束',exact:true}).click();await p.getByTestId('unfinished-result').waitFor();assert.equal(saves.get(a).state.orbs,10);assert.equal(saves.get(a).state.history.at(-1).reward,0);
  assert.deepEqual(saves.get(b).state,sibling);assert.deepEqual(errors,[]);console.log('PASS untimed0/1/3/5 rewards, timed preserved, help/finishing excluded, history and reload no duplicate, sibling unchanged',width);await context.close();
 }}finally{await browser.close();server.close();server.closeAllConnections();}
+
+// All assertions and browser cleanup are awaited above; stop leftover fixture keepalive handles.
+process.exit(0);

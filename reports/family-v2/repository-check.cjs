@@ -1,7 +1,9 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {ProgressRepository}=require('./build/progressRepository');
-const {childStorageKey,validateChildProfile}=require('./build/types');
+const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),ts=require('typescript');
+function load(file){const ctx={exports:{},require:id=>load(path.resolve(path.dirname(file),id+'.ts'))};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,ctx);return ctx.exports;}
+const {ProgressRepository}=load('src/family/progressRepository.ts');
+const {childStorageKey,validateChildProfile}=load('src/family/types.ts');
 const family='11111111-1111-4111-8111-111111111111';
 const a='22222222-2222-4222-8222-222222222222';
 const b='33333333-3333-4333-8333-333333333333';
@@ -40,5 +42,26 @@ test('unexpected family response is rejected before cache write',async()=>{
  await assert.rejects(s.repo(a).load(),/save_owner_mismatch/);assert.equal(s.storage.size,0);
 });
 test('invalid profile and unsafe namespaces rejected',()=>{
- assert.throws(()=>childStorageKey('../v1',a));assert.throws(()=>validateChildProfile(' ',6));assert.throws(()=>validateChildProfile('A',1.5));assert.deepEqual(validateChildProfile(' A ',6),{nickname:'A',ageYears:6});
+ assert.throws(()=>childStorageKey('../v1',a));assert.throws(()=>validateChildProfile(' ',6));assert.throws(()=>validateChildProfile('A',1.5));assert.equal(JSON.stringify(validateChildProfile(' A ',6)),JSON.stringify({nickname:'A',ageYears:6}));
+});
+
+test('same-browser second tab cannot adopt newer cache revision to overwrite stale state',async()=>{
+ const s=setup(),one=s.repo(a),two=s.repo(a);await one.save({orbs:10});await two.load();
+ await one.save({orbs:20});await assert.rejects(two.save({orbs:11}),/revision_conflict/);
+ assert.equal(s.saves.get(a).state.orbs,20);
+ await two.useCloud();assert.equal((await two.load()).state.orbs,20);
+ const backups=[...s.storage].filter(([key])=>key.includes('::conflict-backup::'));
+ assert.equal(backups.length,1);assert.equal(JSON.parse(backups[0][1]).pending.state.orbs,11);
+ await two.save({orbs:21});assert.equal(s.saves.get(a).state.orbs,21);
+});
+test('conflict recovery does not mutate cloud, sibling, or pending operation when cloud load fails',async()=>{
+ const s=setup();const repo=s.repo(a);await repo.save({orbs:10});await s.repo(b).save({orbs:30});
+ s.saves.set(a,{familyId:family,childId:a,revision:2,state:{orbs:50}});
+ await assert.rejects(repo.save({orbs:11}),/revision_conflict/);const before=JSON.stringify([...s.storage]);
+ const original=s.cloud.load;s.cloud.load=async()=>{throw Error('offline');};
+ await assert.rejects(repo.useCloud(),/offline/);assert.equal(JSON.stringify([...s.storage]),before);
+ s.cloud.load=async()=>({familyId:b,childId:a,revision:2,state:{orbs:100}});
+ await assert.rejects(repo.useCloud(),/save_owner_mismatch/);assert.equal(JSON.stringify([...s.storage]),before);
+ s.cloud.load=original;const operations=s.operations.size;await repo.useCloud();
+ assert.equal(s.operations.size,operations);assert.equal(s.saves.get(b).state.orbs,30);assert.equal((await repo.load()).state.orbs,50);
 });

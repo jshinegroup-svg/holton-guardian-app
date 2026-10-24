@@ -70,4 +70,7 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  assert.equal(saves.get(a).state.orbs,10);assert.equal(saves.get(a).state.history.length,0);assert.deepEqual(saves.get(b).state,sibling);
  saves.get(a).state={...saves.get(a).state,taskSoundEnabled:false,taskReminderShown:false,focusTargetMs:undefined,focusElapsedMs:180000,focusStartedAt:await p.evaluate(()=>Date.now()),deadline:null};await p.reload();await p.getByTestId('task-outcome-choices').waitFor();await p.waitForTimeout(500);assert.equal(await p.evaluate(()=>window.__oscCount),0);assert.equal(await p.evaluate(()=>window.__duckCount),0);
  console.log('PASS reminder settings, explicit preview while off, independent volume/persistence, loop end recovery, interrupted retry, >3min playing, timed reminder duck+restore',width);assert.deepEqual(errors,[]);await context.close();
-}}finally{await browser.close();server.close();}
+}}finally{await browser.close();server.close();server.closeAllConnections();}
+
+// All assertions and browser cleanup are awaited above; stop leftover fixture keepalive handles.
+process.exit(0);

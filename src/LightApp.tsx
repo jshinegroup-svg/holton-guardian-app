@@ -93,6 +93,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const busy = useRef(false);
   const syncBlocked=useRef(false);
   const [needsSync,setNeedsSync]=useState(false);
+  const [cloudConfirm,setCloudConfirm]=useState(false);
   const pageScroll = useRef<ScrollView>(null);
   const taskTop = useRef(0);
   const lastPhase = useRef<State['phase'] | undefined>(undefined);
@@ -200,13 +201,15 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     } catch(e) { if(familyMode){syncBlocked.current=true;setNeedsSync(true);setError(syncErrorMessage(e));}else setError('尚未儲存成功，請再試一次；點數與收藏尚未變更。');return false; }
     finally { busy.current = false; setSaving(false); }
   }
-  async function retrySync(){
+  async function retrySync(useCloud=false){
     if(busy.current)return;
     busy.current=true;setSaving(true);
     try{
       // readState retries the persisted operation ID, then reads the acknowledged cloud state.
       // Never reapply the failed transform to an old on-screen snapshot.
+      if(useCloud)await storage.useCloud?.();
       const data=await readState();
+      if(useCloud){setRoom(['ready','done'].includes(data.phase)&&!data.journeys?.event?'village':'mission');setTaskAway(false);setSettingsOpen(false);setStopConfirmOpen(false);setExtensionOpen(false);setCloudConfirm(false);}
       if(!current.current){setRoom(['ready','done'].includes(data.phase)&&!data.journeys?.event?'village':'mission');setFreshTutorial(data.onboardingDone===false);}
       celebrate.current=false;current.current=data;setState(data);setTitle(data.title);setMinutes(String(data.minutes));setGoal(String(data.dailyGoal??3));setNow(Date.now());
       syncBlocked.current=false;setNeedsSync(false);setCustomNeedsApply(false);setError('');
@@ -234,7 +237,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     })();
   },[state,now,playChime]); // change uses only stable refs and setters.
   const button = (label: string, action: () => void, secondary = false, disabled = false, content?:React.ReactNode) => <Pressable testID={secondary ? "secondary-action" : "primary-action"} accessibilityRole="button" accessibilityLabel={label} disabled={disabled || saving} onPress={action} style={[styles.button, secondary && styles.secondary, (disabled || saving) && styles.disabled]}><Text style={[styles.buttonText, secondary && styles.secondaryText]}>{content??label}</Text></Pressable>;
-  if(needsSync)return <SafeAreaView testID="sync-recovery" style={[styles.root,{padding:16}]}><View style={styles.card}><Text style={styles.section}>{childNickname||state?.childName||'冒險者'} · 同步暫停</Text><Text accessibilityRole="alert" style={styles.body}>{error}</Text><Text style={styles.caption}>保留這次操作，確認同步後再繼續；不會重複發放或扣除能量球。</Text>{button(saving?'正在重試同步…':'重試同步',()=>void retrySync())}{familyNavigation?button('回冒險小隊',familyNavigation.onMenu,true):null}</View></SafeAreaView>;
+  if(needsSync)return <SafeAreaView testID="sync-recovery" style={[styles.root,{padding:16,minHeight:0}]}><ScrollView style={{flex:1,minHeight:0}} contentContainerStyle={{paddingBottom:16}}><View style={styles.card}><Text style={styles.section}>{childNickname||state?.childName||'冒險者'} · 同步暫停</Text><Text accessibilityRole="alert" style={styles.body}>{error}</Text><Text style={styles.caption}>保留這次操作，確認同步後再繼續；不會重複發放或扣除能量球。</Text>{button(saving?'正在重試同步…':'重試同步',()=>void retrySync())}{storage.useCloud&&(error.includes('另一台裝置')||cloudConfirm)?cloudConfirm?<><Text style={styles.body}>改用雲端最新進度？這台尚未同步的操作會另存於本機備份，不會合併或再發放獎勵。請先停止另一台裝置的操作。</Text>{button('取消，保留目前操作',()=>setCloudConfirm(false),true)}{button('確認使用雲端進度',()=>void retrySync(true))}</>:button('改用雲端最新進度',()=>setCloudConfirm(true),true):null}{familyNavigation?button('回冒險小隊',familyNavigation.onMenu,true):null}</View></ScrollView></SafeAreaView>;
   if (!state) return <SafeAreaView style={styles.root}><Text style={styles.body}>{error || '正在準備你的夥伴…'}</Text></SafeAreaView>;
   const journey=migrateJourneys(state).journeys;
   const world=state.activeWorld??'forest';
@@ -416,7 +419,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     busy.current=true;setSaving(true);setError('');
     try {
       const before=createBackup(old);
-      const resetState={...initial(null),childName:normalizeChildName(old.childName),focusMusicEnabled:old.focusMusicEnabled===true,focusMusicTrackId:validFocusMusicId(old.focusMusicTrackId)?old.focusMusicTrackId:DEFAULT_FOCUS_MUSIC,dailyGoal:old.dailyGoal??3,shopEnabled:old.shopEnabled??true,wishes:old.wishes??starterWishes(),allowEarlyFinish:old.allowEarlyFinish===true,guardianSundayOnly:old.guardianSundayOnly!==false,taskSoundEnabled:old.taskSoundEnabled!==false,reduceMotion:old.reduceMotion??false};
+      const resetState={...initial(null),childName:normalizeChildName(old.childName),focusMusicEnabled:old.focusMusicEnabled===true,focusMusicTrackId:validFocusMusicId(old.focusMusicTrackId)?old.focusMusicTrackId:DEFAULT_FOCUS_MUSIC,dailyGoal:old.dailyGoal??3,shopEnabled:old.shopEnabled??true,wishes:old.wishes??starterWishes(),allowEarlyFinish:old.allowEarlyFinish===true,guardianSundayOnly:old.guardianSundayOnly!==false,taskSoundEnabled:old.taskSoundEnabled!==false,taskSoundId:old.taskSoundId,taskSoundLevel:old.taskSoundLevel,taskSoundSeconds:old.taskSoundSeconds,focusMusicLevel:old.focusMusicLevel,lastCustomMinutes:old.lastCustomMinutes,reduceMotion:old.reduceMotion??false};
       const restored=snapshot?{...snapshot,...(!isStarterCompanion(snapshot.starterCompanionId)&&isStarterCompanion(old.starterCompanionId)?{starterCompanionId:old.starterCompanionId}:{})}:resetState;
       const next=migrateJourneys(migrateStarterCompanion({...((restored) as State),help:false,deadline:null,onboardingDone:true},!!snapshot));
       createBackup(next); // Revalidate before any replacement write.
@@ -426,7 +429,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       current.current=next;setState(next);setTitle(next.title);setMinutes(String(next.minutes));setGoal(String(next.dailyGoal??3));
       setParentGateTab(null);setSettingsOpen(false);setMapOpen(false);setJourneyOpen(false);setRoom('village');setWorldExchangeOpen(false);setCollectionOpen(false);setGuardianDetailId(null);setBattlePreviewId(null);setChallengeConfirmId(null);setTaskPickerOpen(false);setTaskDetailsOpen(false);setShowWorldAlbum(false);setWalletOpen(false);setIntroReplay(false);celebrate.current=false;
       pageScroll.current?.scrollTo({y:0,animated:false});return true;
-    } catch {setError('備份保留或儲存未完成，原有進度未變更。請再試一次。');return false;}
+    } catch(e) {if(familyMode){syncBlocked.current=true;setNeedsSync(true);setError(syncErrorMessage(e));}else setError('備份保留或儲存未完成，請重試並確認結果。');return false;}
     finally {busy.current=false;setSaving(false);}
   }
   function saveGoal() {

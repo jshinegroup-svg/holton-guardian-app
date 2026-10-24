@@ -7,13 +7,13 @@ import type {ChildProfile,ChildSave} from './types';
 import type {ScopedStorage} from './context';
 export const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{storage:AsyncStorage,storageKey:'holton-family-v2-auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
 export async function getFamily(userId:string){
- const {data,error}=await supabase.from('families').select('id').eq('owner_id',userId).maybeSingle();if(error)throw error;if(data)return data.id as string;
- const added=await supabase.from('families').insert({owner_id:userId}).select('id').single();
- if(added.error){const again=await supabase.from('families').select('id').eq('owner_id',userId).single();if(again.error)throw added.error;return again.data.id as string;}
+ const {data,error}=await cloudRequest(signal=>supabase.from('families').select('id').eq('owner_id',userId).abortSignal(signal).maybeSingle());if(error)throw error;if(data)return data.id as string;
+ const added=await cloudRequest(signal=>supabase.from('families').insert({owner_id:userId}).select('id').abortSignal(signal).single());
+ if(added.error){const again=await cloudRequest(signal=>supabase.from('families').select('id').eq('owner_id',userId).abortSignal(signal).single());if(again.error)throw added.error;return again.data.id as string;}
  return added.data.id as string;
 }
 export async function listChildren(familyId:string):Promise<ChildProfile[]>{
- const {data,error}=await supabase.from('children').select('*').eq('family_id',familyId).order('created_at');if(error)throw error;
+ const {data,error}=await cloudRequest(signal=>supabase.from('children').select('*').eq('family_id',familyId).order('created_at').abortSignal(signal));if(error)throw error;
  return data.map(c=>({id:c.id,familyId:c.family_id,nickname:c.nickname,ageYears:c.age_years,ageRecordedAt:c.age_recorded_at}));
 }
 export const cloud:FamilyCloud={
@@ -25,6 +25,7 @@ export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>voi
  const prefix=`holton-family-v2::${child.familyId}::${child.id}::`;
  let previous:Record<string,unknown>|null=null;
  return {
+ async useCloud(){await repo.useCloud();previous=null;},
  async getItem(key){
   if(key!=='holton-guardian-app::light-v1')return AsyncStorage.getItem(prefix+key);
   try{let saved=await repo.load();

@@ -43,4 +43,7 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  assert.equal(saves.get(a).state.orbs,10);assert.equal(saves.get(b).state.orbs,30);
  failure='before';await next.click();await p.getByTestId('sync-recovery').waitFor();await p.getByRole('button',{name:'重試同步',exact:true}).click();await next.waitFor();assert.equal(saves.get(a).state.orbs,10);
  await p.screenshot({path:`/tmp/holton-stable-${width}.png`});assert.deepEqual(errors,[]);console.log('PASS stable geometry through delayed saves and error retry',width);await context.close();
-}}finally{await browser.close();server.close();}
+}}finally{await browser.close();server.close();server.closeAllConnections();}
+
+// All assertions and browser cleanup are awaited above; stop leftover fixture keepalive handles.
+process.exit(0);

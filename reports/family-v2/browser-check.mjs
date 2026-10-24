@@ -82,4 +82,7 @@ try{for(const [width,height] of [[320,568],[390,600],[844,390],[900,700]]){
  console.log('PASS guardian rest, original personality rotation, renamed long name, personal bubble bounds');
  assert.deepEqual(errors,[]);console.log('PASS solo: no top chrome, integrated family header and parent mode controls, reload remembered, switch child, return duo, deadlines/balances intact');
  console.log(`PASS ${width}: sibling isolation, independent timers, completion once, expand/back, reload, V1 intact, no overflow/JS errors`);await context.close();
-}}finally{await browser.close();server.close();}
+}}finally{await browser.close();server.close();server.closeAllConnections();}
+
+// All assertions and browser cleanup are awaited above; stop leftover fixture keepalive handles.
+process.exit(0);

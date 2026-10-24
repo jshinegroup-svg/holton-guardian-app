@@ -61,4 +61,7 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  assert.equal(saves.get(a).state.taskReward,5);assert.equal(saves.get(b).state.taskReward,5);assert.equal(saves.get(a).state.lastCustomMinutes,999);assert.equal(saves.get(b).state.lastCustomMinutes,61);assert.equal(saves.get(b).state.cardId,'custom-time');
  const beforeDeadline=saves.get(a).state.deadline;await p.reload();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();assert.equal(saves.get(a).state.deadline,beforeDeadline);
  assert.deepEqual(errors,[]);console.log('PASS custom image,1-999 input,default30,plus/minus,apply gating,remember/reload,999min5orbs,duo999/61 isolated',width);await context.close();
-}}finally{await browser.close();server.close();}
+}}finally{await browser.close();server.close();server.closeAllConnections();}
+
+// All assertions and browser cleanup are awaited above; stop leftover fixture keepalive handles.
+process.exit(0);

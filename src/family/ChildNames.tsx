@@ -4,7 +4,7 @@ import {View,Text,TextInput,Pressable,Modal} from 'react-native';
 import {supabase,listChildren} from './client';
 import {validateChildProfile,type ChildProfile} from './types';
 type Archived={id:string;nickname:string;expires_at?:string};
-export default function ChildNames({family,children,onSaved}:{family:string;children:ChildProfile[];onSaved:(kids:ChildProfile[])=>void}){
+export default function ChildNames({family,profiles:children,onSaved}:{family:string;profiles:ChildProfile[];onSaved:(kids:ChildProfile[])=>void}){
  const [names,setNames]=useState(()=>children.length?children.map(c=>c.nickname):['']);
  const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[editing,setEditing]=useState<number|null>(null),[deleting,setDeleting]=useState<ChildProfile|null>(null),[archived,setArchived]=useState<Archived[]|null>(null),[purging,setPurging]=useState<Archived|null>(null);
  const lock=useRef(false),inputs=useRef<(TextInput|null)[]>([]);
