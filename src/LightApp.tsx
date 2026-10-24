@@ -506,10 +506,9 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     </View></View></> : room==='wishes'?<><Text style={styles.body}>和大人一起約定，讓努力變成小小心願。</Text>{button('家長管理心願',()=>openParent('rewards'),true)}<RewardShop data={state} settings={false} saving={saving} change={change}/></> : room==='companions'?<>
       {companionScene}<View style={styles.card}><Text style={styles.section}>你的夥伴與收藏</Text><Text style={styles.body}>已收藏 {ownedIds.size} 張守護獸卡 · {state.collection?.length??0} 張世界卡</Text>{button('我的守護獸收藏',()=>setCollectionOpen(true))}{button('世界卡換點數',()=>setWorldExchangeOpen(true),true)}{button(showWorldAlbum?'收起世界卡收藏':'打開世界卡收藏',()=>setShowWorldAlbum(!showWorldAlbum),true)}{!state.collection?.length?<Text style={styles.caption}>完成任務，慢慢收集你的第一張世界卡。</Text>:null}<Text style={styles.caption}>初始夥伴會一直保留。取得守護獸後，可在收藏中選擇「今天陪我」。</Text></View>
     </> : taskAway&&state.phase==='active'?<View testID="task-away-panel" style={styles.card}>
-      {outcomeChoices}<Text style={styles.heading}>專注時間</Text><Text testID="away-task-title" style={[styles.section,{fontSize:viewportWidth<360?32:36,lineHeight:48,textAlign:'center'}]}>{state.title}</Text>
+      <Text style={styles.heading}>專注時間</Text><Text testID="away-task-title" style={[styles.section,{fontSize:viewportWidth<360?32:36,lineHeight:48,textAlign:'center'}]}>{state.title}</Text>
       <Text testID="away-clock" style={[styles.timer,{fontSize:(state.minutes===0&&state.focusTargetMs===undefined?focusElapsed/1000:remaining)>=6000?(viewportWidth<360?52:64):(viewportWidth<360?72:88),lineHeight:112,fontWeight:'800',paddingHorizontal:4,paddingVertical:24}]}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text>
       {musicControl}
-      {state.taskReminderShown?<Text testID="away-due" accessibilityLiveRegion="polite" style={styles.body}>{state.minutes===0?'已滿 10 分鐘，可以回任務確認是否完成。':'任務時間到了，可以回去確認是否完成。'}</Text>:null}
       {button('回到任務',()=>{armChime();setTaskAway(false);})}
     </View> : !inVillage ? <>
 

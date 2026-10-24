@@ -33,7 +33,7 @@ try{for(const [width,height] of [[320,568],[390,700]]){
 
  await p.getByRole('button',{name:'只有 哥哥 玩',exact:true}).click();
  await p.getByTestId('task-outcome-choices').waitFor();
- await p.getByRole('button',{name:'進入專注介面',exact:true}).click();await p.getByTestId('task-away-panel').getByTestId('task-outcome-choices').waitFor();
+ await p.getByRole('button',{name:'進入專注介面',exact:true}).click();await p.getByTestId('task-away-panel').waitFor();assert.equal(await p.getByTestId('task-away-panel').getByTestId('task-outcome-choices').count(),0);assert.equal(await p.getByTestId('away-due').count(),0);assert.equal(await p.getByTestId('early-stop-choice').count(),0);await p.getByRole('button',{name:'回到任務',exact:true}).click();await p.getByTestId('task-outcome-choices').waitFor();
  await p.getByRole('button',{name:'還差一點',exact:true}).click();await p.getByText('已補上 2 分鐘 · 繼續努力中',{exact:true}).waitFor();
  assert.equal(saves.get(a).state.phase,'active');assert.deepEqual(saves.get(a).state.supportUsed,['rest']);assert.equal(saves.get(a).state.history.length,0);
  await p.screenshot({path:`reports/family-v2/extension-${width}.png`,fullPage:true});const extended=saves.get(a).state;assert.equal(extended.remaining,120);assert(extended.deadline>Date.now()+115000);assert.equal(extended.minutes,5);
