@@ -139,3 +139,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-24 | actor=bot | approval=user | trigger=23282+task-screenshot | Remove persistent early-stop caption; shrink companion time-card 20%; typecheck, web export and four-viewport browser regression passed.
 
 2026-10-24 | actor=codex | approval=user:23354 | trigger=whole-system-practical-audit | Fix observed revision/conflict recovery, family-load retry, restore response-loss handling, reset audio preferences and shared-cloud backup copy; add isolated auth/conflict/commerce-backup regressions; no real family data changed. See reports/family-v2/system-audit-2026-10-24.md.
+2026-10-24 | actor=codex | approval=user:23354 | trigger=audit-release-verification | Render0833d6b live; public SHA matches local; hosted conflict/commerce-backup320/390 + anonymous login PASS.

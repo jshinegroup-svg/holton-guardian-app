@@ -36,3 +36,6 @@ Environment: authoritative V2 checkout; local Expo web export; desktop Chrome wi
 Run `npm run typecheck`, `npm run export:web`, the Node rules under `reports/family-v2`, then `node reports/family-v2/<suite>-check.mjs` from the repository root. Browser fixtures require this host's Chrome and Playwright installation. `TEST_BASE_URL` tests hosted assets while keeping auth/progress requests intercepted. Auth tests use only synthetic credentials and do not print them.
 
 Release verification is recorded below after deployment.
+
+## Released and verified
+Source0833d6b deployed live via Render dep-dbe948rrjlhs73et74n0 (1m27s). Public AppEntry-d20ca5b9b411ecf56f9bf7312943db7a.js SHA256 7afa660b964480a8b6c613cd7ec4ca21aa82737dddd0cb90917fd83f7c1be1ad matches local export exactly. Hosted-assets/mock-cloud conflict and commerce/backup/reset suites PASS at320/390; anonymous public login PASS. URL: https://holton-family-v2.onrender.com/index.html?v=0833d6b-release . No real authenticated production mutations.
