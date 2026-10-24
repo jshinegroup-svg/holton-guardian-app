@@ -510,7 +510,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       <Text testID="away-clock" style={[styles.timer,{fontSize:(state.minutes===0&&state.focusTargetMs===undefined?focusElapsed/1000:remaining)>=6000?(viewportWidth<360?52:64):(viewportWidth<360?72:88),lineHeight:112,fontWeight:'800',paddingHorizontal:4,paddingVertical:24}]}>{clockText(state.minutes===0&&state.focusTargetMs===undefined?Math.floor(focusElapsed/1000):remaining)}</Text>
       {musicControl}
       {state.taskReminderShown?<Text testID="away-due" accessibilityLiveRegion="polite" style={styles.body}>{state.minutes===0?'已滿 10 分鐘，可以回任務確認是否完成。':'任務時間到了，可以回去確認是否完成。'}</Text>:null}
-      {button('回到任務',()=>{armChime();setTaskAway(false);})}{earlyStopAction}
+      {button('回到任務',()=>{armChime();setTaskAway(false);})}
     </View> : !inVillage ? <>
 
       
