@@ -357,7 +357,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     return {...paused,phase:'done',taskOutcome:'unfinished',deadline:null,remaining:0,help:false,supportCardId:undefined,breakDeadline:null,history:[...s.history,{id:`${at}-${Math.random().toString(36).slice(2,8)}`,outcome:'unfinished',title:s.title,at:new Date(at).toISOString(),minutes:s.minutes,elapsedSeconds:Math.floor((paused.focusElapsedMs??0)/1000),reward:0,world:s.activeWorld??'forest',cardId:s.cardId,helpUsed:s.helpUsed,supportUsed:[...(s.supportUsed??[])]}]};
   }
   const stopEarly=()=>{setTaskAway(false);setSoundBlocked(false);void change(stopUnfinished);};
-  const earlyStopAction=!taskDue&&['active','finishing'].includes(state.phase)?<View testID="early-stop-choice" style={{gap:6}}>{button('這次先到這裡',stopEarly,true)}</View>:null;
+  const earlyStopAction=!state.help&&!taskDue&&['active','finishing'].includes(state.phase)?<View testID="early-stop-choice" style={{gap:6}}>{button('這次先到這裡',stopEarly,true)}</View>:null;
   const outcomeChoices=taskDue?<View testID="task-outcome-choices" style={{gap:8}}>
     {button('我完成了',()=>{setTaskAway(false);void change(enterFinishing);})}
     {button('還差一點',()=>{setTaskAway(false);setSoundBlocked(false);void change(s=>extendFocus(s,Date.now()));},true)}

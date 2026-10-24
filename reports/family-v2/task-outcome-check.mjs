@@ -68,7 +68,7 @@ try{for(const [width,height] of [[320,568],[390,700]]){
   const sibling=structuredClone(saves.get(b).state);
   await p.evaluate(({family,a})=>localStorage.setItem(`holton-family-v2::${family}::solo-child`,a),{family,a});await p.reload();await p.getByTestId('focus-complete').waitFor();
   if(mode==='active')assert.equal(await p.getByTestId('focus-complete').isDisabled(),true);
-  if(mode==='help')await p.getByRole('button',{name:'我需要幫忙',exact:true}).click();
+  if(mode==='help'){await p.getByRole('button',{name:'我需要幫忙',exact:true}).click();await p.getByTestId('help-rules').waitFor();assert.equal(await p.getByRole('button',{name:'這次先到這裡',exact:true}).count(),0);await p.getByRole('button',{name:'我準備好了，繼續',exact:true}).click();await p.getByTestId('focus-help').waitFor();}
   if(mode==='away'){await p.getByRole('button',{name:'進入專注介面',exact:true}).click();assert.equal(await p.getByTestId('task-away-panel').getByTestId('early-stop-choice').count(),0);await p.screenshot({path:'reports/family-v2/clean-focus-'+width+'.png',fullPage:true});await p.getByRole('button',{name:'回到任務',exact:true}).click();}
   if(mode==='finishing'){await p.getByTestId('focus-complete').click();await p.getByRole('button',{name:'還有一點，回去繼續',exact:true}).waitFor();}
   await p.getByRole('button',{name:'這次先到這裡',exact:true}).click();await p.getByTestId('unfinished-result').waitFor();
