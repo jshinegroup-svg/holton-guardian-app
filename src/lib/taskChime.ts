@@ -1,11 +1,11 @@
 import {useCallback,useEffect,useRef} from 'react';
 import {Platform} from 'react-native';
-import {reminderNotes,reminderGain,type ReminderSound,type SoundLevel} from './reminderSounds';
+import {reminderNotes,reminderGain,reminderSeconds,type ReminderSound,type SoundLevel} from './reminderSounds';
 /** Original, locally synthesized cues; never loop or change task data. */
-export function useTaskChime(enabled:boolean,sound:ReminderSound='bell',level:SoundLevel='normal') {
+export function useTaskChime(enabled:boolean,sound:ReminderSound='bell',level:SoundLevel='normal',seconds=3) {
  const context=useRef<AudioContext|null>(null),nodes=useRef<OscillatorNode[]>([]);
- const options=useRef({enabled,sound,level});options.current={enabled,sound,level};
- const stop=useCallback(()=>{for(const node of nodes.current){try{node.stop();}catch{}}nodes.current=[];},[]);
+ const options=useRef({enabled,sound,level,seconds});options.current={enabled,sound,level,seconds};
+ const stop=useCallback(()=>{for(const node of nodes.current){try{node.stop();}catch{}}nodes.current=[];if(typeof window!=='undefined')window.dispatchEvent(new Event('holton-task-chime-stop'));},[]);
  const arm=useCallback(()=>{
   if(Platform.OS!=='web'||typeof window==='undefined')return;
   const Constructor=window.AudioContext||(window as unknown as {webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
@@ -27,14 +27,14 @@ export function useTaskChime(enabled:boolean,sound:ReminderSound='bell',level:So
   if((!config.enabled&&!previewSound)||!ctx||ctx.state!=='running')return false;
   try{
    stop();const start=ctx.currentTime+.025;
-   for(const note of reminderNotes(previewSound??config.sound)){
+   for(const note of reminderNotes(previewSound??config.sound,config.seconds)){
     const osc=ctx.createOscillator(),gain=ctx.createGain(),at=start+note.at,end=at+note.duration;
     osc.type=note.type;osc.frequency.value=note.frequency;
     gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(reminderGain[config.level],at+.02);gain.gain.exponentialRampToValueAtTime(.001,end);
     osc.connect(gain);gain.connect(ctx.destination);nodes.current.push(osc);osc.start(at);osc.stop(end+.03);
     osc.onended=()=>{nodes.current=nodes.current.filter(n=>n!==osc);osc.disconnect();gain.disconnect();};
    }
-   window.dispatchEvent(new Event('holton-task-chime'));return true;
+   window.dispatchEvent(new CustomEvent('holton-task-chime',{detail:{durationMs:reminderSeconds(config.seconds)*1000+60}}));return true;
   }catch{stop();return false;}
  },[stop,arm]);
  return {arm,play,stop};
