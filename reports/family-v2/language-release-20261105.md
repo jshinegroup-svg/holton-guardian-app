@@ -31,3 +31,9 @@ Requested by Jerry in Telegram 23599 / 23602 on 2026-11-05.
 Actor: assistant. Approval: explicit user request 23602. Trigger: implement bilingual interface while preserving Chinese version.
 
 Final local results: existing Chinese browser regression PASS at 320/390/844/900; task-outcome and guide-refresh suites PASS at 320/390. Language/login/solo checks PASS. Screenshots reviewed for 320px duo and 390px login. The compact-row fix was verified against the original deployed baseline as well as loaded local assets.
+
+## Deployment verified
+Render deployment `dep-dblodc95efls73ecpemg` succeeded/live (source `65e3404`, 2026-11-05 03:25:37 Taipei, duration 2 minutes).
+Public `AppEntry-7255473bdab70c72a62ea19ca27a0ed8.js` SHA256 `76f17a03040ef73dc1ade8dc342574b047f510ed9048c575b995f1c22621b524` matches local export.
+Hosted anonymous language/login checks PASS at 320/390/900. Hosted-assets + mock-cloud language/active timer/progress checks PASS at 320/390/844/900. No real user progress or registration was mutated by tests.
+Review URL: https://holton-family-v2.onrender.com/?v=65e3404
