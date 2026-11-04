@@ -144,3 +144,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-28 actor=codex approval=user:23378 trigger=release-verify public bundle matched; hosted foldable fixtures passed; report updated
 
 2026-11-05 actor=codex approval=user:23605 trigger=english-details add bounded dynamic translations, native English card faces, starter nameplate and UI audit; preserve Chinese assets and player data
+
+2026-11-05 actor=codex approval=user:23605 trigger=release-verify hosted detail/login checks pass; source705bd9f live; bundle bytes match
