@@ -1,3 +1,4 @@
+import Image from './i18n/CardImage';
 import {useLocale} from './i18n/locale';
 import {LanguagePicker} from './i18n/ui';
 import CustomTimeCard,{customTimeImage} from './CustomTimeCard';
@@ -15,7 +16,7 @@ import CompanionReaction from './CompanionReaction';
 import {migrateStarterCompanion} from './lib/starterCompanion';
 import StarterCompanionPicker,{StarterCompanionArt,starterCompanions,isStarterCompanion,type StarterCompanionId} from './StarterCompanions';
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, Modal, SafeAreaView, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import {  Modal, SafeAreaView, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import {Pressable,Text,TextInput} from './i18n/ui';
 import ReminderSettings from './ReminderSettings';
 import {reminderSeconds,validReminderSound,validSoundLevel,type ReminderSound,type SoundLevel} from './lib/reminderSounds';
@@ -463,7 +464,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     </View>
     {outcomeChoices}
     {stopConfirmation}{extensionModal}
-    {unfinished?<Text verbatim style={styles.body}><Text verbatim>{normalizeChildName(childNickname??state.childName)}</Text>，謝謝你願意試試，我們下次再一起來。</Text>:null}
+    {unfinished?<Text style={styles.body}><Text verbatim>{normalizeChildName(childNickname??state.childName)}</Text>，謝謝你願意試試，我們下次再一起來。</Text>:null}
   </View>;
   if(!starterId&&homePhase&&!state.guardianChallenge) return <StarterCompanionPicker busy={saving} error={error} onChoose={id=>{void change(s=>isStarterCompanion(s.starterCompanionId)?s:{...s,starterCompanionId:id});}}/>;
   if(mapOpen && !settingsOpen && !pending && !challenge) return <WorldMap journeys={journey} activeWorld={world} onEnter={w=>{if(homePhase)void goWorld(w);}} canEnter={homePhase} onSettings={()=>openParent()} onBack={()=>navigateRoom('village')} saving={saving} error={error}/>;

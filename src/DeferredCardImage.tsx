@@ -1,8 +1,9 @@
+import Image from './i18n/CardImage';
 import React,{useEffect,useRef,useState} from 'react';
-import {Image,Platform,View,type ImageProps} from 'react-native';
+import {Platform,View,type ImageProps} from 'react-native';
 
 /** Reserve layout; fetch nearby shop art once, retaining it when scrolled away. */
-export default function DeferredCardImage(props:ImageProps){
+export default function DeferredCardImage(props:ImageProps & {englishTitle?:string}){
  const ref=useRef<React.ElementRef<typeof View>>(null);
  const [visible,setVisible]=useState(Platform.OS!=='web');
  useEffect(()=>{

@@ -1,5 +1,6 @@
+import Image from './i18n/CardImage';
 import React, {useEffect, useRef, useState} from 'react';
-import {Animated, Easing, Image, Platform, StyleSheet, View, type ImageSourcePropType, type ViewStyle} from 'react-native';
+import {Animated, Easing,  Platform, StyleSheet, View, type ImageSourcePropType, type ViewStyle} from 'react-native';
 import {Pressable,Text} from './i18n/ui';
 
 const webGlow=Platform.OS==='web'?({backgroundImage:'radial-gradient(circle, rgba(255,204,100,.9) 0%, rgba(240,174,55,.5) 35%, rgba(240,174,55,0) 72%)',shadowOpacity:0} as unknown as ViewStyle):undefined;

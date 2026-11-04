@@ -1,7 +1,7 @@
 import React,{forwardRef} from 'react';
 import {Text as NativeText,TextInput as NativeInput,Pressable as NativePressable,View,type TextProps,type TextInputProps,type PressableProps} from 'react-native';
 import {t,useLocale} from './locale';
-const children=(value:React.ReactNode):React.ReactNode=>typeof value==='string'?t(value):Array.isArray(value)?value.map(children):React.isValidElement<{children?:React.ReactNode}>(value)&&value.type===React.Fragment?React.cloneElement(value,{},children(value.props.children)):value;
+const children=(value:React.ReactNode):React.ReactNode=>typeof value==='string'?t(value):Array.isArray(value)?value.every(item=>typeof item==='string'||typeof item==='number')?(t(value.join(''))!==value.join('')?t(value.join('')):value.map(children)):value.map(children):React.isValidElement<{children?:React.ReactNode}>(value)&&value.type===React.Fragment?React.cloneElement(value,{},children(value.props.children)):value;
 export const Text=forwardRef<NativeText,TextProps&{verbatim?:boolean}>(({children:content,verbatim,...props},ref)=>{useLocale();return <NativeText {...props} ref={ref} accessibilityLabel={props.accessibilityLabel?t(props.accessibilityLabel):undefined}>{verbatim?content:children(content)}</NativeText>;});
 export type Text=NativeText;
 export const TextInput=forwardRef<NativeInput,TextInputProps>((props,ref)=>{useLocale();return <NativeInput {...props} ref={ref} {...{dataSet:{'original-label':props.accessibilityLabel}}} placeholder={props.placeholder?t(props.placeholder):undefined} accessibilityLabel={props.accessibilityLabel?t(props.accessibilityLabel):undefined}/>;});

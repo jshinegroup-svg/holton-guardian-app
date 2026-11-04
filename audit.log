@@ -142,3 +142,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-10-24 | actor=codex | approval=user:23354 | trigger=audit-release-verification | Render0833d6b live; public SHA matches local; hosted conflict/commerce-backup320/390 + anonymous login PASS.
 2026-10-28 actor=codex approval=user:23375,23378 trigger=iphone-duo-size adapt live landscape layout; add fold/rotation fixture and report; no real progress mutations
 2026-10-28 actor=codex approval=user:23378 trigger=release-verify public bundle matched; hosted foldable fixtures passed; report updated
+
+2026-11-05 actor=codex approval=user:23605 trigger=english-details add bounded dynamic translations, native English card faces, starter nameplate and UI audit; preserve Chinese assets and player data

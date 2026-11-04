@@ -1,9 +1,10 @@
+import Image from './i18n/CardImage';
 import EnergyAmount from './EnergyAmount';
 import {chapterScene} from './ChapterScenery';
 import {chapterSceneIndex} from './lib/journeys';
 import type {WorldId} from './lib/journeys';
 import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Image, StyleSheet, View, type ImageSourcePropType } from 'react-native';
+import { AccessibilityInfo, Animated,  StyleSheet, View, type ImageSourcePropType } from 'react-native';
 import {Pressable,Text} from './i18n/ui';
 
 export function useSystemReducedMotion() {

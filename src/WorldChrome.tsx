@@ -1,5 +1,6 @@
+import Image from './i18n/CardImage';
 import React, {useState} from 'react';
-import { Image, Platform, StyleSheet, View, type ImageSourcePropType } from 'react-native';
+import { Platform, StyleSheet, View, type ImageSourcePropType } from 'react-native';
 import {Text} from './i18n/ui';
 
 /** Decorative illustration only: all cards, labels and controls remain real UI. */

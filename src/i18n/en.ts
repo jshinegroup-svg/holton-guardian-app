@@ -357,3 +357,30 @@ Object.assign(english, {
   "天空旅程已保留；完成森林旅程後即可前往宇宙。": "Your sky journey is preserved. Finish the forest to reach space."
 });
 Object.assign(english, {'閱讀':'Reading'});
+
+// Detail-copy audit: UI text only, never saved player data.
+Object.assign(english, {
+'第':'Chapter',
+'雙倍兌換卡 · 這批點數 ×2':'Double exchange · Points ×2',
+'故事收藏卡 · 無點數獎勵':'Story collectible · No points',
+'正在重試尚未同步的進度…':'Retrying unsynced progress…',
+'正在儲存到雲端…':'Saving to cloud…',
+'另一台裝置的進度已更新，為避免覆蓋，暫停同步。這台的待同步操作仍保留；請先停止在兩台同時操作同一位冒險者。':'Another device updated this adventurer. Sync is paused to prevent overwriting. Pending changes are kept here. Stop playing this adventurer on both devices at once.',
+'連線暫時中斷或回應太久，操作尚未確認同步。網路恢復後，點「重試同步」即可接續，不必重整或清除資料。':'The connection was interrupted or timed out. Sync is not yet confirmed. When connected, select Retry sync. No refresh or data clearing is needed.',
+'暱稱請填寫 1～20 個字。':'Enter a nickname of 1–20 characters.',
+'請選擇孩子的年齡。':'Select the child’s age.',
+'，謝謝你願意試試，我們下次再一起來。':', thank you for trying. We can try again next time.',
+'備份檔太大，請選擇 8 MB 以下的 Holton Hero 備份。':'Choose a Holton Hero backup smaller than 8 MB.',
+'無法讀取這份檔案，請選擇匯出的 JSON 備份。':'Cannot read this file. Choose an exported JSON backup.',
+'這不是支援的 Holton Hero 備份版本。':'This Holton Hero backup version is not supported.',
+'備份內容不完整或格式不符；請使用任務與挑戰結束後匯出的備份。原有紀錄未變更。':'This backup is incomplete or invalid. Use a backup exported after tasks and challenges ended. Your existing records are unchanged.',
+'備份有重複紀錄，請重新匯出；原有紀錄未變更。':'This backup has duplicate records. Export it again. Your existing records are unchanged.',
+'家長鎖資料無法讀取，請保留瀏覽器資料並聯絡協助。':'Cannot read the parent lock. Keep browser data and contact support.',
+'請輸入 6 位數字。':'Enter 6 digits.',
+'家長密碼已設定或變更，請關閉視窗並重新驗證後再修改。':'The parent PIN was set or changed. Close this window and verify again before editing.',
+'家長密碼已變更，請重新驗證。':'The parent PIN changed. Verify again.',
+'請完整輸入 6 位數字；這次不計入錯誤次數。':'Enter all 6 digits. This does not count as an incorrect attempt.',
+'請先設定家長密碼。':'Set a parent PIN first.',
+'輸入次數較多，請稍候一分鐘再試。':'Too many attempts. Wait a minute and try again.',
+'家長密碼已變更，請使用新密碼重新輸入。':'The parent PIN changed. Enter the new PIN.',
+});
