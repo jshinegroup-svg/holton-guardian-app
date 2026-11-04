@@ -1,5 +1,6 @@
 import React from 'react';
-import {Image, Platform, Text, type ImageStyle, type StyleProp, type TextStyle} from 'react-native';
+import {Image, Platform, type ImageStyle, type StyleProp, type TextStyle} from 'react-native';
+import {Text} from './i18n/ui';
 
 /** Display only. Symbols distinguish a balance from incoming/outgoing energy. */
 export default function EnergyAmount({value,kind='balance',size=24,style}:{value:number;kind?:'balance'|'gain'|'cost';size?:number;style?:StyleProp<TextStyle>}) {

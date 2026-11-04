@@ -1,6 +1,7 @@
 import {useFamilyStorage} from './family/context';
 import React,{useEffect,useState} from 'react';
-import {Pressable,Text,View} from 'react-native';
+import {View} from 'react-native';
+import {Pressable,Text} from './i18n/ui';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 export const MUSIC_HINT_KEY='holton-guardian-app::task-music-hint-v1';
 /** Inline and dismissible: never blocks the task or starts audio. */

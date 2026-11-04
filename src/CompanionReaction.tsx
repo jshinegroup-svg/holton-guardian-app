@@ -1,16 +1,19 @@
+import {useLocale} from './i18n/locale';
 import {companionReply,type CompanionMood} from './lib/companionReplies';
 import React,{useEffect,useRef,useState} from 'react';
-import {Animated,Pressable,StyleSheet,Text,View} from 'react-native';
+import {Animated,StyleSheet,View} from 'react-native';
+import {Pressable,Text} from './i18n/ui';
 
 /** Local-only feedback: never writes game progress or touches the task clock. */
 export default function CompanionReaction({name,adventurerName='',character,mood,reduced,children,onActivate,selected,disabled=false,alignTop=false,compact=false}:{name:string;adventurerName?:string;character:string;mood:CompanionMood;reduced:boolean;children:React.ReactNode;onActivate?:()=>void;selected?:boolean;disabled?:boolean;alignTop?:boolean;compact?:boolean}){
+ const {locale}=useLocale();
  const [reply,setReply]=useState('');
  const active=useRef(false),next=useRef(0);
  const timeout=useRef<ReturnType<typeof setTimeout>|null>(null);
  const bounce=useRef(new Animated.Value(0)).current;
  useEffect(()=>()=>{if(timeout.current)clearTimeout(timeout.current);bounce.stopAnimation();},[bounce]);
  useEffect(()=>{if(reduced){bounce.stopAnimation();bounce.setValue(0);}},[reduced,bounce]);
- useEffect(()=>{if(timeout.current)clearTimeout(timeout.current);timeout.current=null;active.current=false;next.current=0;setReply('');bounce.stopAnimation();bounce.setValue(0);},[adventurerName,character,mood,bounce]);
+ useEffect(()=>{if(timeout.current)clearTimeout(timeout.current);timeout.current=null;active.current=false;next.current=0;setReply('');bounce.stopAnimation();bounce.setValue(0);},[adventurerName,character,mood,bounce,locale]);
  const greet=()=>{
   if(active.current)return;
   active.current=true;

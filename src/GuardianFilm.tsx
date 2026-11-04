@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import {Pressable,Text} from './i18n/ui';
 import { guardianFilmPath } from './lib/guardianFilms';
 import type { BattleProps } from './GuardianBattle';
 

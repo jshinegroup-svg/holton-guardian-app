@@ -1,7 +1,8 @@
 import {type StarterCompanionId} from './lib/starterCompanion';
 export {isStarterCompanion,type StarterCompanionId} from './lib/starterCompanion';
 import React,{useState} from 'react';
-import {Image,Pressable,SafeAreaView,ScrollView,StyleSheet,Text,View} from 'react-native';
+import {Image,SafeAreaView,ScrollView,StyleSheet,View} from 'react-native';
+import {Pressable,Text} from './i18n/ui';
 export const starterCompanions=[
  {id:'pip',name:'光核小機獸',english:'Pip',line:'我陪你，一起勇敢踏出第一步。',source:require('../assets/companions/pip-sheet.jpg'),column:1},
  {id:'hop',name:'長耳機兔',english:'HOP',line:'帶著好奇心，一起發現新冒險！',source:require('../assets/companions/hop-bomo-sheet.jpg'),column:0},

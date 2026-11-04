@@ -1,3 +1,4 @@
+import {getLocale} from '../i18n/locale';
 export type CompanionMood='ready'|'focus'|'rest'|'done';
 const replies={
  pip:{
@@ -56,6 +57,7 @@ const replies={
  },
 } as const;
 export function companionReplies(id:string,mood:CompanionMood):readonly string[]{
+ if(getLocale()==='en')return englishReplies[mood];
  const species=id.split(':')[0];
  const character=Object.prototype.hasOwnProperty.call(replies,species)?species as keyof typeof replies:'guardian';
  return replies[character][mood];
@@ -67,6 +69,14 @@ export function companionReply(id:string,mood:CompanionMood,turn:number,adventur
  const name=Array.from(adventurerName.replace(/\s+/g,' ').trim()).slice(0,20).join('');
  if(!name)return lines[turn%lines.length];
  if(turn%2!==0)return lines[Math.floor(turn/2)%lines.length];
+ if(getLocale()==='en'){const personal={ready:`${name}, let’s give it a try!`,focus:`${name}, I’m with you, one step at a time.`,done:`Well done, ${name}! Another task finished!`,rest:`${name}, stretch and recharge!`};return personal[mood];}
  const personal={ready:`${name}，我們一起加油吧！`,focus:`${name}，我陪你，一步一步來。`,done:`太棒了，${name}！又完成一個任務！`,rest:`${name}，伸個懶腰，補充能量吧！`};
  return personal[mood];
 }
+
+const englishReplies:Record<CompanionMood,readonly string[]>={
+ready:["Let’s begin with one small step!","I’m ready to explore with you.","Courage packed? Let’s go!","One tiny step is a wonderful start.","Adventure ahead — don’t forget your smile!"],
+focus:["I’m right here with you.","One step at a time. No rush.","Let’s focus on what’s in front of us.","You do the task; I’ll cheer you on!","Distractions can wait in line today!"],
+rest:["Take a break. I’ll wait with you.","Relax your shoulders and breathe.","Ready when you are.","Even brave adventurers need a rest.","Stretch up and say hello to the ceiling!"],
+done:["We did it together!","Every little step counts.","Look at the progress you made!","A little victory dance — remember the brakes!","High five! Another adventure step complete!"]
+};

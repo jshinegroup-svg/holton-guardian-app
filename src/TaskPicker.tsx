@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import {Pressable,Text,TextInput} from './i18n/ui';
 export const taskCategories = [
   { id: 'homework', icon: '📚', title: '寫作業', tasks: ['國語作業', '數學作業', '英文作業', '自然作業', '社會作業', '寫作文', '訂正作業', '生字練習', '預習課文', '複習功課'] },
   { id: 'housework', icon: '🧹', title: '幫忙家務', tasks: ['收玩具', '擦桌子', '摺衣服', '掃地'] },

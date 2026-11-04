@@ -1,6 +1,7 @@
 import {timeChallenges,guardianBeasts} from '../data/holtonCatalog';
 import React,{useState} from 'react';
-import {View,Text,Pressable} from 'react-native';
+import {View} from 'react-native';
+import {Text,Pressable} from '../i18n/ui';
 import {supabase} from './client';
 type Summary={days:number;returning_children:number;active_children:number;ages:{age_years:number;children:number;families:number;started:number;completed:number;cohort_completed:number;early_completed:number;task_seconds:number;screen_seconds:number}[];cards:{card_id:string;selections:number;tasks:number}[]};
 const cardLabel=(id:string)=>timeChallenges.find(c=>c.id===id)?.name??guardianBeasts.find(c=>id.startsWith(c.id+':'))?.name??({pip:'Pip 初始夥伴',hop:'HOP 初始夥伴',bomo:'BOMO 初始夥伴'} as Record<string,string>)[id]??'其他卡片';

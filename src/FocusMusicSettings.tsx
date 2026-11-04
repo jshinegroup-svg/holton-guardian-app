@@ -1,7 +1,8 @@
 import {VolumeChoices} from './ReminderSettings';
 import type {SoundLevel} from './lib/reminderSounds';
 import React,{useState} from 'react';
-import {Linking,Pressable,StyleSheet,Text,View} from 'react-native';
+import {Linking,StyleSheet,View} from 'react-native';
+import {Pressable,Text} from './i18n/ui';
 import {focusMusicTracks,type FocusMusicId} from './lib/focusMusicCatalog';
 export default function FocusMusicSettings({enabled,selected,previewId,busy,status,onToggle,onSelect,onPreview,onRetry,onStopPreview,level,onLevel}:{enabled:boolean;selected:FocusMusicId;previewId:FocusMusicId|null;busy:boolean;status:string;onToggle:()=>void;onSelect:(id:FocusMusicId)=>void;onPreview:(id:FocusMusicId)=>void;onRetry:()=>void;onStopPreview:()=>void;level:SoundLevel;onLevel:(v:SoundLevel)=>void}) {
  const [category,setCategory]=useState<'focus'|'relax'|null>(null);

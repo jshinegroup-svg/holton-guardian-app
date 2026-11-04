@@ -1,6 +1,7 @@
 import EnergyAmount from './EnergyAmount';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { Animated, Image, Platform, ScrollView, StyleSheet, View, type ImageSourcePropType } from 'react-native';
+import {Pressable,Text} from './i18n/ui';
 
 import GuardianFilm from './GuardianFilm';
 import { guardianFilmPath } from './lib/guardianFilms';

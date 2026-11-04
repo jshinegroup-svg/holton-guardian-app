@@ -1,7 +1,8 @@
 import PasswordInput from './PasswordInput';
 import {useFamilyStorage} from './family/context';
 import React,{useEffect,useRef,useState} from 'react';
-import {Modal,View,Text,Pressable,ScrollView,Platform,TextInput} from 'react-native';
+import {Modal,View,ScrollView,Platform} from 'react-native';
+import {Text,Pressable,TextInput} from './i18n/ui';
 import {hasParentPin,normalizeParentPin,recoveryCode,saveParentPin,verifyParentPin} from './lib/parentLock';
 export function ParentPinGate({visible,onConfirm,onCancel,change=false}:{visible:boolean;onConfirm:()=>void;onCancel:()=>void;change?:boolean}){
  const {pinKey}=useFamilyStorage();

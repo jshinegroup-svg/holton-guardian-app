@@ -1,5 +1,6 @@
 import React,{useEffect,useState} from 'react';
-import {Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
+import {StyleSheet,View} from 'react-native';
+import {Pressable,Text,TextInput} from './i18n/ui';
 import {reminderGroups,validReminderSeconds,reminderSounds,soundLevels,type ReminderSound,type SoundLevel} from './lib/reminderSounds';
 export function VolumeChoices({label,value,busy,onChange}:{label:string;value:SoundLevel;busy:boolean;onChange:(v:SoundLevel)=>void}){return <View style={{gap:8}}><Text style={s.text}>{label}</Text><View style={s.row}>{soundLevels.map(level=><Pressable key={level.id} accessibilityRole="radio" accessibilityLabel={`${label}：${level.name}`} aria-checked={value===level.id} accessibilityState={{checked:value===level.id}} disabled={busy} onPress={()=>onChange(level.id)} style={[s.button,value===level.id&&s.selected]}><Text style={s.text}>{level.name}</Text></Pressable>)}</View></View>;}
 export default function ReminderSettings({seconds,onSeconds,enabled,sound,level,busy,notice,onToggle,onSound,onLevel,onPreview}:{seconds:number;onSeconds:(v:number)=>Promise<boolean>;enabled:boolean;sound:ReminderSound;level:SoundLevel;busy:boolean;notice:string;onToggle:()=>void;onSound:(v:ReminderSound)=>void;onLevel:(v:SoundLevel)=>void;onPreview:(v:ReminderSound)=>void}){const [draft,setDraft]=useState(String(seconds)),[durationNotice,setDurationNotice]=useState('');useEffect(()=>setDraft(String(seconds)),[seconds]);const parsed=/^\d+$/.test(draft)?Number(draft):NaN;return <View testID="reminder-settings" style={s.panel}>

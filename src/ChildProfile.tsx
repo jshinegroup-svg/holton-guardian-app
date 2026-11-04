@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import {Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
+import { StyleSheet, View} from 'react-native';
+import {Pressable,Text,TextInput} from './i18n/ui';
 export const CHILD_NAME_LIMIT = 20;
 export function normalizeChildName(value:unknown):string {
   return typeof value==='string'?Array.from(value.replace(/\s+/g,' ').trim()).slice(0,CHILD_NAME_LIMIT).join(''):'';

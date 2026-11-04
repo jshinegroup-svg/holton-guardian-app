@@ -1,7 +1,8 @@
 import {chapterScene} from './ChapterScenery';
 import JourneyStageScene,{journeyStage} from './JourneyStageScene';
 import React, {useEffect,useState} from 'react';
-import {Image,Pressable,SafeAreaView,ScrollView,StyleSheet,Text,View,Platform} from 'react-native';
+import {Image,SafeAreaView,ScrollView,StyleSheet,View,Platform} from 'react-native';
+import {Pressable,Text} from './i18n/ui';
 import {worldIds,worlds,unlocked,journeyHint,type Journeys,type WorldId,type JourneyEvent} from './lib/journeys';
 export const journeyArt={sky:require('../assets/worlds/sky-base/island-v3.png'),forest:require('../assets/worlds/journeys/forest.png'),cosmos:require('../assets/worlds/journeys/cosmos.png')};
 function Button({label,onPress,disabled=false}:{label:string;onPress:()=>void;disabled?:boolean}) {return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={({pressed})=>[s.button,pressed&&{opacity:.75,transform:[{scale:.98}]},disabled&&{opacity:.55}]}><Text style={s.buttonText}>{label}</Text></Pressable>;}

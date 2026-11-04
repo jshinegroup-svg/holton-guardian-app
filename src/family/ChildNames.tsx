@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React,{useRef,useState} from 'react';
-import {View,Text,TextInput,Pressable,Modal} from 'react-native';
+import {View,Modal} from 'react-native';
+import {Text,TextInput,Pressable} from '../i18n/ui';
 import {supabase,listChildren} from './client';
 import {validateChildProfile,type ChildProfile} from './types';
 type Archived={id:string;nickname:string;expires_at?:string};

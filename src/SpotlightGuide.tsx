@@ -1,3 +1,4 @@
+import {t,useLocale} from './i18n/locale';
 import {useFamilyStorage,type ScopedStorage} from './family/context';
 import React,{useEffect,useRef,useState} from 'react';
 import {Platform} from 'react-native';
@@ -38,6 +39,7 @@ const rooms:Record<string,Step[]>={
 };
 export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,hasTask,onMission,onPicker,onMusicDone,onResumeChange}:{allowed:boolean;room:string;replay:number;phase:string;pickerOpen:boolean;hasTask:boolean;onMission:()=>void;onPicker:()=>void;onMusicDone:()=>void;onResumeChange:(available:boolean)=>void}){
  const {storage}=useFamilyStorage();
+ useLocale();
  const [store,setStore]=useState<GuideStore|null>(null),[mode,setMode]=useState<string|null>(null),[index,setIndex]=useState(0),[rect,setRect]=useState<DOMRect|null>(null),[size,setSize]=useState({w:0,h:0,top:0,left:0}),[notice,setNotice]=useState(''),[tipHeight,setTipHeight]=useState(180),[confirmSkip,setConfirmSkip]=useState(false);
  const target=useRef<HTMLElement|null>(null),tip=useRef<HTMLDivElement|null>(null),lastReplay=useRef(0),saveLock=useRef(false),advanceTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
  const steps=mode==='main'?main:rooms[mode??'']??[];const step=steps[index];
@@ -65,7 +67,7 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
   let anchor:HTMLElement|null=null,attempts=0,userMoved=false,frame=0,layoutWidth=window.innerWidth;
   const viewport=()=>{const vv=window.visualViewport;return {w:vv?.width??window.innerWidth,h:vv?.height??window.innerHeight,top:vv?.offsetTop??0,left:vv?.offsetLeft??0};};
   const measure=()=>{
-   const el=document.querySelector<HTMLElement>(step.selector);target.current=el;
+   const el=document.querySelector<HTMLElement>(step.selector.replaceAll('aria-label','data-original-label'));target.current=el;
    const view=viewport();setSize(old=>Object.keys(view).every(k=>Math.abs(old[k as keyof typeof old]-view[k as keyof typeof view])<.5)?old:view);
    if(tip.current){const measured=tip.current.offsetHeight;setTipHeight(old=>Math.abs(old-measured)>1?measured:old);}
    const r=el?.getBoundingClientRect();
@@ -74,7 +76,7 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
   // Measurement never scrolls. Only bounded initial alignment can move the page;
   // mobile toolbar / visual viewport events must not create a scroll feedback loop.
   const align=()=>{
-   const el=document.querySelector<HTMLElement>(step.selector);if(!el||userMoved)return;
+   const el=document.querySelector<HTMLElement>(step.selector.replaceAll('aria-label','data-original-label'));if(!el||userMoved)return;
    const v=viewport(),r=el.getBoundingClientRect();
    const outside=r.bottom<=v.top+12||r.top>=v.top+v.h-12;
    if((anchor!==el||outside)&&attempts<4){attempts++;anchor=el;el.scrollIntoView({block:r.height>v.h*.4?'start':'center',inline:'nearest',behavior:'instant' as ScrollBehavior});}
@@ -126,12 +128,12 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
   <div style={{...shade,left:0,top:0,width:layoutW,height:r.top}}/><div style={{...shade,left:0,top:r.bottom,width:layoutW,height:Math.max(0,window.innerHeight-r.bottom)}}/>
   <div style={{...shade,left:0,top:r.top,width:r.left,height:r.bottom-r.top}}/><div style={{...shade,left:r.right,top:r.top,width:Math.max(0,layoutW-r.right),height:r.bottom-r.top}}/>
   {rect?<div data-testid="spotlight-hole" style={{position:'fixed',left:r.left,top:r.top,width:r.right-r.left,height:r.bottom-r.top,border:'3px solid #ffe2a0',borderRadius:14,boxSizing:'border-box',boxShadow:'0 0 22px #f7c55977'}}/>:null}
-  <div ref={tip} tabIndex={-1} role="dialog" aria-label="操作教學" aria-live="polite" data-testid="spotlight-tip" style={{position:'fixed',pointerEvents:'auto',left:tipLeft,top:tipTop,width:tipWidth,maxHeight:Math.max(80,viewBottom-tipTop-8),overflowY:'auto',boxSizing:'border-box',background:'#0b3046',color:'#fff0c9',border:'1px solid #e0bd75',borderRadius:16,padding:14,boxShadow:'0 8px 30px #0008'}}>
-   {confirmSkip?<><h2 style={{fontSize:20,margin:'0 0 8px'}}>✨ 想先自己探索嗎？</h2><p style={{fontSize:16,lineHeight:1.55}}>教學還沒結束喔！繼續跟著操作，認識更多功能，讓第一次冒險更順手。也可以先自己試試看。</p><p style={{fontSize:13,lineHeight:1.5}}>之後想再看，可以到「家長小屋 → 設定與教學 → 重新觀看操作教學」。</p>{notice?<p role="alert">{notice}</p>:null}<div style={{display:'flex',flexDirection:'column',gap:8}}><button style={buttonStyle} onClick={()=>setConfirmSkip(false)}>繼續帶我玩</button><button style={{...buttonStyle,background:'transparent'}} onClick={()=>void finish(true)}>先自己探索</button></div></>:<>
-   <div style={{fontSize:13,color:'#e2c682'}}>操作教學 · {index+1}／{steps.length}</div>
-   <p style={{fontSize:16,lineHeight:1.55,margin:'7px 0 10px'}}>{rect?step.text:'正在定位操作位置…'}</p>
-   {notice?<p role="alert">{notice}</p>:null}
-   <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}><button style={{...buttonStyle,background:'transparent'}} onClick={requestSkip}>略過教學</button>{step.info?<button style={buttonStyle} onClick={advance}>{mode==='main'?'完成教學，先不開始':'知道了'}</button>:null}</div>
+  <div ref={tip} tabIndex={-1} role="dialog" aria-label={t('操作教學')} aria-live="polite" data-testid="spotlight-tip" style={{position:'fixed',pointerEvents:'auto',left:tipLeft,top:tipTop,width:tipWidth,maxHeight:Math.max(80,viewBottom-tipTop-8),overflowY:'auto',boxSizing:'border-box',background:'#0b3046',color:'#fff0c9',border:'1px solid #e0bd75',borderRadius:16,padding:14,boxShadow:'0 8px 30px #0008'}}>
+   {confirmSkip?<><h2 style={{fontSize:20,margin:'0 0 8px'}}>{t("✨ 想先自己探索嗎？")}</h2><p style={{fontSize:16,lineHeight:1.55}}>{t("教學還沒結束喔！繼續跟著操作，認識更多功能，讓第一次冒險更順手。也可以先自己試試看。")}</p><p style={{fontSize:13,lineHeight:1.5}}>{t("之後想再看，可以到「家長小屋 → 設定與教學 → 重新觀看操作教學」。")}</p>{notice?<p role="alert">{t(notice)}</p>:null}<div style={{display:'flex',flexDirection:'column',gap:8}}><button style={buttonStyle} onClick={()=>setConfirmSkip(false)}>{t("繼續帶我玩")}</button><button style={{...buttonStyle,background:'transparent'}} onClick={()=>void finish(true)}>{t("先自己探索")}</button></div></>:<>
+   <div style={{fontSize:13,color:'#e2c682'}}>{t("操作教學 · ")}{index+1}／{steps.length}</div>
+   <p style={{fontSize:16,lineHeight:1.55,margin:'7px 0 10px'}}>{t(rect?step.text:'正在定位操作位置…')}</p>
+   {notice?<p role="alert">{t(notice)}</p>:null}
+   <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}><button style={{...buttonStyle,background:'transparent'}} onClick={requestSkip}>{t("略過教學")}</button>{step.info?<button style={buttonStyle} onClick={advance}>{t(mode==='main'?'完成教學，先不開始':'知道了')}</button>:null}</div>
    </>}
   </div>
  </div>,document.body);

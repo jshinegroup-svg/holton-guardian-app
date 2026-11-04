@@ -1,5 +1,6 @@
 import React from 'react';
-import {View,Text,TextInput,Pressable,StyleSheet} from 'react-native';
+import {View,StyleSheet} from 'react-native';
+import {Text,TextInput,Pressable} from './i18n/ui';
 import EnergyAmount from './EnergyAmount';
 import {DEFAULT_CUSTOM_MINUTES,MAX_CUSTOM_MINUTES,parseCustomMinutes,rewardForMinutes} from './lib/taskTime';
 

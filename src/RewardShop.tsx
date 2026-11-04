@@ -1,7 +1,8 @@
 import EnergyAmount from './EnergyAmount';
 import DeferredCardImage from './DeferredCardImage';
 import React, { useRef, useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import {Text,TextInput,Pressable} from './i18n/ui';
 export type Wish = { id: string; name: string; cost: number; enabled: boolean; custom?: boolean; style?: 'gold'|'scroll'|'crystal'; note?: string };
 export type WishReceipt = { id: string; name: string; cost: number; at: string; fulfilled?: boolean; wishId?: string; custom?: boolean; style?: Wish['style']; note?: string; balanceBefore?: number; balanceAfter?: number; usedAt?: string };
 export type ShopData = { shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; orbs: number };
@@ -25,7 +26,7 @@ export function catalog(wishes?:Wish[]):Wish[] {
 function Art({wish,small=false}:{wish:Wish|WishReceipt;small?:boolean}) {
   const id='wishId' in wish ? wish.wishId : wish.id;
   const art=wish.custom ? customArt[wish.style??'gold'] : wishArt[id??'']??extraArt[id??''];
-  return <View style={s.cardTap}><DeferredCardImage source={art??customArt.gold} accessibilityLabel={`${wish.name||'自訂心願'}${wish.custom?'造型':'原卡'}`} style={{width:small?120:170,height:small?180:255,alignSelf:'center'}} resizeMode="contain"/>{wish.custom?<View style={s.customCaption}><Text style={s.title}>{wish.name||'填入你的心願'}</Text><Text style={s.text}>{wish.note||'內容與點數，由你們一起約定'}</Text></View>:null}</View>;
+  return <View style={s.cardTap}><DeferredCardImage source={art??customArt.gold} accessibilityLabel={`${wish.name||'自訂心願'}${wish.custom?'造型':'原卡'}`} style={{width:small?120:170,height:small?180:255,alignSelf:'center'}} resizeMode="contain"/>{wish.custom?<View style={s.customCaption}><Text verbatim={!!wish.name} style={s.title}>{wish.name||'填入你的心願'}</Text><Text verbatim={!!wish.note} style={s.text}>{wish.note||'內容與點數，由你們一起約定'}</Text></View>:null}</View>;
 }
 export function redeemWish<T extends ShopData>(s: T, id: string, receiptId: string): T {
   const w = catalog(s.wishes).find(x => x.id === id);
@@ -98,7 +99,7 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
           <Pressable testID="wish-guide-card" accessibilityRole="button" accessibilityLabel={`${picked?'取消選擇':'選擇'}${w.name}卡片`} aria-pressed={picked} accessibilityState={{disabled:unavailable||saving}} disabled={unavailable||saving} onPress={()=>toggle(w)} style={({pressed})=>[s.cardTap,pressed&&s.pressed]}>
             <Text style={[s.badge,picked&&s.badgeSelected]}>{picked?'✓ 已選取 · 1 張':'點卡片也可以選擇'}</Text>
             <Art wish={w}/>
-            {!w.custom?<Text style={s.title}>{w.name}</Text>:null}{!w.custom&&w.note?<Text style={s.text}>{w.note}</Text>:null}<Text style={s.text}><EnergyAmount kind="cost" value={w.cost}/>／張</Text>
+            {!w.custom?<Text style={s.title}><Text verbatim={w.custom}>{w.name}</Text></Text>:null}{!w.custom&&w.note?<Text style={s.text}><Text verbatim>{w.note}</Text></Text>:null}<Text style={s.text}><EnergyAmount kind="cost" value={w.cost}/>／張</Text>
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel={`${picked?'取消選擇':'我想兌換'}${w.name}`} aria-pressed={picked} accessibilityState={{disabled:unavailable||saving}} disabled={unavailable||saving} onPress={()=>toggle(w)} style={({pressed})=>[s.button,picked&&s.selectedButton,pressed&&s.pressed,(unavailable||saving)&&{opacity:.45}]}><Text style={s.text}>{picked?'✓ 已選取｜先不換，取消':'＋ 我想兌換'}</Text></Pressable>
           {picked?<Text accessibilityLiveRegion="polite" style={s.text}>已加入清單，尚未扣點。共選 {selected.length} 項／<EnergyAmount kind="cost" value={total}/>；往下確認。</Text>:unavailable?<Text style={s.text}>再選這項還差 <EnergyAmount value={total+w.cost-data.orbs}/>，可先取消其他選擇。</Text>:null}
@@ -108,7 +109,7 @@ export default function RewardShop<T extends ShopData>({ data, settings, saving,
       <Text style={s.text}>更多心願：10 張原卡與寶箱／卷軸自訂卡，可請家長在「家長小屋 → 心願獎勵」填寫點數並開放。</Text>
       <View style={s.summary}><Text style={s.title}>最後確認 · 我的兌換清單</Text>
         {!selected.length?<Text style={s.text}>還沒選心願。先在喜歡的卡片按「我想兌換」。</Text>:<>
-          {selected.map(w=><View key={w.id} style={s.item}><Text style={s.text}>{w.name} × 1 · <EnergyAmount kind="cost" value={w.cost}/></Text>{action(`移除${w.name}`,()=>toggle(w))}</View>)}
+          {selected.map(w=><View key={w.id} style={s.item}><Text style={s.text}><Text verbatim={w.custom}>{w.name}</Text> × 1 · <EnergyAmount kind="cost" value={w.cost}/></Text>{action(`移除${w.name}`,()=>toggle(w))}</View>)}
           <Text style={s.title}>{selected.length} 項，費用 <EnergyAmount kind="cost" value={total}/></Text>
           <Text style={s.text}>{total<=data.orbs?<>目前 <EnergyAmount value={data.orbs}/> → 剩餘 <EnergyAmount value={data.orbs-total}/></>:`點數不足，還差 ${total-data.orbs} 點，請移除部分心願。`}</Text>
           <Text style={s.text}>按下面的確認按鈕，才會一次扣除點數。</Text>

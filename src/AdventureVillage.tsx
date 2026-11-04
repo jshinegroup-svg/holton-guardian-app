@@ -1,6 +1,7 @@
 import EnergyAmount from './EnergyAmount';
 import React from 'react';
-import {Image, Platform, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Image, Platform, StyleSheet, View} from 'react-native';
+import {Pressable,Text} from './i18n/ui';
 export type VillageRoom = 'village' | 'mission' | 'wishes' | 'companions';
 // Percentages share the same coordinate space as the single map image.
 const destinations = [

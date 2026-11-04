@@ -3,7 +3,8 @@ import {chapterScene} from './ChapterScenery';
 import {chapterSceneIndex} from './lib/journeys';
 import type {WorldId} from './lib/journeys';
 import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Image, Pressable, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { AccessibilityInfo, Animated, Image, StyleSheet, View, type ImageSourcePropType } from 'react-native';
+import {Pressable,Text} from './i18n/ui';
 
 export function useSystemReducedMotion() {
   const [reduced, setReduced] = useState(true);

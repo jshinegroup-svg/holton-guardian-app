@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { Image, StyleSheet, View, type ImageSourcePropType } from 'react-native';
+import {Text} from './i18n/ui';
 
 const blue = require('../assets/cards/energy-math/energy-5.jpg');
 const gold = require('../assets/cards/energy-math/energy-20.jpg');
