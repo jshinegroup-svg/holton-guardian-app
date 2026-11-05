@@ -1,5 +1,7 @@
 /** Interface copy only; names, custom tasks, saved records and card artwork stay intact. */
 export const english:Record<string,string> = {
+'點卡片，開始任務':'Tap the card to start',
+
 '冒險小隊 · 第二版測試中':'Adventure Squad · V2 Preview',
 '正在準備冒險小隊…':'Preparing your adventure…',
 '歡迎回到家庭冒險':'Welcome back, adventurers!',

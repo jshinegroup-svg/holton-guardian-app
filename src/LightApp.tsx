@@ -1,3 +1,4 @@
+import TaskStarterCard from './TaskStarterCard';
 import Image from './i18n/CardImage';
 import {useLocale} from './i18n/locale';
 import {LanguagePicker} from './i18n/ui';
@@ -555,9 +556,8 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
         {button('準備出發', () => void change(s => s.phase !== 'ready' || !s.title.trim() ? s : ({ ...s, phase: 'preparing', taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false, focusElapsedMs:0,focusStartedAt:null, cardId: customSelected?CUSTOM_TIME_CARD_ID:s.cardId??cardIdForMinutes(s.minutes), taskReward: s.minutes===0?0:rewardForMinutes(s.minutes), supportCardId: undefined, supportUsed: [], breakDeadline: null, helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })), false, !state.title.trim()||customPending)}
       </> : state.phase === 'preparing' ? <>
         <PortalCue reduced={reduceMotion} />
-        <Image source={sopCards.find(card => card.id === 'task-starter')!.imageSource} accessibilityLabel="Task Starter 任務啟動卡" style={[styles.ritualArt,{height:252,width:'90%',alignSelf:'center'}]} resizeMode="contain" />
+        <TaskStarterCard source={sopCards.find(card => card.id === 'task-starter')!.imageSource} disabled={saving} reduced={reduceMotion} onStart={() => change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'active', taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false, focusElapsedMs:0,focusStartedAt:Date.now(), help: false, deadline: s.minutes === 0 ? null : Date.now() + s.minutes * 60000, remaining: s.minutes * 60 }))} />
         <Text style={styles.section}>Task Starter · 任務啟動</Text><Text style={styles.body}>這次挑戰：{durationLabel(state.minutes)}。準備好再按，現在還沒有計時。</Text>
-        {button('我準備好了，開始！', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'active', taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false, focusElapsedMs:0,focusStartedAt:Date.now(), help: false, deadline: s.minutes === 0 ? null : Date.now() + s.minutes * 60000, remaining: s.minutes * 60 })))}
         {button('回去選時間卡', () => void change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'ready', deadline: null })), true)}
       </> : state.phase === 'finishing' ? <>
         <Image source={finishImage} accessibilityLabel={`${finish.title} 收尾鼓勵卡`} style={[styles.ritualArt,{width:'85%',height:238,alignSelf:'center'}]} resizeMode="contain" />

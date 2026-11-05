@@ -20,7 +20,7 @@ const main:Step[]=[
  {selector:'[data-testid="tutorial-task-categories"]',text:'從亮起的五種類別中，點一件今天想做的事。'},
  companionStep,
  {selector:'[aria-label="準備出發"]',text:'時間與任務選好了，點「準備出發」。現在還不會開始計時。'},
- {selector:'[aria-label="我準備好了，開始！"]',text:'準備好才按這裡開始計時。需要時可求助；時間到可完成、補時或先結束。「完成教學，先不開始」不會啟動任務。',info:true},
+ {selector:'[data-testid="task-starter-card"]',text:'準備好才按這裡開始計時。需要時可求助；時間到可完成、補時或先結束。「完成教學，先不開始」不會啟動任務。',info:true},
 ];
 const rooms:Record<string,Step[]>={
  companionTap:[companionStep],
