@@ -53,7 +53,7 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
   assert.equal(await card.getAttribute('aria-label'),language==='en'?'Tap the card to start':'點卡片，開始任務');
   assert.equal(await p.getByRole('button',{name:language==='en'?"I’m ready — let’s start!":'我準備好了，開始！',exact:true}).count(),0);
   await card.scrollIntoViewIfNeeded();await p.screenshot({path:`reports/family-v2/starter-touch-${width}-${language}.png`});
-  const art=card.locator('img');assert(await art.count()>0);assert(await art.first().evaluate(el=>el.complete&&el.naturalWidth>0));
+  const art=card.locator('img');assert(await art.count()>0);await art.first().evaluate(el=>el.decode());assert(await art.first().evaluate(el=>el.complete&&el.naturalWidth>0));
   await card.dispatchEvent('touchstart',{touches:[{identifier:1,clientX:100,pageX:100,clientY:100,pageY:100}],changedTouches:[{identifier:1,clientX:100,pageX:100,clientY:100,pageY:100}]});
   await card.dispatchEvent('touchmove',{touches:[{identifier:1,clientX:100,pageX:100,clientY:140,pageY:140}],changedTouches:[{identifier:1,clientX:100,pageX:100,clientY:140,pageY:140}]});
   await card.dispatchEvent('click');await p.waitForTimeout(650);assert.equal(saves.get(a).state.phase,'preparing');
