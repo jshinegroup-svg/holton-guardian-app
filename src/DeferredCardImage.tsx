@@ -3,7 +3,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {Platform,View,type ImageProps} from 'react-native';
 
 /** Reserve layout; fetch nearby shop art once, retaining it when scrolled away. */
-export default function DeferredCardImage(props:ImageProps & {englishTitle?:string}){
+export default function DeferredCardImage(props:ImageProps){
  const ref=useRef<React.ElementRef<typeof View>>(null);
  const [visible,setVisible]=useState(Platform.OS!=='web');
  useEffect(()=>{

@@ -1,4 +1,3 @@
-import {useLocale} from './i18n/locale';
 import {type StarterCompanionId} from './lib/starterCompanion';
 export {isStarterCompanion,type StarterCompanionId} from './lib/starterCompanion';
 import React,{useState} from 'react';
@@ -11,12 +10,10 @@ export const starterCompanions=[
 ] as const;
 /** Non-destructive sprite framing keeps the exact approved characters. */
 export function StarterCompanionArt({id,width=120}:{id:StarterCompanionId;width?:number}){
- const {locale}=useLocale();
  const card=starterCompanions.find(c=>c.id===id)!;const height=width*4/3;
  return <View testID={`starter-art-${id}`} accessibilityLabel={`${card.english} ${card.name}`} style={{width,height,overflow:'hidden',borderRadius:10}}>
   <Image source={card.source} accessible={false} resizeMode="stretch" fadeDuration={0} style={{position:'absolute',left:-card.column*width,top:0,width:width*2,height}}/>
   <View pointerEvents="none" style={{position:'absolute',top:height*.075,left:width*.1,width:width*.8,height:height*.065,backgroundColor:'#062447',alignItems:'center',justifyContent:'center'}}><Text style={{fontSize:width*.1,color:'#ffe79a',fontWeight:'800'}}>{card.english}</Text></View>
-  {locale==='en'?<View pointerEvents="none" style={{position:'absolute',bottom:height*.06,left:width*.11,width:width*.78,height:height*.18,backgroundColor:'#062447',borderWidth:1,borderColor:'#d8b75f',borderRadius:5,alignItems:'center',justifyContent:'center'}}><Text style={{fontSize:width*.09,color:'#ffe79a',fontWeight:'700'}}>{card.english}</Text></View>:null}
  </View>;
 }
 export default function StarterCompanionPicker({busy,error,onChoose}:{busy:boolean;error:string;onChoose:(id:StarterCompanionId)=>void}){
