@@ -148,3 +148,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-05 actor=codex approval=user:23605 trigger=release-verify hosted detail/login checks pass; source705bd9f live; bundle bytes match
 
 2026-11-05 actor=codex approval=user:23609 trigger=restore-original-art remove English text-card substitution and bottom portrait overlay; interface translation only; source assets unchanged; 320/390 image parity checks pass
+
+2026-11-05 actor=codex approval=user:23609 trigger=live-art-verified source34f3dc3 live; original card imgs loaded at320/390, same across languages, save unchanged; test now waits for async native image mounts

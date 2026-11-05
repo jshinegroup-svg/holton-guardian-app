@@ -42,6 +42,7 @@ try{for(const [width,height] of [[320,568],[390,750]]){
  const deck=p.getByTestId('time-card-deck');
  await deck.waitFor();
  const sources=async()=>deck.locator('img').evaluateAll(images=>images.map(i=>i.getAttribute('src')));
+ await p.waitForFunction(()=>document.querySelectorAll('[data-testid="time-card-deck"] img').length>=5);
  const englishSources=await sources();assert(englishSources.length>=5,'Original time-card images must exist in English');
  await p.waitForFunction(()=>Array.from(document.querySelectorAll('[data-testid="time-card-deck"] img')).every(i=>i.complete&&i.naturalWidth>0));
  assert.equal(await p.getByTestId('english-card-face').count(),0);
