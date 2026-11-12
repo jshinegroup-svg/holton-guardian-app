@@ -1,3 +1,4 @@
+import IntegrationPreview from './src/homework/IntegrationPreview';
 import { Asset } from "expo-asset";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -143,7 +144,7 @@ import type {
 import LightApp from "./src/LightApp";
 import FamilyApp from "./src/family/FamilyApp";
 import ResponsiveStyles from "./src/ResponsiveStyles";
-export default function HoltonApp(){return <><ResponsiveStyles/><FamilyApp/></>;}
+export default function HoltonApp(){return <><ResponsiveStyles/>{process.env.EXPO_PUBLIC_HOMEWORK_PREVIEW==='1'?<IntegrationPreview/>:<FamilyApp/>}</>;}
 
 export function LegacyApp() {
   const [childName, setChildName] = useState("Holton");

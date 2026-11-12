@@ -1,3 +1,5 @@
+import HomeworkAdventure from './homework/HomeworkAdventure';
+import type {Homework} from './homework/model';
 import TaskStarterCard from './TaskStarterCard';
 import Image from './i18n/CardImage';
 import {useLocale} from './i18n/locale';
@@ -53,7 +55,7 @@ const RECOVERY_KEY = 'holton-guardian-app::before-replace-v1';
 type State=LightState;
 type RecordItem = { outcome?:'completed'|'unfinished';elapsedSeconds?:number; world?:WorldId; reward?: number; id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
 const worldEnergyReward=(id?:string)=>worldPointValues[id??'']?<><EnergyAmount kind="gain" value={worldPointValues[id!]} size={20}/> 可兌換</>:worldRewardLabel(id);
-export type LightState = { taskSoundSeconds?:number; taskSoundId?:ReminderSound; taskSoundLevel?:SoundLevel; focusMusicLevel?:SoundLevel; lastCustomMinutes?:number; focusTargetMs?:number; taskOutcome?:'completed'|'unfinished';continueAfterDue?:boolean; guardianSundayOnly?:boolean; starterChoiceVersion?:1;starterCompanionId?:StarterCompanionId; focusMusicEnabled?:boolean;focusMusicTrackId?:FocusMusicId; childName?:string; allowEarlyFinish?:boolean;taskSoundEnabled?:boolean;taskReminderShown?:boolean; focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+export type LightState = { homework?:Homework; taskSoundSeconds?:number; taskSoundId?:ReminderSound; taskSoundLevel?:SoundLevel; focusMusicLevel?:SoundLevel; lastCustomMinutes?:number; focusTargetMs?:number; taskOutcome?:'completed'|'unfinished';continueAfterDue?:boolean; guardianSundayOnly?:boolean; starterChoiceVersion?:1;starterCompanionId?:StarterCompanionId; focusMusicEnabled?:boolean;focusMusicTrackId?:FocusMusicId; childName?:string; allowEarlyFinish?:boolean;taskSoundEnabled?:boolean;taskReminderShown?:boolean; focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
 const cardIdForMinutes=(minutes:number)=>timeChallenges.find(card=>card.minutes===minutes)?.id??CUSTOM_TIME_CARD_ID;
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, starterChoiceVersion:1,...(old?{starterCompanionId:'pip' as const}:{}),onboardingDone:!!old, shopEnabled: true, wishes: starterWishes(), title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
@@ -77,7 +79,8 @@ function importGuardianCards(old: Partial<PersistedAppState> | null): GuardianRe
 
 export type DuoControl={ready:boolean;start:(at:number)=>Promise<boolean>};
 export default function LightApp({childNickname,compact=false,musicOwner=true,onExpand,duoControl,familyNavigation}:{childNickname?:string;compact?:boolean;musicOwner?:boolean;onExpand?:()=>void;duoControl?:(control:DuoControl|null)=>void;familyNavigation?:{sync:string;onMenu:()=>void;onSolo?:()=>void}}={}) {
-  useLocale();
+  const {locale}=useLocale();
+  const [homeworkOpen,setHomeworkOpen]=useState(false);
   const {storage,pinKey,familyMode}=useFamilyStorage();
   const {width: viewportWidth, height: viewportHeight} = useWindowDimensions();
   const [state, setState] = useState<State | null>(null);
@@ -222,7 +225,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     }catch(e){setError(syncErrorMessage(e));}
     finally{busy.current=false;setSaving(false);}
   }
-  const duoReady=!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=MAX_CUSTOM_MINUTES&&!saving&&!needsSync&&!customNeedsApply;
+  const duoReady=!homeworkOpen&&!state?.homework?.timer&&!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=MAX_CUSTOM_MINUTES&&!saving&&!needsSync&&!customNeedsApply;
   async function startDuo(at:number){
     if(!duoReady||busy.current)return false;
     const n=Number(minutes);
@@ -230,7 +233,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     armChime();
     return change(s=>s.phase==='preparing'?{...s,phase:'active',focusElapsedMs:0,focusStartedAt:at,help:false,deadline:s.minutes===0?null:at+s.minutes*60000}:s);
   }
-  useEffect(()=>{duoControl?.({ready:duoReady,start:startDuo});return()=>duoControl?.(null);},[duoControl,state,title,minutes,saving,customNeedsApply]);
+  useEffect(()=>{duoControl?.({ready:duoReady,start:startDuo});return()=>duoControl?.(null);},[duoControl,state,title,minutes,saving,customNeedsApply,homeworkOpen]);
   useEffect(()=>{
     if(!state||state.phase!=='active'||state.help||state.taskReminderShown||reminderBusy.current)return;
     const target=focusTargetMs(state);
@@ -467,6 +470,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     {stopConfirmation}{extensionModal}
     {unfinished?<Text style={styles.body}><Text verbatim>{normalizeChildName(childNickname??state.childName)}</Text>，謝謝你願意試試，我們下次再一起來。</Text>:null}
   </View>;
+  if((homeworkOpen||state.homework?.timer)&&homePhase&&!settingsOpen) return <HomeworkAdventure recovery={needsSync?<View>{button(locale==='en'?'Retry sync':'重試同步',()=>void retrySync(),true)}{button(locale==='en'?'Use cloud progress':'改用雲端進度',()=>void retrySync(true),true)}</View>:null} state={state} change={change} error={error} button={button} onClose={()=>setHomeworkOpen(false)}/>;
   if(!starterId&&homePhase&&!state.guardianChallenge) return <StarterCompanionPicker busy={saving} error={error} onChoose={id=>{void change(s=>isStarterCompanion(s.starterCompanionId)?s:{...s,starterCompanionId:id});}}/>;
   if(mapOpen && !settingsOpen && !pending && !challenge) return <WorldMap journeys={journey} activeWorld={world} onEnter={w=>{if(homePhase)void goWorld(w);}} canEnter={homePhase} onSettings={()=>openParent()} onBack={()=>navigateRoom('village')} saving={saving} error={error}/>;
   if(journeyOpen && homePhase && !settingsOpen && !pending && !challenge) return <JourneyMap journeys={journey} world={world} onClose={()=>setJourneyOpen(false)} onWorldMap={()=>{setJourneyOpen(false);setMapOpen(true);}}/>;
@@ -494,7 +498,8 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       {parentTab==='backup'?<BackupTools data={state} busy={saving} allowed={homePhase&&!challenge} onRestore={snapshot=>replaceProgress(snapshot)} onReset={()=>replaceProgress(null)} onReadRecovery={()=>storage.getItem(RECOVERY_KEY)}/>:null}
       {parentTab==='records'?<WeeklyFootprints history={state.history} receipts={state.wishReceipts??[]} now={now}/>:null}
       {parentTab==='rewards'?<RewardShop data={state} settings saving={saving} change={change}/>:null}
-      {parentTab==='preferences'?<><LanguagePicker/>
+      {parentTab==='preferences'?<>
+      <View style={styles.card}><Text style={styles.section}>{locale==='en'?'Homework Quest':'功課冒險'}</Text>{button(locale==='en'?(state.homework?.enabled?'Hide homework card':'Enable homework card'):(state.homework?.enabled?'關閉功課入口':'開啟功課入口'),()=>void change(s=>({...s,homework:{...(s.homework??{days:{}}),enabled:!s.homework?.enabled}})),true,!!state.homework?.timer)}<Text style={styles.caption}>{locale==='en'?'Hiding keeps records and earned rewards.':'關閉只隱藏入口，紀錄及已領獎勵保留。'}</Text></View><LanguagePicker/>
       {button('修改家長密碼',()=>setChangePin(true),true)}
       {button('重新觀看操作教學',()=>{void (async()=>{if(state.phase==='done'&&!await change(s=>({...s,phase:'ready',deadline:null,help:false,remaining:s.minutes*60})))return;await initializeGuide(true,true,storage);navigateRoom('village');setFreshTutorial(true);setIntroReplay(true);setTutorialReplay(n=>-Math.abs(n)-1);})();},true,!homePhase)}
       <View style={styles.card} testID="guardian-exchange-setting"><Text style={styles.section}>守護獸兌換時間</Text>
@@ -510,6 +515,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       </>:null}
       {parentTab==='records'?<View style={styles.card}><Text style={styles.section}>世界卡兌換紀錄</Text><Text style={styles.body}>今天已兌換 <EnergyAmount kind="gain" value={todayExchangePoints}/>。每天最多一次，可留到明天一起換。</Text>{button('查看世界卡兌換', () => setWorldExchangeOpen(true), true)}</View>:null}
       {parentTab==='preferences'?<>
+      <View style={styles.card}><Text style={styles.section}>{locale==='en'?'Homework Quest':'功課冒險'}</Text>{button(locale==='en'?(state.homework?.enabled?'Hide homework card':'Enable homework card'):(state.homework?.enabled?'關閉功課入口':'開啟功課入口'),()=>void change(s=>({...s,homework:{...(s.homework??{days:{}}),enabled:!s.homework?.enabled}})),true,!!state.homework?.timer)}<Text style={styles.caption}>{locale==='en'?'Hiding keeps records and earned rewards.':'關閉只隱藏入口，紀錄及已領獎勵保留。'}</Text></View>
       <View style={styles.card}><Text style={styles.section}>守護獸收藏與舊卡恢復</Text><Text style={styles.body}>目前收藏 {ownedIds.size} 張。舊版能確認的卡片會自動帶入；更換已取得的陪伴夥伴不扣點，也不改變初始夥伴。</Text>{button('查看守護獸收藏', () => setCollectionOpen(true), true)}
         {starterMissing.length > 0 && !state.starterRestoreAt ? <><Text style={styles.caption}>若孩子以前已兌換完五隻 Mini 初階卡，可補回以前已取得的 {starterMissing.length} 張。只補卡，不扣點、不重複發卡。</Text>{button('補回已兌換的五隻初階卡', restoreStarters, true)}</> : <Text style={styles.caption}>初階收藏已保留，不需要重新購買。</Text>}
         <Text style={styles.caption}>{state.guardianSundayOnly===false?'守護獸不限星期幾，隨時可兌換。':'星期日兌換以台北時間為準。'}Mini 10、Mid 20、Final 40、Legendary 60 點；每張扣完整標示點數，按階段取得，舊卡仍保留。</Text>
@@ -543,6 +549,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     </View> : !inVillage ? <>
 
       
+      {homePhase&&state.homework?.enabled?<Pressable testID="homework-entry" accessibilityRole="button" accessibilityLabel={locale==='en'?'Homework Quest':'功課冒險'} onPress={()=>setHomeworkOpen(true)} style={({pressed})=>[styles.card,{alignItems:'center',transform:[{scale:pressed?.97:1}]}]}><Image source={{uri:'/homework/entry.png'}} style={{width:'100%',height:260}} resizeMode="contain"/><Text style={styles.section}>{locale==='en'?'Homework Quest':'功課冒險'}</Text><Text style={styles.caption}>{locale==='en'?'Choose a subject · light up the stars':'自由選科目 · 點亮今日星陣'}</Text></Pressable>:null}
       <View testID="mission-layout" onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }}><View testID="mission-stage" style={[styles.card, styles.missionPanel]}>{state.phase==='ready'?<Pressable testID="task-title-entry" accessibilityRole="button" accessibilityLabel={state.title?`修改任務：${state.title}`:'選擇任務'} accessibilityHint="點開後可換個任務或選得更清楚" disabled={saving} onPress={()=>{setTaskDetailsOpen(false);setTaskActionsOpen(true);}} style={({pressed})=>[styles.taskTitleEntry,pressed&&{opacity:.8}]}><Text testID="mission-name" style={styles.taskTitleText}>{state.title||'今天要完成什麼？'} ▾</Text><Text style={styles.taskTitleHint}>點一下選擇或調整任務</Text></Pressable>:<Text testID="mission-name" style={[styles.heading,focusActive&&styles.focusMissionName]}>{state.phase === 'done' ? (unfinished?'這次先到這裡':'你做到了！') : state.title || '今天要完成什麼？'}</Text>}
       {state.phase === 'ready' ? <>
         <View style={styles.cardStage}>
