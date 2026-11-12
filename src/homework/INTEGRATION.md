@@ -24,3 +24,6 @@ Before production rollout: review this integrated preview, then enable for chose
 
 ## 2026-11-12 — Shared task carousel (Jerry chose A)
 Removed the standalone promotional entry. Homework Quest is now the last card in the existing circular time/custom-card deck, rendered by the original CardPedestal. Its selected mode hides the timed-task picker/custom minutes and presents Enter homework mode; entry never starts a timer. Returning retains the selected homework card in the current session. Timed state remains separate; selecting a timed card restores its controls. Parent enable/disable remains in force; duo timed-start is unavailable while homework is selected. Preview only, no production deployment.
+
+## 2026-11-12 — Star board mobile layout correction
+Aligned date/progress/hint/reward text with separate artwork plaques using bounded, vertically centered regions and explicit line heights. Set text-size-adjust to 100% to prevent mobile text inflation. Subject labels wrap within their badges. Map actions now use two columns: notebook/review, preparation/history, with compact readable labels. Artwork and reward behavior unchanged.
