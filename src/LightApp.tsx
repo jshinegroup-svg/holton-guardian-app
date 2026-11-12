@@ -81,9 +81,12 @@ export type DuoControl={ready:boolean;start:(at:number)=>Promise<boolean>};
 export default function LightApp({childNickname,compact=false,musicOwner=true,onExpand,duoControl,familyNavigation}:{childNickname?:string;compact?:boolean;musicOwner?:boolean;onExpand?:()=>void;duoControl?:(control:DuoControl|null)=>void;familyNavigation?:{sync:string;onMenu:()=>void;onSolo?:()=>void}}={}) {
   const {locale}=useLocale();
   const [homeworkOpen,setHomeworkOpen]=useState(false);
+  const [homeworkCardSelected,setHomeworkCardSelected]=useState(false);
   const {storage,pinKey,familyMode}=useFamilyStorage();
   const {width: viewportWidth, height: viewportHeight} = useWindowDimensions();
   const [state, setState] = useState<State | null>(null);
+  const homeworkSelected=homeworkCardSelected&&!!state?.homework?.enabled;
+
   const [customDraft,setCustomDraft]=useState(String(DEFAULT_CUSTOM_MINUTES));
   const [customNeedsApply,setCustomNeedsApply]=useState(false);
   const selectedMinutes=state?.minutes,selectedTimeCardId=state?.cardId;
@@ -225,7 +228,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     }catch(e){setError(syncErrorMessage(e));}
     finally{busy.current=false;setSaving(false);}
   }
-  const duoReady=!homeworkOpen&&!state?.homework?.timer&&!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=MAX_CUSTOM_MINUTES&&!saving&&!needsSync&&!customNeedsApply;
+  const duoReady=!homeworkSelected&&!homeworkOpen&&!state?.homework?.timer&&!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=MAX_CUSTOM_MINUTES&&!saving&&!needsSync&&!customNeedsApply;
   async function startDuo(at:number){
     if(!duoReady||busy.current)return false;
     const n=Number(minutes);
@@ -233,7 +236,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     armChime();
     return change(s=>s.phase==='preparing'?{...s,phase:'active',focusElapsedMs:0,focusStartedAt:at,help:false,deadline:s.minutes===0?null:at+s.minutes*60000}:s);
   }
-  useEffect(()=>{duoControl?.({ready:duoReady,start:startDuo});return()=>duoControl?.(null);},[duoControl,state,title,minutes,saving,customNeedsApply,homeworkOpen]);
+  useEffect(()=>{duoControl?.({ready:duoReady,start:startDuo});return()=>duoControl?.(null);},[duoControl,state,title,minutes,saving,customNeedsApply,homeworkOpen,homeworkSelected]);
   useEffect(()=>{
     if(!state||state.phase!=='active'||state.help||state.taskReminderShown||reminderBusy.current)return;
     const target=focusTargetMs(state);
@@ -263,12 +266,15 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const customCard={...timeChallenges[0],id:CUSTOM_TIME_CARD_ID,name:'自訂時間 · Master Mode Legendary',minutes:state.minutes,orbs:rewardForMinutes(state.minutes),imageSource:customTimeImage};
   const selectedCard = customSelected?customCard:timeChallenges.find(card => card.id === state.cardId);
   const displayCard = selectedCard ?? timeChallenges.find(card => card.minutes === state.minutes) ?? timeChallenges[1];
+  const homeworkCard={id:"homework-quest",name:locale==='en'?"Homework Quest":"功課冒險",imageSource:{uri:"/homework/entry.png"}};
+  const taskDeck=[...timeChallenges,customCard,...(state.homework?.enabled?[homeworkCard]:[])];
   const stepCard = (delta:number) => {
-    const index=customSelected?timeChallenges.length:timeChallenges.indexOf(displayCard);
-    const next=(index+delta+timeChallenges.length+1)%(timeChallenges.length+1);
+    const index=homeworkSelected?taskDeck.length-1:customSelected?timeChallenges.length:timeChallenges.indexOf(displayCard);
+    const next=(index+delta+taskDeck.length)%taskDeck.length;
+    if(taskDeck[next].id===homeworkCard.id){setHomeworkCardSelected(true);return;}
     const card=timeChallenges[next];
     const n=card?.minutes??(validCustomMinutes(state.lastCustomMinutes??0)?state.lastCustomMinutes!:DEFAULT_CUSTOM_MINUTES);
-    void change(s=>s.phase!=='ready'?s:{...s,cardId:card?.id??CUSTOM_TIME_CARD_ID,minutes:n,remaining:n*60}).then(saved=>{if(saved){setMinutes(String(n));setCustomDraft(String(n));setCustomNeedsApply(!card);}});
+    void change(s=>s.phase!=='ready'?s:{...s,cardId:card?.id??CUSTOM_TIME_CARD_ID,minutes:n,remaining:n*60}).then(saved=>{if(saved){setHomeworkCardSelected(false);setMinutes(String(n));setCustomDraft(String(n));setCustomNeedsApply(!card);}});
   };
   const customValue=parseCustomMinutes(customDraft);
   const customPending=customSelected&&(customNeedsApply||customValue!==state.minutes);
@@ -549,18 +555,17 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     </View> : !inVillage ? <>
 
       
-      {homePhase&&state.homework?.enabled?<Pressable testID="homework-entry" accessibilityRole="button" accessibilityLabel={locale==='en'?'Homework Quest':'功課冒險'} onPress={()=>setHomeworkOpen(true)} style={({pressed})=>[styles.card,{alignItems:'center',transform:[{scale:pressed?.97:1}]}]}><Image source={{uri:'/homework/entry.png'}} style={{width:'100%',height:260}} resizeMode="contain"/><Text style={styles.section}>{locale==='en'?'Homework Quest':'功課冒險'}</Text><Text style={styles.caption}>{locale==='en'?'Choose a subject · light up the stars':'自由選科目 · 點亮今日星陣'}</Text></Pressable>:null}
-      <View testID="mission-layout" onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }}><View testID="mission-stage" style={[styles.card, styles.missionPanel]}>{state.phase==='ready'?<Pressable testID="task-title-entry" accessibilityRole="button" accessibilityLabel={state.title?`修改任務：${state.title}`:'選擇任務'} accessibilityHint="點開後可換個任務或選得更清楚" disabled={saving} onPress={()=>{setTaskDetailsOpen(false);setTaskActionsOpen(true);}} style={({pressed})=>[styles.taskTitleEntry,pressed&&{opacity:.8}]}><Text testID="mission-name" style={styles.taskTitleText}>{state.title||'今天要完成什麼？'} ▾</Text><Text style={styles.taskTitleHint}>點一下選擇或調整任務</Text></Pressable>:<Text testID="mission-name" style={[styles.heading,focusActive&&styles.focusMissionName]}>{state.phase === 'done' ? (unfinished?'這次先到這裡':'你做到了！') : state.title || '今天要完成什麼？'}</Text>}
+      <View testID="mission-layout" onLayout={event => { taskTop.current = event.nativeEvent.layout.y; }}><View testID="mission-stage" style={[styles.card, styles.missionPanel]}>{state.phase==='ready'&&homeworkSelected?<View style={styles.taskTitleEntry}><Text testID="homework-card-title" style={styles.taskTitleText}>{homeworkCard.name}</Text><Text style={styles.taskTitleHint}>{locale==='en'?'Choose a subject · light up the stars':'自由選科目 · 點亮今日星陣'}</Text></View>:state.phase==='ready'?<Pressable testID="task-title-entry" accessibilityRole="button" accessibilityLabel={state.title?`修改任務：${state.title}`:'選擇任務'} accessibilityHint="點開後可換個任務或選得更清楚" disabled={saving} onPress={()=>{setTaskDetailsOpen(false);setTaskActionsOpen(true);}} style={({pressed})=>[styles.taskTitleEntry,pressed&&{opacity:.8}]}><Text testID="mission-name" style={styles.taskTitleText}>{state.title||'今天要完成什麼？'} ▾</Text><Text style={styles.taskTitleHint}>點一下選擇或調整任務</Text></Pressable>:<Text testID="mission-name" style={[styles.heading,focusActive&&styles.focusMissionName]}>{state.phase === 'done' ? (unfinished?'這次先到這裡':'你做到了！') : state.title || '今天要完成什麼？'}</Text>}
       {state.phase === 'ready' ? <>
         <View style={styles.cardStage}>
-          <Pressable accessibilityRole="button" accessibilityLabel="上一張時間卡" onPress={() => stepCard(-1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>‹</Text></Pressable>
-          <CardLift selected reduced={reduceMotion}><CardPedestal source={displayCard.imageSource} label={displayCard.name} deck={[...timeChallenges,customCard]} selectedId={displayCard.id} /></CardLift>
-          <Pressable accessibilityRole="button" accessibilityLabel="下一張時間卡" onPress={() => stepCard(1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>›</Text></Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel={locale==='en'?'Previous task card':'上一張任務卡'} onPress={() => stepCard(-1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>‹</Text></Pressable>
+          <CardLift selected reduced={reduceMotion}><CardPedestal source={homeworkSelected?homeworkCard.imageSource:displayCard.imageSource} label={homeworkSelected?homeworkCard.name:displayCard.name} deck={taskDeck} selectedId={homeworkSelected?homeworkCard.id:displayCard.id} /></CardLift>
+          <Pressable accessibilityRole="button" accessibilityLabel={locale==='en'?'Next task card':'下一張任務卡'} onPress={() => stepCard(1)} disabled={saving} style={styles.arrow}><Text style={styles.section}>›</Text></Pressable>
         </View>
-        {customSelected?<CustomTimeCard draft={customDraft} onChange={text=>{setCustomDraft(text);setCustomNeedsApply(true);}} onApply={()=>void applyCustomTime()} disabled={saving}/>:null}
-        {customPending?<Text accessibilityLiveRegion="polite" style={styles.caption}>調整好後，按「用這個時間」再出發。</Text>:null}
-        <Text style={styles.cardPlaque}>{customSelected?'自訂 · ':''}{durationLabel(state.minutes)} · {state.minutes===0?'依專注時間給球':<>完成 <EnergyAmount kind="gain" value={rewardForMinutes(state.minutes)} size={20} style={styles.cardPlaque}/></>}</Text>
-        {button('準備出發', () => void change(s => s.phase !== 'ready' || !s.title.trim() ? s : ({ ...s, phase: 'preparing', taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false, focusElapsedMs:0,focusStartedAt:null, cardId: customSelected?CUSTOM_TIME_CARD_ID:s.cardId??cardIdForMinutes(s.minutes), taskReward: s.minutes===0?0:rewardForMinutes(s.minutes), supportCardId: undefined, supportUsed: [], breakDeadline: null, helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })), false, !state.title.trim()||customPending)}
+        {!homeworkSelected&&customSelected?<CustomTimeCard draft={customDraft} onChange={text=>{setCustomDraft(text);setCustomNeedsApply(true);}} onApply={()=>void applyCustomTime()} disabled={saving}/>:null}
+        {!homeworkSelected&&customPending?<Text accessibilityLiveRegion="polite" style={styles.caption}>調整好後，按「用這個時間」再出發。</Text>:null}
+        {homeworkSelected?<><Text style={styles.cardPlaque}>{locale==='en'?'Complete today’s homework · +10 points · +1 journey step':'今日全部確認完成 · 10點＋旅程1次'}</Text>{button(locale==='en'?'Enter homework mode':'進入功課模式',()=>setHomeworkOpen(true))}</>:<><Text style={styles.cardPlaque}>{customSelected?'自訂 · ':''}{durationLabel(state.minutes)} · {state.minutes===0?'依專注時間給球':<>完成 <EnergyAmount kind="gain" value={rewardForMinutes(state.minutes)} size={20} style={styles.cardPlaque}/></>}</Text>
+        {button('準備出發', () => void change(s => s.phase !== 'ready' || !s.title.trim() ? s : ({ ...s, phase: 'preparing', taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false, focusElapsedMs:0,focusStartedAt:null, cardId: customSelected?CUSTOM_TIME_CARD_ID:s.cardId??cardIdForMinutes(s.minutes), taskReward: s.minutes===0?0:rewardForMinutes(s.minutes), supportCardId: undefined, supportUsed: [], breakDeadline: null, helpUsed: false, finishId: undefined, deadline: null, remaining: s.minutes * 60 })), false, !state.title.trim()||customPending)}</>}
       </> : state.phase === 'preparing' ? <>
         <PortalCue reduced={reduceMotion} />
         <TaskStarterCard source={sopCards.find(card => card.id === 'task-starter')!.imageSource} disabled={saving} reduced={reduceMotion} onStart={() => change(s => s.phase !== 'preparing' ? s : ({ ...s, phase: 'active', taskOutcome:undefined,continueAfterDue:false,focusTargetMs:undefined,taskReminderShown:false, focusElapsedMs:0,focusStartedAt:Date.now(), help: false, deadline: s.minutes === 0 ? null : Date.now() + s.minutes * 60000, remaining: s.minutes * 60 }))} />
