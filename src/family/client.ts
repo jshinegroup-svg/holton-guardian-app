@@ -5,7 +5,16 @@ import {SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY} from './publicConfig';
 import {ProgressRepository,type FamilyCloud} from './progressRepository';
 import type {ChildProfile,ChildSave} from './types';
 import type {ScopedStorage} from './context';
-export const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{storage:AsyncStorage,storageKey:'holton-family-v2-auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}});
+// Capture metadata before the SDK consumes the callback; never retain URL credentials.
+const params=typeof location==='undefined'?new URLSearchParams():new URLSearchParams(location.search);
+const fragment=typeof location==='undefined'?new URLSearchParams():new URLSearchParams(location.hash.slice(1));
+export const authCallback={
+ recovery:params.get('auth')==='recovery'||fragment.get('type')==='recovery',
+ code:params.has('code'),
+ error:fragment.has('error')||fragment.has('error_code')||params.has('error'),
+};
+export function clearAuthCallback(){if(typeof history!=='undefined'){const url=new URL(location.href);for(const key of ['auth','code','error','error_code','error_description'])url.searchParams.delete(key);url.hash='';history.replaceState(null,'',url.pathname+url.search);}}
+export const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{storage:AsyncStorage,storageKey:'holton-family-v2-auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:authCallback.code?'pkce':'implicit'}});
 export async function getFamily(userId:string){
  const {data,error}=await cloudRequest(signal=>supabase.from('families').select('id').eq('owner_id',userId).abortSignal(signal).maybeSingle());if(error)throw error;if(data)return data.id as string;
  const added=await cloudRequest(signal=>supabase.from('families').insert({owner_id:userId}).select('id').abortSignal(signal).single());

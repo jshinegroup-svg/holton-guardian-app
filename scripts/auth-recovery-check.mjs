@@ -1,0 +1,12 @@
+import {chromium} from '/Users/user/.openclaw/extensions/lossless-claw.disabled-backup/node_modules/playwright-core/index.mjs';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{for(const mode of ['request','fresh','expired','old','marker']){
+const c=await browser.newContext({viewport:{width:390,height:844}}),p=await c.newPage();let puts=0,requests=0,other=0;
+const user={id:'00000000-0000-4000-8000-000000000001',email:'fixture@example.invalid',aud:'authenticated'};
+await c.route('https://*.supabase.co/**',async r=>{const u=new URL(r.request().url());if(u.pathname.endsWith('/recover')){requests++;assert(!r.request().postDataJSON().code_challenge);assert(u.searchParams.get('redirect_to').includes('auth=recovery'));return r.fulfill({json:{}});}if(u.pathname.endsWith('/user')){if(r.request().method()==='PUT')puts++;return r.fulfill({json:user});}other++;return r.fulfill({status:400,json:{message:'isolated'}});});
+const base=process.env.TEST_BASE_URL||'http://127.0.0.1:19403';
+if(mode==='request'){await p.goto(base);await p.getByRole('textbox',{name:'家長 Email',exact:true}).fill(user.email);await p.getByRole('button',{name:'忘記密碼',exact:true}).click();await p.getByText('若這個信箱有帳號，將收到重設密碼信。',{exact:true}).waitFor();assert.equal(requests,1);}
+else if(mode==='fresh'){const e=o=>Buffer.from(JSON.stringify(o)).toString('base64url'),token=e({alg:'HS256'})+'.'+e({sub:user.id,exp:Math.floor(Date.now()/1000)+3600})+'.test';await p.goto(base+'/?auth=recovery#access_token='+token+'&refresh_token=synthetic&expires_in=3600&token_type=bearer&type=recovery');await p.getByText('設定新密碼',{exact:true}).waitFor();assert.equal(other,0);assert(!new URL(p.url()).hash);await p.reload();await p.getByText('設定新密碼',{exact:true}).waitFor();await p.getByRole('textbox',{name:'家庭帳號密碼',exact:true}).fill('Synthetic-only-917!');await p.getByRole('button',{name:'儲存新密碼',exact:true}).click();await p.waitForFunction(()=>!document.body.innerText.includes('儲存新密碼'));assert.equal(puts,1);}
+else{await p.goto(base+(mode==='expired'?'/?auth=recovery#error=access_denied&error_code=otp_expired':mode==='old'?'/?code=synthetic':'/?auth=recovery'));await p.getByText('重設連結無法驗證',{exact:true}).waitFor();assert.equal(puts,0);assert.equal(other,0);await p.getByRole('button',{name:'回登入頁，重新申請重設信',exact:true}).click();await p.getByText('歡迎回到家庭冒險',{exact:true}).waitFor();}
+console.log('PASS',mode);await c.close();}}finally{await browser.close();}
