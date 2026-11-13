@@ -1,0 +1,100 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "key": "chinese-a",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: a closed handwriting exercise notebook prominently marked with the single Chinese character 甲 and a pencil. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-4ef335d7-8133-4445-81ca-722942274d0a.png"
+    },
+    {
+      "key": "chinese-b",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: a closed handwriting exercise notebook prominently marked with the single Chinese character 乙 and a pencil. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-d80be6a1-5076-416e-ad17-bfa4dc6f86cb.png"
+    },
+    {
+      "key": "chinese-workbook",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: an open lined Chinese writing workbook and a pen writing in its squares. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-ace48895-dfe1-4ed8-9fd6-efc3a9474be6.png"
+    },
+    {
+      "key": "words",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: four Chinese character tiles, with one character circled clearly by a ring. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-1c1d95bd-7be6-4d00-8d79-ad4279b9cd3c.png"
+    },
+    {
+      "key": "sentences",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: three word cards arranged horizontally into a sentence, a curved connecting line below. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-fa593960-bfc2-4499-a472-35215fd7ac71.png"
+    },
+    {
+      "key": "air-writing",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: a cheerful child extending one hand upward drawing a luminous Chinese character in the air; no book. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-d2ee1699-b517-4f67-a7d5-e60eaa8cf32c.png"
+    },
+    {
+      "key": "composition",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: a manuscript page with Chinese writing grid and a large feather quill. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-0721f817-0b90-4813-be4b-64c70df33e63.png"
+    },
+    {
+      "key": "math-book",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: an open math textbook with large embossed numerals 1 2 3. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-6439c680-ec9a-4e6c-a564-15aad2db921f.png"
+    },
+    {
+      "key": "math-workbook",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: an open arithmetic workbook with 2+3=5 and a pencil diagonally writing. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-3d527d3a-b076-4b3a-98c4-5e2875d88126.png"
+    },
+    {
+      "key": "math-practice",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: three dimensional number blocks with prominent plus minus multiplication division symbols. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-932bf830-7a56-47b1-b99b-fe457833f0c6.png"
+    },
+    {
+      "key": "read-aloud",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: a cheerful child holding an open book and reading aloud with visible sound waves. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-ebc93a93-4dd7-4c36-b213-17f8517e2d20.png"
+    },
+    {
+      "key": "recite",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: a cheerful child reciting from memory, speech bubble overhead, hands empty, no book. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-6b176bf6-d56b-4335-869f-7ec7f0380f19.png"
+    },
+    {
+      "key": "reading",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: a seated child quietly absorbed in an open book, no speech bubble. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-a2e34736-b1fc-4a2d-8b88-e2b6a7dafddb.png"
+    },
+    {
+      "key": "chinese-review",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: Chinese character tiles and a prominent magnifying glass. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-50442a96-03ba-431c-b61f-36dedfc2f661.png"
+    },
+    {
+      "key": "math-review",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: arithmetic equation tiles 2+3 and a prominent magnifying glass. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-ab69993e-2128-438c-a0de-ca480f1d3846.png"
+    },
+    {
+      "key": "corrections",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: a large eraser beside a corrected line on paper and a clear check mark. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-8a0284c2-3e7b-438a-80c6-9af400b63e95.png"
+    },
+    {
+      "key": "poetry",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: a cheerful child reciting poetry with an unfurled poetry scroll and a small speech wave. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-2dfd30cb-c00f-4e41-93d9-a27c136db08a.png"
+    },
+    {
+      "key": "custom",
+      "prompt": "Use case: stylized-concept. Production game UI icon. Reference image is STYLE ONLY, not the requested subject. Create one square single circular gold-rimmed magical badge filling square edge to edge, exactly matching reference rim and navy enamel / pale blue silver sculpted relief. Center subject: an unfurled adventure mission scroll with a prominent five pointed star seal. Highly legible at 80 pixels with large simplified silhouettes. No title or labels, no extra UI or outer margins. Dark navy outside circle. Single badge. Replace reference jumping child entirely with requested subject.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-49731184-bc50-478e-bcde-3a6b10e830ae.png"
+    },
+    {
+      "key": "jump-rope",
+      "prompt": "Circular gold rim, navy enamel, blue silver relief of a child jumping rope, full body with a clear rope arc; single badge; no title.",
+      "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-2d65606c-afd0-4371-902b-c6677eb232f8.png"
+    }
+  ]
+}

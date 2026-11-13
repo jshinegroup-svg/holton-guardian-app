@@ -1,0 +1,22 @@
+[
+  {
+    "key": "words",
+    "prompt": "Create a square single circular gold rim game badge matching the provided image's navy enamel and pale silver-blue relief style. STYLE reference only; replace all central subject with: EXACTLY THREE flat paper vocabulary flashcards showing ONLY the Traditional Chinese characters 山 水 木. A large clearly visible silver oval circles the middle character 水. These are school flashcards, NOT Mahjong tiles, NO 中 發 白 萬, no other letters. Large simple legible subject at 80px. Ornate double gold rim fills square edge to edge. No title, no extra UI.",
+    "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-16785225-08b2-4232-b8ad-c36369569e31.png"
+  },
+  {
+    "key": "sentences",
+    "prompt": "Create a square single circular gold rim game badge matching the provided image's navy enamel and pale silver-blue relief style. STYLE reference only; replace all central subject with: THREE paper word cards arranged horizontally, with ONLY the Traditional Chinese characters 我 愛 書, one per card; a curved linking line connects them. No pictograms, no other text. Large simple legible subject at 80px. Ornate double gold rim fills square edge to edge. No title, no extra UI.",
+    "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-1813145f-2f9e-4b56-995b-34903671d91f.png"
+  },
+  {
+    "key": "chinese-workbook",
+    "prompt": "Create a square single circular gold rim game badge matching the provided image's navy enamel and pale silver-blue relief style. STYLE reference only; replace all central subject with: an open Chinese handwriting workbook with large empty square practice grids and a pen writing a simple stroke. NO characters, NO letters, NO text, avoid simplified Chinese. Large simple legible subject at 80px. Ornate double gold rim fills square edge to edge. No title, no extra UI.",
+    "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-24bce5d6-149f-413a-82c8-d1b6cf147254.png"
+  },
+  {
+    "key": "chinese-review",
+    "prompt": "Create a square single circular gold rim game badge matching the provided image's navy enamel and pale silver-blue relief style. STYLE reference only; replace all central subject with: three paper vocabulary flashcards showing ONLY 山 水 木 with a large magnifying glass enlarging 水. School paper flashcards, NOT mahjong tiles, no other letters. Large simple legible subject at 80px. Ornate double gold rim fills square edge to edge. No title, no extra UI.",
+    "source": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a1d31d-f017-7ed3-9b5b-b98b52f88e96/exec-de85809a-53e8-4ff8-bdc5-f0f0ef7d4aa1.png"
+  }
+]
