@@ -1,3 +1,4 @@
+import HomeworkGuide from './homework/HomeworkGuide';
 import HomeworkAdventure from './homework/HomeworkAdventure';
 import type {Homework} from './homework/model';
 import TaskStarterCard from './TaskStarterCard';
@@ -80,6 +81,7 @@ function importGuardianCards(old: Partial<PersistedAppState> | null): GuardianRe
 export type DuoControl={ready:boolean;start:(at:number)=>Promise<boolean>};
 export default function LightApp({childNickname,compact=false,musicOwner=true,onExpand,duoControl,familyNavigation}:{childNickname?:string;compact?:boolean;musicOwner?:boolean;onExpand?:()=>void;duoControl?:(control:DuoControl|null)=>void;familyNavigation?:{sync:string;onMenu:()=>void;onSolo?:()=>void}}={}) {
   const {locale}=useLocale();
+  const [homeworkGuideOpen,setHomeworkGuideOpen]=useState(false);
   const [homeworkOpen,setHomeworkOpen]=useState(false);
   const [homeworkCardSelected,setHomeworkCardSelected]=useState(false);
   const {storage,pinKey,familyMode}=useFamilyStorage();
@@ -505,6 +507,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       {parentTab==='records'?<WeeklyFootprints history={state.history} receipts={state.wishReceipts??[]} now={now}/>:null}
       {parentTab==='rewards'?<RewardShop data={state} settings saving={saving} change={change}/>:null}
       {parentTab==='preferences'?<>
+      <HomeworkGuide visible={homeworkGuideOpen} onClose={()=>setHomeworkGuideOpen(false)} button={button}/>{button(locale==='en'?'Homework Quest guide':'功課冒險教學',()=>setHomeworkGuideOpen(true),true)}
       <View style={styles.card}><Text style={styles.section}>{locale==='en'?'Homework Quest':'功課冒險'}</Text>{button(locale==='en'?(state.homework?.enabled?'Hide homework card':'Enable homework card'):(state.homework?.enabled?'關閉功課入口':'開啟功課入口'),()=>void change(s=>({...s,homework:{...(s.homework??{days:{}}),enabled:!s.homework?.enabled}})),true,!!state.homework?.timer)}<Text style={styles.caption}>{locale==='en'?'Hiding keeps records and earned rewards.':'關閉只隱藏入口，紀錄及已領獎勵保留。'}</Text></View><LanguagePicker/>
       {button('修改家長密碼',()=>setChangePin(true),true)}
       {button('重新觀看操作教學',()=>{void (async()=>{if(state.phase==='done'&&!await change(s=>({...s,phase:'ready',deadline:null,help:false,remaining:s.minutes*60})))return;await initializeGuide(true,true,storage);navigateRoom('village');setFreshTutorial(true);setIntroReplay(true);setTutorialReplay(n=>-Math.abs(n)-1);})();},true,!homePhase)}
@@ -521,7 +524,6 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       </>:null}
       {parentTab==='records'?<View style={styles.card}><Text style={styles.section}>世界卡兌換紀錄</Text><Text style={styles.body}>今天已兌換 <EnergyAmount kind="gain" value={todayExchangePoints}/>。每天最多一次，可留到明天一起換。</Text>{button('查看世界卡兌換', () => setWorldExchangeOpen(true), true)}</View>:null}
       {parentTab==='preferences'?<>
-      <View style={styles.card}><Text style={styles.section}>{locale==='en'?'Homework Quest':'功課冒險'}</Text>{button(locale==='en'?(state.homework?.enabled?'Hide homework card':'Enable homework card'):(state.homework?.enabled?'關閉功課入口':'開啟功課入口'),()=>void change(s=>({...s,homework:{...(s.homework??{days:{}}),enabled:!s.homework?.enabled}})),true,!!state.homework?.timer)}<Text style={styles.caption}>{locale==='en'?'Hiding keeps records and earned rewards.':'關閉只隱藏入口，紀錄及已領獎勵保留。'}</Text></View>
       <View style={styles.card}><Text style={styles.section}>守護獸收藏與舊卡恢復</Text><Text style={styles.body}>目前收藏 {ownedIds.size} 張。舊版能確認的卡片會自動帶入；更換已取得的陪伴夥伴不扣點，也不改變初始夥伴。</Text>{button('查看守護獸收藏', () => setCollectionOpen(true), true)}
         {starterMissing.length > 0 && !state.starterRestoreAt ? <><Text style={styles.caption}>若孩子以前已兌換完五隻 Mini 初階卡，可補回以前已取得的 {starterMissing.length} 張。只補卡，不扣點、不重複發卡。</Text>{button('補回已兌換的五隻初階卡', restoreStarters, true)}</> : <Text style={styles.caption}>初階收藏已保留，不需要重新購買。</Text>}
         <Text style={styles.caption}>{state.guardianSundayOnly===false?'守護獸不限星期幾，隨時可兌換。':'星期日兌換以台北時間為準。'}Mini 10、Mid 20、Final 40、Legendary 60 點；每張扣完整標示點數，按階段取得，舊卡仍保留。</Text>
