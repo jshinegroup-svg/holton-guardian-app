@@ -12,6 +12,8 @@ export function subjectIconKey(title:string):string {
  [/閱讀|阅读|reading/i,'reading'],[/訂正|订正|correct/i,'corrections'],[/數學|数学|math/i,'math-book']
  ];return rules.find(([r])=>r.test(title))?.[1]??'custom';
 }
+const boyIcons=new Set(['jump-rope','air-writing','read-aloud','recite','reading','poetry']);
+export function subjectIconFile(title:string):string { const key=subjectIconKey(title);return `${key}${boyIcons.has(key)?'-boy':''}.png`; }
 export default function SubjectIcon({title,confirmed=false,size=32,className}:{title:string;confirmed?:boolean;size?:number|string;className?:string}){
- return <img className={className} data-subject-icon={subjectIconKey(title)} src={`/homework/subject-icons/${subjectIconKey(title)}.png`} alt="" aria-hidden draggable={false} style={{width:size,height:size,flexShrink:0,borderRadius:'50%',objectFit:'cover',filter:confirmed?'sepia(1) saturate(2.4) brightness(1.2)':'none',boxShadow:confirmed?'0 0 18px #ffd45a':'0 2px 5px #0008'}}/>;
+ return <img className={className} data-subject-icon={subjectIconKey(title)} src={`/homework/subject-icons/${subjectIconFile(title)}`} alt="" aria-hidden draggable={false} style={{width:size,height:size,flexShrink:0,borderRadius:'50%',objectFit:'cover',filter:confirmed?'sepia(1) saturate(2.4) brightness(1.2)':'none',boxShadow:confirmed?'0 0 18px #ffd45a':'0 2px 5px #0008'}}/>;
 }
