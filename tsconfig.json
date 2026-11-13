@@ -19,6 +19,6 @@
     "hooks/**",
     "scripts/reset-project.js",
     "expo-env.d.ts",
-    "dist/**"
+    "dist/**", "supabase/functions/**"
   ]
 }

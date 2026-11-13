@@ -21,7 +21,7 @@ function ChildGame({child,compact,musicOwner,onExpand,controls,onMenu,onSolo,sol
  useEffect(()=>{let seconds=0;const flush=()=>{if(!seconds)return;const count=seconds;seconds=0;void supabase.rpc('record_usage_event',{p_child_id:child.id,p_id:crypto.randomUUID(),p_kind:'active_time',p_elapsed_seconds:count});};const timer=setInterval(()=>{if(!document.hidden&&Date.now()-lastInteraction.current<30000)seconds++;if(seconds>=30)flush();},1000);return()=>{clearInterval(timer);flush();};},[child.id]);
  const storage=useMemo(()=>makeChildStorage(child,setSync),[child.id,child.familyId]);
  useEffect(()=>{const id=crypto.randomUUID();void supabase.rpc('record_usage_event',{p_child_id:child.id,p_id:id,p_kind:'visit'});},[child.id]);
- const scope=useMemo(()=>({storage,pinKey:`holton-family-v2::${child.familyId}::parent-pin`,familyMode:true}),[storage,child.familyId]);
+ const scope=useMemo(()=>({storage,pinKey:`holton-family-v2::${child.familyId}::parent-pin`,familyMode:true,childId:child.id,childName:child.nickname}),[storage,child.familyId,child.id,child.nickname]);
  return <FamilyStorageContext.Provider value={scope}><View onPointerDown={()=>{lastInteraction.current=Date.now();}} style={{flex:1,minWidth:0}}><View testID="family-sync-status" pointerEvents="none" style={compact?styles.syncSlot:styles.syncOverlay}><Text numberOfLines={1} accessibilityLiveRegion="polite" style={styles.sync}>{compact||sync!=='雲端已同步'?`${child.nickname} · ${t(sync)}`:''}</Text></View><LightApp familyNavigation={{sync,onMenu,onSolo}} duoControl={register} childNickname={child.nickname} compact={compact} musicOwner={musicOwner} onExpand={onExpand}/></View></FamilyStorageContext.Provider>;
 }
 export default function FamilyApp(){
