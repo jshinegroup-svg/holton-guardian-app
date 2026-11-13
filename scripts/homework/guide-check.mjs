@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=path.resolve('dist-production','.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(path.resolve('dist-production')+path.sep)){res.writeHead(403).end();return;}const data=await readFile(file);const ext=path.extname(file);res.setHeader('Content-Type',ext==='.js'?'application/javascript':ext==='.html'?'text/html':ext==='.png'?'image/png':ext==='.jpg'?'image/jpeg':'application/octet-stream');res.end(data);}catch{res.writeHead(404).end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=process.env.TEST_BASE_URL||`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
-try{for(const [width,height] of [[320,568],[390,700]]){
+try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  const family=randomUUID(),user=randomUUID(),a=randomUUID(),b=randomUUID();
  const kids=[{id:a,family_id:family,nickname:'哥哥',age_years:8,age_recorded_at:new Date().toISOString()},{id:b,family_id:family,nickname:'妹妹',age_years:6,age_recorded_at:new Date().toISOString()}];
  const seed=name=>({version:1,activeWorld:'forest',journeys:{version:2,counts:{forest:0,sky:0,cosmos:0},legacyCredit:0},starterChoiceVersion:1,starterCompanionId:'pip',onboardingDone:true,childName:name,title:name==='哥哥'?'數學作業':'閱讀',minutes:5,orbs:name==='哥哥'?10:30,homework:width===320?{enabled:false,days:{}}:undefined,phase:'ready',deadline:null,remaining:300,help:false,supportUsed:['rest'],breakDeadline:null,focusElapsedMs:0,focusStartedAt:null,rewardProgress:2,dailyGoal:1,taskReward:1,history:[],guardian:{},guardianCards:[],allowEarlyFinish:true,focusMusicEnabled:false});
@@ -57,6 +57,8 @@ try{for(const [width,height] of [[320,568],[390,700]]){
   await guide.getByRole('button',{name:i===6?'知道了，開始探索':'下一步',exact:true}).click();
  }
  await guide.waitFor({state:'hidden'});assert.equal(JSON.stringify(saves.get(a).state),before);
+ await p.evaluate(()=>{document.querySelectorAll('*').forEach(e=>{if(e.scrollTop)e.scrollTop=0;});window.scrollTo(0,0)});
+ const geometry=await p.evaluate(()=>{const star=document.querySelector('.hw-stars').getBoundingClientRect();const toolbar=document.querySelector('[data-testid=homework-toolbar]');const buttons=[...toolbar.querySelectorAll('[role=button]')].map(e=>e.getBoundingClientRect());return {starWidth:star.width,starHeight:star.height,toolbarTop:toolbar.getBoundingClientRect().top,buttonHeights:buttons.map(b=>b.height),sameRow:Math.abs(buttons[0].top-buttons[1].top)<2,overflow:document.documentElement.scrollWidth>innerWidth+1};});assert(geometry.starWidth<=361);assert(geometry.sameRow);assert(geometry.buttonHeights.every(h=>h>=44));assert(!geometry.overflow);console.log('PASS compact map',width,geometry);await p.screenshot({path:`reports/homework/compact-map-${width}.png`});
  await p.getByRole('button',{name:'返回任務卡',exact:true}).click();
  await p.getByRole('button',{name:'進入功課模式',exact:true}).click();await p.waitForTimeout(350);assert.equal(await guide.count(),0);
  await p.getByRole('button',{name:'功課冒險教學',exact:true}).click();await guide.waitFor();await guide.getByRole('button',{name:'先略過',exact:true}).click();
