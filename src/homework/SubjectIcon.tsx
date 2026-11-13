@@ -3,6 +3,7 @@ import React from 'react';
 /** Match saved titles too: no migration or change to task IDs/progress. */
 export function subjectIconKey(title:string):string {
  const rules:[RegExp,string][]=[
+ [/讀[／/]背課文/,'read-aloud'],
  [/跳繩|跳绳|jump.?rope/i,'jump-rope'],[/童詩|童诗|poem|poetry/i,'poetry'],
  [/甲本/,'chinese-a'],[/乙本/,'chinese-b'],[/國語習作|国语习作/,'chinese-workbook'],
  [/圈詞|全詞|圈词|全词/,'words'],[/造詞|造句|造词/,'sentences'],[/書空|书空/,'air-writing'],[/作文/,'composition'],
