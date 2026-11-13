@@ -3,7 +3,7 @@
 Branch: feat/homework-integration. Base: 47ade02. Production source and deployment untouched.
 
 - Optional `LightState.homework` lives in the existing per-child revisioned save, not prototype browser storage.
-- Parent preferences enables/disables entrance. Existing accounts default off. Disabling preserves all records/rewards.
+- Homework card is always present in the original carousel for all accounts (2026-11-13 user decision). No entrance toggle. Legacy enabled flags are ignored; records and rewards are preserved.
 - `HomeworkAdventure` uses the same LightApp button renderer and ParentPinGate. No demo data migration.
 - Claim commits the date receipt, +10 wallet, one history event and one existing journey step in one change. Future/empty/unconfirmed/claimed/active-task days cannot claim.
 - Pending save retries use existing operation IDs; conflict must explicitly resolve through existing repository recovery.

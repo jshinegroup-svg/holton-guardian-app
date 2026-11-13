@@ -8,6 +8,8 @@ assert.equal(updateDay(next,date,d=>({...d,tasks:[]})),next);
 for(const phase of ['active','preparing','finishing']){const b={...s,phase};assert.equal(claimHomework(b,date,now),b)}
 for(const tasks of [[],[{id:'a',title:'Math',detail:'',reported:true}]]){const b={...s,homework:{enabled:true,days:{[date]:{tasks}}}};assert.equal(claimHomework(b,date,now),b)}
 const future={...s,homework:{enabled:true,days:{'2026-11-13':s.homework.days[date]}}};assert.equal(claimHomework(future,'2026-11-13',now),future);
-const off={...s,homework:{...s.homework,enabled:false}};assert.equal(claimHomework(off,date,now),off);
+// Legacy hidden or unset flags no longer block the now-unconditional mode.
+for(const enabled of [false,undefined]){const legacy={...s,homework:{...s.homework,enabled}};const reward=claimHomework(legacy,date,now);assert.equal(reward.orbs,35);assert.equal(reward.journeys.counts.forest,4);assert.equal(claimHomework(reward,date,now),reward);}
+const fresh={...s,homework:undefined};assert.equal(claimHomework(fresh,date,now),fresh);
 const copy=JSON.parse(JSON.stringify(next));assert.equal(claimHomework(copy,date,now),copy);
-console.log('PASS: atomic reward + journey, replay/reload dedup, locked claimed day, empty/reported/future/active/disabled guards, original state preserved');
+console.log('PASS: atomic reward + journey, replay/reload dedup, locked claimed day, empty/reported/future/active guards and legacy hidden/unset flags, original state preserved');

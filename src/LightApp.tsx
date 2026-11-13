@@ -87,7 +87,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const {storage,pinKey,familyMode}=useFamilyStorage();
   const {width: viewportWidth, height: viewportHeight} = useWindowDimensions();
   const [state, setState] = useState<State | null>(null);
-  const homeworkSelected=homeworkCardSelected&&!!state?.homework?.enabled;
+  const homeworkSelected=homeworkCardSelected;
 
   const [customDraft,setCustomDraft]=useState(String(DEFAULT_CUSTOM_MINUTES));
   const [customNeedsApply,setCustomNeedsApply]=useState(false);
@@ -269,7 +269,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const selectedCard = customSelected?customCard:timeChallenges.find(card => card.id === state.cardId);
   const displayCard = selectedCard ?? timeChallenges.find(card => card.minutes === state.minutes) ?? timeChallenges[1];
   const homeworkCard={id:"homework-quest",name:locale==='en'?"Homework Quest":"功課冒險",imageSource:{uri:"/homework/entry.png"}};
-  const taskDeck=[...timeChallenges,customCard,...(state.homework?.enabled?[homeworkCard]:[])];
+  const taskDeck=[...timeChallenges,customCard,homeworkCard];
   const stepCard = (delta:number) => {
     const index=homeworkSelected?taskDeck.length-1:customSelected?timeChallenges.length:timeChallenges.indexOf(displayCard);
     const next=(index+delta+taskDeck.length)%taskDeck.length;
@@ -508,7 +508,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       {parentTab==='rewards'?<RewardShop data={state} settings saving={saving} change={change}/>:null}
       {parentTab==='preferences'?<>
       <HomeworkGuide visible={homeworkGuideOpen} onClose={()=>setHomeworkGuideOpen(false)} button={button}/>{button(locale==='en'?'Homework Quest guide':'功課冒險教學',()=>setHomeworkGuideOpen(true),true)}
-      <View style={styles.card}><Text style={styles.section}>{locale==='en'?'Homework Quest':'功課冒險'}</Text>{button(locale==='en'?(state.homework?.enabled?'Hide homework card':'Enable homework card'):(state.homework?.enabled?'關閉功課入口':'開啟功課入口'),()=>void change(s=>({...s,homework:{...(s.homework??{days:{}}),enabled:!s.homework?.enabled}})),true,!!state.homework?.timer)}<Text style={styles.caption}>{locale==='en'?'Hiding keeps records and earned rewards.':'關閉只隱藏入口，紀錄及已領獎勵保留。'}</Text></View><LanguagePicker/>
+      <LanguagePicker/>
       {button('修改家長密碼',()=>setChangePin(true),true)}
       {button('重新觀看操作教學',()=>{void (async()=>{if(state.phase==='done'&&!await change(s=>({...s,phase:'ready',deadline:null,help:false,remaining:s.minutes*60})))return;await initializeGuide(true,true,storage);navigateRoom('village');setFreshTutorial(true);setIntroReplay(true);setTutorialReplay(n=>-Math.abs(n)-1);})();},true,!homePhase)}
       <View style={styles.card} testID="guardian-exchange-setting"><Text style={styles.section}>守護獸兌換時間</Text>
