@@ -7,8 +7,8 @@ export default function StarBoard({day,date,onTask,onPortal,en}:{day?:HomeworkDa
  .hw-stars{position:relative;width:100%;aspect-ratio:1/2;background:url('/homework/reference-plate.png') center/100% 100%;container-type:inline-size;color:#fff2cc;font-family:serif;-webkit-text-size-adjust:100%;text-size-adjust:100%}
  .hw-stars .plaque{position:absolute;inset:0 0 auto;height:15.7%;background:url('/homework/reference-ui.jpg') left top/300.4695% auto;mask-image:linear-gradient(#000 94%,transparent)}
  .hw-stars .date{position:absolute;top:12.1%;left:34%;width:32%;height:3.1%;display:flex;align-items:center;justify-content:center;text-align:center;background:#10203a;border-radius:50%;font-size:3.8cqw;line-height:1.1}
- .hw-stars .progress{position:absolute;top:18.9%;left:32%;width:36%;height:3.8%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:4.5cqw;line-height:1.1}
- .hw-stars .disc{position:absolute;inset:23% 0 auto;height:49%}
+ .hw-stars .progress{position:absolute;top:18.35%;left:32%;width:36%;height:3.8%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:4.5cqw;line-height:1.1}
+ .hw-stars .disc{position:absolute;inset:24.8% 0 auto;height:47.2%}
  .hw-stars button{cursor:pointer;font-family:inherit;color:#fff3c8;-webkit-tap-highlight-color:transparent}
  .hw-stars button:active{scale:.96}.hw-stars button:focus-visible{outline:3px solid #fff}
  .hw-stars .rune{position:absolute;transform:translate(-50%,-50%);width:25%;padding:0;border:0;background:none;display:flex;align-items:center;flex-direction:column}
