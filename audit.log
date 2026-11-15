@@ -153,3 +153,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-12 actor:codex approval:user-request trigger:integrate-homework — isolated branch; added optional per-child homework, atomic rewards, adult gate, local attachments, preview and tests; production untouched.
 2026-11-15 actor:codex approval:user-bug-report trigger:recognition-stuck-and-missing-key — support lowercase server secret; retain scoped tab draft; bounded recognition wait; mocked regression checks passed.
 2026-11-15 actor:codex approval:user-request trigger:photo-date-and-seven-day-history — suggest literal notebook date with explicit review and manual overrides; seven-day task history includes tomorrow, preserves unresolved and future work.
+
+2026-11-15 actor:codex approval:user-request trigger:friend-sync-repair — bound timed focus to target and rebase explicit extensions; preserve invalid legacy telemetry as raw/unknown without blocking atomic progress; distinguish sync failures; add rollback-only RPC regression and update stale test selectors.

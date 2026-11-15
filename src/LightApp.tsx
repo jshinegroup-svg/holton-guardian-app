@@ -365,6 +365,8 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   }
   function completeTask(s: State): State {
     if (s.phase !== 'finishing') return s;
+    // Old saved finishing screens may predate bounded timed accounting.
+    s={...s,focusElapsedMs:elapsedFocusMs(s,Date.now())};
     const at = new Date();
     const dateKey = day(at);
     const reward=s.minutes===0?rewardForFocusMs(s.focusElapsedMs??0):(s.taskReward??1);

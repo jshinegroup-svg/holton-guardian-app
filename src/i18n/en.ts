@@ -385,4 +385,8 @@ Object.assign(english, {
 '請先設定家長密碼。':'Set a parent PIN first.',
 '輸入次數較多，請稍候一分鐘再試。':'Too many attempts. Wait a minute and try again.',
 '家長密碼已變更，請使用新密碼重新輸入。':'The parent PIN changed. Enter the new PIN.',
+
+'伺服器無法接受這筆資料，並非網路中斷。待同步操作仍保留，請聯絡維護人員；不要清除資料或反覆重試。':'The server could not accept this data. This is not a network interruption. Your pending action is kept. Contact support; do not clear data or retry repeatedly.',
+'登入驗證或存取權限有問題，待同步操作仍保留。請聯絡維護人員協助，先不要登出或清除資料。':'Authentication or access permission failed. Your pending action is kept. Contact support before signing out or clearing data.',
+'同步尚未完成，原因需要進一步確認。待同步操作仍保留，請聯絡維護人員；不要清除資料。':'Sync is incomplete and needs investigation. Your pending action is kept. Contact support; do not clear data.',
 });

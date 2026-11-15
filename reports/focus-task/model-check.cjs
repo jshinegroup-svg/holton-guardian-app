@@ -26,3 +26,19 @@ for(const minutes of [0,5]){
  assert.equal(again.orbs,10);
 }
 console.log('PASS 2-minute extension timed/untimed, repeat guards, help pause/resume, original rewards');
+
+const abandoned={phase:'active',minutes:25,deadline:now+1500000,remaining:1500,focusElapsedMs:0,focusStartedAt:now};
+const daysLater=now+1325699915;
+assert.equal(f.elapsedFocusMs(abandoned,daysLater),1500000);
+const legacy={...abandoned,phase:'finishing',focusElapsedMs:1325699915,focusStartedAt:null};
+assert.equal(f.elapsedFocusMs(legacy,daysLater),1500000);
+const continued=f.extendFocus(abandoned,daysLater);
+assert.equal(f.elapsedFocusMs(continued,daysLater+30000),1530000);
+assert.equal(f.elapsedFocusMs(continued,daysLater+99999999),1620000);
+assert.equal(f.elapsedFocusMs({...abandoned,focusStartedAt:Infinity},daysLater),0);
+const errors=load('src/family/cloudRequest.ts');
+assert.match(errors.syncErrorMessage({code:'23514',message:'constraint violation'}),/並非網路/);
+assert.match(errors.syncErrorMessage({code:'42501',message:'not_authorized'}),/登入驗證/);
+assert.match(errors.syncErrorMessage(new Error('cloud_timeout')),/連線暫時/);
+assert.match(errors.syncErrorMessage(new Error('unknown')),/原因需要/);
+console.log('PASS 15-day abandoned task, legacy finishing, extension rebasing, nonfinite clock, distinct sync errors');
