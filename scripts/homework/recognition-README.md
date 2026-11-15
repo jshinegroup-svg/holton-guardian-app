@@ -18,3 +18,5 @@ Verification:
 - `node scripts/homework/model-check.cjs`, `repository-check.cjs`, `guide-check.mjs`
 
 Live OCR accuracy and the configured API project's model access/balance require a real authenticated request after secret setup; mocked tests do NOT verify these. Do not claim real recognition is active until checked. No production child data should be seeded for tests.
+
+2026-11-15 selection policy: writing, corrections, essays, memorization, recitation, poetry and reading are selected by default. Administrative reminders remain visible as unchecked editable tasks. Adult may change any checkbox before confirming. Recognition cache fingerprint v2-learning avoids reuse of writing-only results.
