@@ -1,0 +1,17 @@
+const ts=require('typescript'),fs=require('fs'),assert=require('node:assert/strict');
+require.extensions['.ts']=(m,file)=>m._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,file);
+const {editSavedHomework,claimHomework}=require('../../src/homework/model.ts');
+const from='2026-11-15',to='2026-11-16';
+const day={tasks:[{id:'a',title:'數學',detail:'12頁',confirmed:true,reported:true},{id:'b',title:'國語',detail:'3次'}]};
+const s={orbs:20,phase:'ready',history:[],journeys:{version:2,counts:{forest:2,sky:0,cosmos:0},legacyCredit:0},homework:{days:{[from]:day}}};
+const edits=day.tasks.map(t=>({id:t.id,title:t.title==='國語'?'童詩':t.title,detail:'13–14頁'}));
+const moved=editSavedHomework(s,from,to,day,edits);
+assert(!moved.homework.days[from]);assert.equal(moved.homework.days[to].tasks[0].confirmed,true);assert.equal(moved.homework.days[to].tasks[1].title,'童詩');assert.equal(moved.orbs,20);assert.deepEqual(moved.history,[]);assert.equal(s.homework.days[from].tasks[0].detail,'12頁');assert.equal(editSavedHomework(moved,from,to,day,edits),moved);
+for(const invalid of ['', '2026-02-30','not-date'])assert.equal(editSavedHomework(s,from,invalid,day,edits),s);
+for(const state of [{...s,homework:{days:{[from]:day,[to]:day}}},{...s,homework:{days:s.homework.days,timer:{date:from}}},{...s,history:[{finishId:`homework:${to}`}]}])assert.equal(editSavedHomework(state,from,to,day,edits),state);
+const stale={tasks:day.tasks.map(t=>({...t,confirmed:true}))};assert.equal(editSavedHomework(s,from,to,stale,edits),s);
+assert.equal(editSavedHomework(s,from,to,day,[edits[0],edits[0]]),s);
+const claimed={...day,claimedAt:'2026-11-15T10:00:00Z'},paid={...s,homework:{days:{[from]:claimed}}};
+assert.equal(editSavedHomework(paid,from,to,claimed,edits),paid);
+const corrected=editSavedHomework(paid,from,from,claimed,edits);assert.equal(corrected.homework.days[from].claimedAt,claimed.claimedAt);assert.equal(claimHomework(corrected,from),corrected);assert.equal(corrected.orbs,20);
+console.log('PASS: edit/move preserve IDs, completion, wallet, source immutability; reject invalid dates, occupied/reward dates, timers, stale edits and replay; claimed text correction cannot reward again');

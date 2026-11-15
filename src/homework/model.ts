@@ -17,3 +17,15 @@ export function updateDay(s:LightState,date:string,fn:(d:HomeworkDay)=>HomeworkD
  const h=homework(s),d=h.days[date]??{tasks:[]};if(d.claimedAt)return s;
  return {...s,homework:{...h,days:{...h.days,[date]:fn(d)}}};
 }
+
+// Edits retain task identity/status. Moving is atomic and never overwrites a day.
+export function editSavedHomework(s:LightState,from:string,to:string,expected:HomeworkDay,edits:{id:string;title:string;detail:string}[]):LightState{
+ const h=homework(s),day=h.days[from];
+ const validDate=(v:string)=>/^\d{4}-\d{2}-\d{2}$/.test(v)&&!Number.isNaN(Date.parse(v+'T12:00:00Z'))&&new Date(v+'T12:00:00Z').toISOString().slice(0,10)===v;
+ if(!day||h.timer||!validDate(to)||JSON.stringify(day)!==JSON.stringify(expected))return s;
+ if(edits.length!==day.tasks.length||new Set(edits.map(t=>t.id)).size!==edits.length||edits.some(t=>!day.tasks.some(x=>x.id===t.id)||!t.title.trim()||t.title.trim().length>80||t.detail.length>1000))return s;
+ if(from!==to&&(day.claimedAt||h.days[to]?.tasks.length||h.days[to]?.claimedAt||s.history.some(e=>e.finishId===`homework:${from}`||e.finishId===`homework:${to}`)))return s;
+ const updated={...day,tasks:day.tasks.map(t=>{const e=edits.find(e=>e.id===t.id)!;return {...t,title:e.title.trim(),detail:e.detail.trim()}})};
+ const days={...h.days};delete days[from];days[to]=updated;
+ return {...s,homework:{...h,days}};
+}
