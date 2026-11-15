@@ -40,7 +40,7 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
   HTMLMediaElement.prototype.play=function(){const s=get(this);s.at=Date.now();s.paused=false;window.__playCount++;this.dispatchEvent(new Event('playing'));return Promise.resolve();};
   HTMLMediaElement.prototype.pause=function(){const s=get(this);s.time=this.currentTime;s.paused=true;this.dispatchEvent(new Event('pause'));};HTMLMediaElement.prototype.load=function(){};
  });
- await p.goto(base);await p.getByLabel('6 位數家長密碼',{exact:true}).fill(String(randomInt(100000,999999)));const value=await p.getByLabel('6 位數家長密碼',{exact:true}).inputValue();await p.getByLabel('再次輸入家長密碼',{exact:true}).fill(value);assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'顯示6 位數家長密碼',exact:true}).click();assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'text');assert.equal(await p.getByLabel('再次輸入家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'隱藏6 位數家長密碼',exact:true}).click();await p.getByRole('button',{name:'繼續設定',exact:true}).click();await p.getByRole('button',{name:'已妥善保存，啟用家長密碼',exact:true}).click();
+ await p.clock.setFixedTime(new Date('2026-11-15T04:00:00Z'));await p.goto(base);await p.getByLabel('6 位數家長密碼',{exact:true}).fill(String(randomInt(100000,999999)));const value=await p.getByLabel('6 位數家長密碼',{exact:true}).inputValue();await p.getByLabel('再次輸入家長密碼',{exact:true}).fill(value);assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'顯示6 位數家長密碼',exact:true}).click();assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'text');assert.equal(await p.getByLabel('再次輸入家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'隱藏6 位數家長密碼',exact:true}).click();await p.getByRole('button',{name:'繼續設定',exact:true}).click();await p.getByRole('button',{name:'已妥善保存，啟用家長密碼',exact:true}).click();
 
  await p.getByRole('button',{name:'只有 哥哥 玩',exact:true}).click();
  const storageKey=`holton-family-v2::${family}::${a}::holton-guardian-app::light-v1`;
@@ -64,6 +64,13 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  await upload.setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:Buffer.from(await p.evaluate(()=>{const c=document.createElement('canvas');c.width=8;c.height=8;return c.toDataURL('image/png').split(',')[1]}),'base64')});
  await p.getByRole('button',{name:'開始辨識',exact:true}).click();await p.getByRole('alert').filter({hasText:'辨識服務尚未完成'}).waitFor();assert.equal(JSON.stringify(saves.get(a).state),before);
  recognitionMode='success';await p.getByRole('button',{name:'開始辨識',exact:true}).click();await p.getByLabel('Task 1 title',{exact:true}).waitFor();
+ assert.equal(await p.getByLabel('保存日期',{exact:true}).inputValue(),'2026-11-16');
+ assert.equal(await p.getByLabel('確認功課日期',{exact:true}).isChecked(),false);
+ await p.getByRole('button',{name:'今天',exact:true}).click();
+ assert.equal(await p.getByLabel('保存日期',{exact:true}).inputValue(),'2026-11-15');
+ await p.getByRole('alert').filter({hasText:'保存日期與照片日期不同'}).waitFor();
+ await p.getByRole('button',{name:'明天',exact:true}).click();
+ assert.equal(await p.getByLabel('保存日期',{exact:true}).inputValue(),'2026-11-16');
  const boxes=p.getByLabel('列入關卡',{exact:true});assert.equal(await boxes.count(),7);for(let i=0;i<6;i++)assert.equal(await boxes.nth(i).isChecked(),true);assert.equal(await boxes.nth(6).isChecked(),false);await boxes.nth(6).check();assert.equal(await boxes.nth(6).isChecked(),true);await boxes.nth(6).uncheck();for(let i=2;i<6;i++)await boxes.nth(i).uncheck();
  await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));assert.equal(await p.getByLabel('Task 1 title',{exact:true}).count(),1);
  assert.equal(await p.getByRole('button',{name:'確認加入2項功課',exact:true}).isDisabled(),true);
@@ -74,11 +81,15 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  assert.equal(await p.getByLabel('Task 2 detail',{exact:true}).inputValue(),'94–99頁，訂正92頁');
  assert.equal(await p.getByRole('button',{name:'確認加入2項功課',exact:true}).isDisabled(),true);
  assert.equal(recognitionCalls,2);
+ await p.getByLabel('確認功課日期',{exact:true}).check();
  await p.getByLabel('我已核對孩子、日期、頁數與不確定文字；加入既有功課，不覆蓋舊項目。',{exact:true}).check();
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:'reports/homework/photo-preview-'+width+'.png'});
  await p.getByRole('button',{name:'確認加入2項功課',exact:true}).click();await p.getByText('已加入功課，原有進度保留；照片僅保存在此裝置。',{exact:true}).waitFor();
  assert.equal(await p.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('holton-photo-draft:')).length),0);
  const saved=saves.get(a).state;assert.equal(saved.homework.days['2026-11-16'].tasks.length,3);assert.equal(saved.orbs,10);assert.equal(saved.history.length,0);assert(saved.homework.days['2026-11-16'].tasks.find(t=>t.id==='old').confirmed);assert(!saved.homework.days['2026-11-16'].tasks.filter(t=>t.id!=='old').some(t=>t.confirmed||t.reported));assert.equal(recognitionCalls,2);assert.equal(saves.get(b).state.orbs,30);assert.deepEqual(errors,[]);
+ await p.getByRole('button',{name:'7天紀錄／未完成',exact:true}).click();
+ await p.getByText('2026-11-10 ～ 2026-11-16',{exact:false}).waitFor();
+ assert((await p.getByTestId('homework-page').innerText()).includes('94–99頁，訂正92頁'));
  console.log('PASS photo import, missing key, editable uncertain details, date override, camera visibility, adult check, isolated save, unchanged rewards',width);
  await context.close();
 }}finally{await browser.close();server.close();}
