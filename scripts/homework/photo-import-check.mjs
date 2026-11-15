@@ -14,7 +14,7 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  const saves=new Map(kids.map(c=>[c.id,{child_id:c.id,family_id:family,revision:1,state:seed(c.nickname),updated_at:new Date().toISOString()}]));const ops=new Map();let recognitionCalls=0;let recognitionMode='missing';let completions=0;let failure='';const attempts=[];
  const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:width<800});const p=await context.newPage();p.setDefaultTimeout(12000);p.setDefaultNavigationTimeout(15000);const errors=[];console.log('viewport',width);p.on('pageerror',e=>errors.push(e.message));
  await context.route('https://hzihwjpjcbsuqipaeeit.supabase.co/**',async route=>{const req=route.request(),url=new URL(req.url()),pathname=url.pathname;let data;
-  if(pathname.endsWith('/functions/v1/homework-recognize')){recognitionCalls++;assert.equal(req.postDataJSON().childId,a);if(recognitionMode==='missing'){await route.fulfill({status:503,json:{error:'not_configured'}});return;}data={draft:{dateText:'11月16日',tasks:[{title:'圈詞',detail:'第7課2次',uncertainty:''},{title:'數學課本',detail:'94–待確認頁，訂正92頁',uncertainty:'末頁不清楚'},{title:'背課文',detail:'第八課',uncertainty:''},{title:'童詩朗誦',detail:'一遍',uncertainty:''},{title:'閱讀',detail:'十分鐘',uncertainty:''},{title:'作文',detail:'我的家庭',uncertainty:''}],excluded:[{text:'家長簽名',reason:'不是書寫功課'}],warnings:[]}};}else if(pathname.endsWith('/rpc/record_usage_event'))data=null;
+  if(pathname.endsWith('/functions/v1/homework-recognize')){recognitionCalls++;assert.equal(req.postDataJSON().childId,a);if(recognitionMode==='missing'){await route.fulfill({status:503,json:{error:'not_configured'}});return;}data={draft:{dateText:'11月16日',tasks:[{title:'圈詞',detail:'第7課2次，本別待確認',uncertainty:''},{title:'數學課本',detail:'94–待確認頁，訂正92頁',uncertainty:'末頁不清楚'},{title:'背課文',detail:'第八課',uncertainty:''},{title:'童詩朗誦',detail:'一遍',uncertainty:''},{title:'閱讀',detail:'十分鐘',uncertainty:''},{title:'作文',detail:'我的家庭',uncertainty:''}],excluded:[{text:'家長簽名',reason:'不是書寫功課'}],warnings:[]}};}else if(pathname.endsWith('/rpc/record_usage_event'))data=null;
   else if(pathname.endsWith('/rpc/list_archived_children'))data=kids.filter(c=>c.hidden_from_home).map(({id,nickname})=>({id,nickname,expires_at:new Date(Date.now()+30*86400000).toISOString()}));
   else if(pathname.endsWith('/rpc/permanently_delete_child')){const body=req.postDataJSON();const i=kids.findIndex(c=>c.id===body.p_child_id);assert(kids[i].hidden_from_home);kids.splice(i,1);saves.delete(body.p_child_id);data=null;}
   else if(pathname.endsWith('/rpc/set_child_archived')){const body=req.postDataJSON();kids.find(c=>c.id===body.p_child_id).hidden_from_home=body.p_archived;data=null;}
@@ -58,6 +58,8 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  }
  await guide.waitFor({state:'hidden'});assert.equal(JSON.stringify(saves.get(a).state),before);
 
+ await p.getByRole('button',{name:'查看 2026-11-16 已安排的 1 項功課',exact:true}).click();
+ assert((await p.getByTestId('homework-page').innerText()).includes('2026-11-16'));
  await p.getByRole('button',{name:'安排功課',exact:true}).click();await p.getByLabel('6 位數家長密碼',{exact:true}).fill(value);await p.getByTestId('parent-pin-gate').getByRole('button',{name:'確認',exact:true}).click();
  await p.getByRole('button',{name:'拍照／上傳，自動填入',exact:true}).click();
  const upload=p.locator('input[type=file]').last();
@@ -65,7 +67,7 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  await p.getByRole('button',{name:'開始辨識',exact:true}).click();await p.getByRole('alert').filter({hasText:'辨識服務尚未完成'}).waitFor();assert.equal(JSON.stringify(saves.get(a).state),before);
  recognitionMode='success';await p.getByRole('button',{name:'開始辨識',exact:true}).click();await p.getByLabel('Task 1 title',{exact:true}).waitFor();
  assert.equal(await p.getByLabel('保存日期',{exact:true}).inputValue(),'2026-11-16');
- assert.equal(await p.getByLabel('確認功課日期',{exact:true}).isChecked(),false);
+ assert.equal(await p.getByLabel('確認功課日期',{exact:true}).count(),0);
  await p.getByRole('button',{name:'今天',exact:true}).click();
  assert.equal(await p.getByLabel('保存日期',{exact:true}).inputValue(),'2026-11-15');
  await p.getByRole('alert').filter({hasText:'保存日期與照片日期不同'}).waitFor();
@@ -81,9 +83,9 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  assert.equal(await p.getByLabel('Task 2 detail',{exact:true}).inputValue(),'94–99頁，訂正92頁');
  assert.equal(await p.getByRole('button',{name:'確認加入2項功課',exact:true}).isDisabled(),true);
  assert.equal(recognitionCalls,2);
- await p.getByLabel('確認功課日期',{exact:true}).check();
  await p.getByLabel('我已核對孩子、日期、頁數與不確定文字；加入既有功課，不覆蓋舊項目。',{exact:true}).check();
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:'reports/homework/photo-preview-'+width+'.png'});
+ assert.equal(await p.getByRole('button',{name:'確認加入2項功課',exact:true}).isDisabled(),false);
  await p.getByRole('button',{name:'確認加入2項功課',exact:true}).click();await p.getByText('已加入功課，原有進度保留；照片僅保存在此裝置。',{exact:true}).waitFor();
  assert.equal(await p.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('holton-photo-draft:')).length),0);
  const saved=saves.get(a).state;assert.equal(saved.homework.days['2026-11-16'].tasks.length,3);assert.equal(saved.orbs,10);assert.equal(saved.history.length,0);assert(saved.homework.days['2026-11-16'].tasks.find(t=>t.id==='old').confirmed);assert(!saved.homework.days['2026-11-16'].tasks.filter(t=>t.id!=='old').some(t=>t.confirmed||t.reported));assert.equal(recognitionCalls,2);assert.equal(saves.get(b).state.orbs,30);assert.deepEqual(errors,[]);
