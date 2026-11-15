@@ -4,7 +4,7 @@ Entry: Homework Quest → Prepare homework (adult PIN) → Photo / upload — au
 
 Backend: Supabase Edge Function `homework-recognize`. It validates the bearer session using `auth.getUser`, then verifies ownership of the child. Gateway JWT validation is off only because the function performs explicit authentication (supports the project's current signing keys). Never remove the body authentication.
 
-Required server secret: `OPENAI_API_KEY` in Supabase Edge Function Secrets. No key belongs in Expo/public env or git. Optional `HOMEWORK_VISION_MODEL`, default `gpt-5.6-terra` (Responses API, structured outputs, low reasoning). Set billing limits in the API project separately. A ChatGPT subscription does not supply this key or API balance.
+Required server secret: `OPENAI_API_KEY` (also accepts existing lowercase `openai_api_key`) in Supabase Edge Function Secrets. No key belongs in Expo/public env or git. Optional `HOMEWORK_VISION_MODEL`, default `gpt-5.6-terra` (Responses API, structured outputs, low reasoning). Set billing limits in the API project separately. A ChatGPT subscription does not supply this key or API balance.
 
 Migration: `20261113_homework_recognition.sql`. RLS table is not accessible to authenticated/anonymous clients. Service-only RPC serializes requests per family owner, caches identical content, permits 20 unique submissions in a rolling 24 hours. Failed or interrupted submissions retain their reservation to avoid duplicate charged calls. A timed-out file can be rechecked for a completed cached result. New photo/manual entry remains available. Old cache entries for an owner are removed on their next submission after 24 hours. Raw images are not stored in this table; recognized text is. OpenAI request uses `store:false`; provider retention policies still apply.
 
@@ -20,3 +20,5 @@ Verification:
 Live OCR accuracy and the configured API project's model access/balance require a real authenticated request after secret setup; mocked tests do NOT verify these. Do not claim real recognition is active until checked. No production child data should be seeded for tests.
 
 2026-11-15 selection policy: writing, corrections, essays, memorization, recitation, poetry and reading are selected by default. Administrative reminders remain visible as unchecked editable tasks. Adult may change any checkbox before confirming. Recognition cache fingerprint v2-learning avoids reuse of writing-only results.
+
+2026-11-15 recovery fix: photo/review draft is retained in tab sessionStorage scoped by family PIN namespace and child, expires after 24 hours of inactivity, and is cleared after successful save or explicit cancel. Review confirmation is never restored. Browser quota failures are visible. UI waits at most 75 seconds; retry uses backend content deduplication. Same-tab remount is covered at 320/390/844 widths. Real OpenAI execution still requires authenticated live verification.

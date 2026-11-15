@@ -14,7 +14,7 @@ Deno.serve(async req=>{
  if(!token)return respond({error:'login_required'},401);
  const {data:auth,error:authError}=await db.auth.getUser(token);
  if(authError||!auth.user)return respond({error:'login_required'},401);
- const key=Deno.env.get('OPENAI_API_KEY');
+ const key=Deno.env.get('OPENAI_API_KEY')||Deno.env.get('openai_api_key');
  if(!key)return respond({error:'not_configured'},503);
  let body;
  try{const raw=await req.text();if(raw.length>11500000)return respond({error:'file_too_large'},413);body=JSON.parse(raw)}catch{return respond({error:'invalid_input'},400)}

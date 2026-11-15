@@ -68,9 +68,16 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));assert.equal(await p.getByLabel('Task 1 title',{exact:true}).count(),1);
  assert.equal(await p.getByRole('button',{name:'確認加入2項功課',exact:true}).isDisabled(),true);
  await p.getByLabel('保存日期',{exact:true}).fill('2026-11-16');await p.getByLabel('Task 2 detail',{exact:true}).fill('94–99頁，訂正92頁');
+ await p.getByRole('button',{name:'保留草稿，稍後繼續',exact:true}).click();
+ await p.getByRole('button',{name:'拍照／上傳，自動填入',exact:true}).click();
+ assert.equal(await p.getByLabel('保存日期',{exact:true}).inputValue(),'2026-11-16');
+ assert.equal(await p.getByLabel('Task 2 detail',{exact:true}).inputValue(),'94–99頁，訂正92頁');
+ assert.equal(await p.getByRole('button',{name:'確認加入2項功課',exact:true}).isDisabled(),true);
+ assert.equal(recognitionCalls,2);
  await p.getByLabel('我已核對孩子、日期、頁數與不確定文字；加入既有功課，不覆蓋舊項目。',{exact:true}).check();
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:'reports/homework/photo-preview-'+width+'.png'});
  await p.getByRole('button',{name:'確認加入2項功課',exact:true}).click();await p.getByText('已加入功課，原有進度保留；照片僅保存在此裝置。',{exact:true}).waitFor();
+ assert.equal(await p.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('holton-photo-draft:')).length),0);
  const saved=saves.get(a).state;assert.equal(saved.homework.days['2026-11-16'].tasks.length,3);assert.equal(saved.orbs,10);assert.equal(saved.history.length,0);assert(saved.homework.days['2026-11-16'].tasks.find(t=>t.id==='old').confirmed);assert(!saved.homework.days['2026-11-16'].tasks.filter(t=>t.id!=='old').some(t=>t.confirmed||t.reported));assert.equal(recognitionCalls,2);assert.equal(saves.get(b).state.orbs,30);assert.deepEqual(errors,[]);
  console.log('PASS photo import, missing key, editable uncertain details, date override, camera visibility, adult check, isolated save, unchanged rewards',width);
  await context.close();
