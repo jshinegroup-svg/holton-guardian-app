@@ -12,8 +12,21 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  const kids=[{id:a,family_id:family,nickname:'哥哥',age_years:8,age_recorded_at:new Date().toISOString()},{id:b,family_id:family,nickname:'妹妹',age_years:6,age_recorded_at:new Date().toISOString()}];
  const seed=name=>({version:1,activeWorld:'forest',journeys:{version:2,counts:{forest:0,sky:0,cosmos:0},legacyCredit:0},starterChoiceVersion:1,starterCompanionId:'pip',onboardingDone:true,childName:name,title:name==='哥哥'?'數學作業':'閱讀',minutes:5,orbs:name==='哥哥'?10:30,homework:{enabled:false,days:{'2026-11-16':{tasks:[{id:'old',title:'國語甲本',detail:'原有功課',reported:true,confirmed:true}]}}},phase:'ready',deadline:null,remaining:300,help:false,supportUsed:['rest'],breakDeadline:null,focusElapsedMs:0,focusStartedAt:null,rewardProgress:2,dailyGoal:1,taskReward:1,history:[],guardian:{},guardianCards:[],allowEarlyFinish:true,focusMusicEnabled:false});
  const saves=new Map(kids.map(c=>[c.id,{child_id:c.id,family_id:family,revision:1,state:seed(c.nickname),updated_at:new Date().toISOString()}]));const ops=new Map();let recognitionCalls=0;let recognitionMode='missing';let completions=0;let failure='';const attempts=[];
+ const photos=new Map();let photoFailure=false;
  const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:width<800});const p=await context.newPage();p.setDefaultTimeout(12000);p.setDefaultNavigationTimeout(15000);const errors=[];console.log('viewport',width);p.on('pageerror',e=>errors.push(e.message));
- await context.route('https://hzihwjpjcbsuqipaeeit.supabase.co/**',async route=>{const req=route.request(),url=new URL(req.url()),pathname=url.pathname;let data;
+ const apiRoute=async route=>{const req=route.request(),url=new URL(req.url()),pathname=url.pathname;let data;
+  if(pathname.startsWith('/storage/v1/object/')){
+   if(photoFailure){await route.fulfill({status:503,json:{message:'offline'}});return;}
+   const key=pathname.split('homework-notebooks/')[1];assert(key.startsWith(a+'/')||key.startsWith(b+'/'));
+   if(req.method()==='POST'){
+    const fields=await new Request(req.url(),{method:'POST',headers:await req.allHeaders(),body:req.postDataBuffer()}).formData();
+    const file=fields.get('');assert(file);const replace=req.headers()['x-upsert']==='true';
+    if(photos.has(key)&&!replace){await route.fulfill({status:409,json:{statusCode:'409',message:'The resource already exists'}});return;}
+    photos.set(key,{buffer:Buffer.from(await file.arrayBuffer()),mime:file.type});await route.fulfill({status:200,json:{Key:key}});return;
+   }
+   const photo=photos.get(key);if(!photo){await route.fulfill({status:400,json:{statusCode:'404',error:'not_found',message:'Object not found'}});return;}
+   await route.fulfill({status:200,contentType:photo.mime,body:photo.buffer});return;
+  }
   if(pathname.endsWith('/functions/v1/homework-recognize')){recognitionCalls++;assert.equal(req.postDataJSON().childId,a);if(recognitionMode==='missing'){await route.fulfill({status:503,json:{error:'not_configured'}});return;}data={draft:{dateText:'11月16日',tasks:[{title:'圈詞',detail:'第7課2次，本別待確認',uncertainty:''},{title:'數學課本',detail:'94–待確認頁，訂正92頁',uncertainty:'末頁不清楚'},{title:'背課文',detail:'第八課',uncertainty:''},{title:'童詩朗誦',detail:'一遍',uncertainty:''},{title:'閱讀',detail:'十分鐘',uncertainty:''},{title:'作文',detail:'我的家庭',uncertainty:''}],excluded:[{text:'家長簽名',reason:'不是書寫功課'}],warnings:[]}};}else if(pathname.endsWith('/rpc/record_usage_event'))data=null;
   else if(pathname.endsWith('/rpc/list_archived_children'))data=kids.filter(c=>c.hidden_from_home).map(({id,nickname})=>({id,nickname,expires_at:new Date(Date.now()+30*86400000).toISOString()}));
   else if(pathname.endsWith('/rpc/permanently_delete_child')){const body=req.postDataJSON();const i=kids.findIndex(c=>c.id===body.p_child_id);assert(kids[i].hidden_from_home);kids.splice(i,1);saves.delete(body.p_child_id);data=null;}
@@ -25,7 +38,8 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
   else if(pathname.endsWith('/rpc/save_child_progress')){const body=req.postDataJSON();attempts.push(body.p_operation_id);if(failure==='before'){failure='';await route.fulfill({status:503,json:{message:'test_network_unavailable'}});return;}if(failure==='hang'){failure='';await new Promise(r=>setTimeout(r,14000));try{await route.abort();}catch{}return;}if(ops.has(body.p_operation_id))data={...ops.get(body.p_operation_id),duplicate:true};else{const prev=saves.get(body.p_child_id);if(prev.revision!==body.p_expected_revision){await route.fulfill({status:409,json:{message:'revision_conflict'}});return;}const revision=prev.revision+1;saves.set(body.p_child_id,{...prev,revision,state:body.p_state});data={revision,duplicate:false};ops.set(body.p_operation_id,data);completions+=body.p_events.filter(e=>e.kind==='task_completed').length;}}
   else {await route.fulfill({status:400,json:{message:'unmocked route'}});return;}
   if(failure==='after'&&pathname.endsWith('/rpc/save_child_progress')){failure='';await route.fulfill({status:503,json:{message:'test_response_lost'}});return;}await route.fulfill({status:200,json:data});
- });
+ };
+ await context.route('https://hzihwjpjcbsuqipaeeit.supabase.co/**',apiRoute);
  // Only synthetic local test session; production does not contain a test bypass.
  await p.addInitScript(({user})=>{const enc=x=>btoa(JSON.stringify(x));const exp=Math.floor(Date.now()/1000)+3600;localStorage.setItem('holton-family-v2-auth',JSON.stringify({access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:user,exp,role:'authenticated'})}.test`,refresh_token:'synthetic-test',expires_at:exp,expires_in:3600,token_type:'bearer',user:{id:user,email:'fixture@example.invalid'}}));localStorage.setItem('holton-guardian-app::light-v1','original-v1-sentinel');},{user});
  await p.addInitScript(({family,a,b})=>{for(const id of [a,b])localStorage.setItem(`holton-family-v2::${family}::${id}::holton-guardian-app::spotlight-v1`,JSON.stringify({main:true,companions:true,wishes:true,parent:true,companionTap:true,music:true}));},{family,a,b});
@@ -86,12 +100,37 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  await p.getByLabel('我已核對孩子、日期、頁數與不確定文字；加入既有功課，不覆蓋舊項目。',{exact:true}).check();
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:'reports/homework/photo-preview-'+width+'.png'});
  assert.equal(await p.getByRole('button',{name:'確認加入2項功課',exact:true}).isDisabled(),false);
- await p.getByRole('button',{name:'確認加入2項功課',exact:true}).click();await p.getByText('已加入功課，原有進度保留；照片僅保存在此裝置。',{exact:true}).waitFor();
+ await p.getByRole('button',{name:'確認加入2項功課',exact:true}).click();await p.getByText('已加入功課，原有進度保留；照片已同步，可跨裝置查看。',{exact:true}).waitFor();
  assert.equal(await p.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('holton-photo-draft:')).length),0);
  const saved=saves.get(a).state;assert.equal(saved.homework.days['2026-11-16'].tasks.length,3);assert.equal(saved.orbs,10);assert.equal(saved.history.length,0);assert(saved.homework.days['2026-11-16'].tasks.find(t=>t.id==='old').confirmed);assert(!saved.homework.days['2026-11-16'].tasks.filter(t=>t.id!=='old').some(t=>t.confirmed||t.reported));assert.equal(recognitionCalls,2);assert.equal(saves.get(b).state.orbs,30);assert.deepEqual(errors,[]);
  await p.getByRole('button',{name:'7天紀錄／未完成',exact:true}).click();
  await p.getByText('2026-11-10 ～ 2026-11-16',{exact:false}).waitFor();
  assert((await p.getByTestId('homework-page').innerText()).includes('94–99頁，訂正92頁'));
+
+ // View a synced photo from history, then from a fresh device with no photo cache.
+ await p.getByRole('button',{name:'查看 11-16 聯絡簿',exact:true}).click();
+ await p.getByRole('img',{name:'聯絡簿',exact:true}).waitFor();
+ const source=await p.getByRole('img',{name:'聯絡簿',exact:true}).getAttribute('src');
+ assert(source.startsWith('data:image/'));assert.equal(await p.getByTestId('parent-pin-gate').count(),0);
+ const persisted=JSON.stringify(saves.get(a).state);
+ const freshState=await context.storageState();for(const origin of freshState.origins)origin.localStorage=origin.localStorage.filter(x=>!x.name.includes('homework-photo:')&&!x.name.endsWith('holton-guardian-app::light-v1'));
+ const second=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:width<800,storageState:freshState});await second.route('https://hzihwjpjcbsuqipaeeit.supabase.co/**',apiRoute);
+ const p2=await second.newPage();p2.setDefaultTimeout(12000);await p2.clock.setFixedTime(new Date('2026-11-15T04:00:00Z'));await p2.goto(base);
+ await p2.getByRole('button',{name:'開始任務',exact:true}).click();for(let i=0;i<15&&await p2.getByTestId('homework-card-title').count()===0;i++)await p2.getByLabel('下一張任務卡',{exact:true}).click();
+ await p2.getByRole('button',{name:'進入功課模式',exact:true}).click();
+ await p2.getByRole('button',{name:'明天',exact:true}).click();assert.equal(await p2.getByLabel('功課日期',{exact:true}).inputValue(),'2026-11-16');
+ await p2.getByRole('button',{name:'查看 11/16 聯絡簿',exact:true}).click();await p2.getByRole('img',{name:'聯絡簿',exact:true}).waitFor();assert.equal(await p2.getByRole('img',{name:'聯絡簿',exact:true}).getAttribute('src'),source);
+ assert.equal(await p2.getByTestId('parent-pin-gate').count(),0);assert(await p2.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ await p2.screenshot({path:`reports/homework/notebook-second-device-${width}.png`});
+ await p2.getByRole('button',{name:'昨天',exact:true}).click();assert.equal(await p2.getByLabel('功課日期',{exact:true}).inputValue(),'2026-11-14');
+ // Migrate an old local PDF on first view; don't send it through recognition.
+ await p2.evaluate(({family,a})=>localStorage.setItem(`holton-family-v2::${family}::${a}::homework-photo:2026-11-14`,'data:application/pdf;base64,JVBERi0xLjQKJSVFT0Y='),{family,a});
+ await p2.getByRole('button',{name:'查看 11/14 聯絡簿',exact:true}).click();await p2.locator('iframe[title="聯絡簿PDF"]').waitFor();assert(photos.has(a+'/2026-11-14'));
+ await p2.getByRole('button',{name:'今天',exact:true}).click();assert.equal(await p2.getByLabel('功課日期',{exact:true}).inputValue(),'2026-11-15');
+ photoFailure=true;await p2.getByRole('button',{name:'查看 11/15 聯絡簿',exact:true}).click();await p2.getByText('聯絡簿尚未讀取成功，請確認連線後重試。原照片與功課不會刪除。',{exact:true}).waitFor();photoFailure=false;
+ assert.equal(JSON.stringify(saves.get(a).state),persisted);assert.equal(recognitionCalls,2);
+ await second.close();
+ console.log('PASS: fresh-device image, legacy PDF migration, date shortcuts, read-only/no PIN, offline error, unchanged progress/rewards',width);
  console.log('PASS photo import, missing key, editable uncertain details, date override, camera visibility, adult check, isolated save, unchanged rewards',width);
  await context.close();
 }}finally{await browser.close();server.close();}

@@ -1,3 +1,5 @@
+import {NotebookRepository} from '../homework/notebookRepository';
+import {notebookCloud} from '../homework/notebookCloud';
 import {cloudRequest,syncErrorMessage} from './cloudRequest';
 import {createClient} from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -32,16 +34,19 @@ export const cloud:FamilyCloud={
 export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>void):ScopedStorage {
  const repo=new ProgressRepository<Record<string,unknown>>(child.familyId,child.id,AsyncStorage,cloud,()=>crypto.randomUUID());
  const prefix=`holton-family-v2::${child.familyId}::${child.id}::`;
+ const notebooks=new NotebookRepository({getItem:key=>AsyncStorage.getItem(prefix+key),setItem:(key,value)=>AsyncStorage.setItem(prefix+key,value)},notebookCloud(supabase,child.id));
  let previous:Record<string,unknown>|null=null;
  return {
  async useCloud(){await repo.useCloud();previous=null;},
  async getItem(key){
+  if(key.startsWith('homework-photo:'))return notebooks.read(key.slice('homework-photo:'.length));
   if(key!=='holton-guardian-app::light-v1')return AsyncStorage.getItem(prefix+key);
   try{let saved=await repo.load();
   if(saved?.pending){onSync('正在重試尚未同步的進度…');await repo.retry();saved=await repo.load();}
   previous=saved?.state??null;onSync('雲端已同步');return previous?JSON.stringify(previous):null;}catch(e){onSync(syncErrorMessage(e));throw e;}
  },
  async setItem(key,value){
+  if(key.startsWith('homework-photo:'))return notebooks.write(key.slice('homework-photo:'.length),value);
   if(key!=='holton-guardian-app::light-v1')return AsyncStorage.setItem(prefix+key,value);
   const next=JSON.parse(value);const events:import('./types').FamilyEvent[]=[];const at=new Date().toISOString();
   if(next.phase==='active'&&previous?.phase==='preparing'){

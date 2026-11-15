@@ -16,7 +16,7 @@ export default function SavedHomeworkEditor({state,date,change,button,onClose,on
  async function save(){
   if(busy||invalid)return;setBusy(true);setError('');let applied=false;
   try{
-   // Copy local reference before the cloud move, retaining the original as a fallback.
+   // Copy the attachment (cloud in family mode) before moving homework. Retain the source as a fallback.
    if(target!==date){const source=await storage.getItem(`homework-photo:${date}`),existing=await storage.getItem(`homework-photo:${target}`);if(source&&existing&&source!==existing){setError(tr('目標日期已有不同照片，請先核對；尚未搬移功課。','The target date has a different photo. Review it first; homework was not moved.'));return}if(source&&!existing)await storage.setItem(`homework-photo:${target}`,source)}
    const ok=await change(s=>{const next=editSavedHomework(s,date,target,original,items);applied=next!==s;return next});
    if(ok&&applied)onSaved(target);else setError(tr('尚未完成修改。資料可能已更新、日期已有功課或正在計時；請返回核對，原資料不會被覆蓋。','Not saved. Data may have changed, the date may be occupied, or a timer is running. Go back and review; existing data is not overwritten.'));

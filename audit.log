@@ -155,3 +155,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-15 actor:codex approval:user-request trigger:photo-date-and-seven-day-history — suggest literal notebook date with explicit review and manual overrides; seven-day task history includes tomorrow, preserves unresolved and future work.
 
 2026-11-15 actor:codex approval:user-request trigger:friend-sync-repair — bound timed focus to target and rebase explicit extensions; preserve invalid legacy telemetry as raw/unknown without blocking atomic progress; distinguish sync failures; add rollback-only RPC regression and update stale test selectors.
+
+2026-11-15 actor:codex approval:user-request trigger:notebook-cross-device — add private family-isolated photo/PDF storage and non-overwriting legacy migration; yesterday/today/tomorrow and dated read-only notebook/history; update guide; rollback-only RLS checks and two-browser mobile tests; no real-family progress/reward writes.
