@@ -166,7 +166,9 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const [notice, setNotice] = useState('');
   const [now, setNow] = useState(Date.now());
   const musicTrack=validFocusMusicId(state?.focusMusicTrackId)?state.focusMusicTrackId:DEFAULT_FOCUS_MUSIC;
-  const musicActive=state?.phase==='active'&&!state.help&&!settingsOpen&&(compact||room==='mission');
+  const homeworkTimer=state?.homework?.timer;
+  const homeworkMusicActive=!!homeworkTimer&&homeworkTimer.mode==='focus'&&!homeworkTimer.helpOpen&&!!homeworkTimer.deadline&&homeworkTimer.deadline>now;
+  const musicActive=!settingsOpen&&(homeworkTimer?homeworkMusicActive:!homeworkOpen&&state?.phase==='active'&&!state.help&&(compact||room==='mission'));
   const music=useFocusMusic({enabled:musicOwner&&state?.focusMusicEnabled===true,active:musicActive,trackId:musicTrack,previewAllowed:musicOwner&&settingsOpen&&parentTab==='music',level:validSoundLevel(state?.focusMusicLevel)?state.focusMusicLevel:'normal'});
   async function readState(){
         const raw = await storage.getItem(KEY);
@@ -481,17 +483,17 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     {stopConfirmation}{extensionModal}
     {unfinished?<Text style={styles.body}><Text verbatim>{normalizeChildName(childNickname??state.childName)}</Text>，謝謝你願意試試，我們下次再一起來。</Text>:null}
   </View>;
-  if((homeworkOpen||state.homework?.timer)&&homePhase&&!settingsOpen) return <HomeworkAdventure recovery={needsSync?<View>{button(locale==='en'?'Retry sync':'重試同步',()=>void retrySync(),true)}{button(locale==='en'?'Use cloud progress':'改用雲端進度',()=>void retrySync(true),true)}</View>:null} state={state} change={change} error={error} button={button} onClose={()=>setHomeworkOpen(false)}/>;
+  async function toggleMusic() {
+    const enabled=current.current?.focusMusicEnabled!==true;
+    if(enabled&&musicActive&&musicOwner)music.play(musicTrack);else music.stopPreview();
+    if(!await change(s=>({...s,focusMusicEnabled:enabled})))music.stop();
+  }
+  const musicControl=<View testID="focus-music-control" style={{alignItems:'flex-end',gap:4}}><Pressable accessibilityRole="switch" accessibilityLabel="專注音樂" accessibilityState={{checked:state.focusMusicEnabled===true}} disabled={saving} onPress={()=>void toggleMusic()} style={{padding:10,borderRadius:14,borderWidth:1,borderColor:'#a7c8cc',backgroundColor:'rgba(9,36,56,.88)'}}><Text style={{fontSize:15,color:'#fff0cf'}}>♫ 音樂：{state.focusMusicEnabled?'開':'關'}</Text></Pressable>{state.focusMusicEnabled&&(music.status==='blocked'||music.status==='error')?<Pressable accessibilityRole="button" accessibilityLabel="播放專注音樂" onPress={music.retry} style={{padding:8}}><Text style={{fontSize:14,color:'#bcecf1'}}>點此播放音樂</Text></Pressable>:null}{musicActive&&!homeworkTimer?<TaskMusicHint enabled={state.focusMusicEnabled===true}/>:null}</View>;
+  if((homeworkOpen||state.homework?.timer)&&homePhase&&!settingsOpen) return <HomeworkAdventure recovery={needsSync?<View>{button(locale==='en'?'Retry sync':'重試同步',()=>void retrySync(),true)}{button(locale==='en'?'Use cloud progress':'改用雲端進度',()=>void retrySync(true),true)}</View>:null} state={state} change={change} error={error} button={button} musicControl={musicOwner?musicControl:null} chime={{arm:armChime,play:playChime,stop:stopChime}} onClose={()=>setHomeworkOpen(false)}/>;
   if(!starterId&&homePhase&&!state.guardianChallenge) return <StarterCompanionPicker busy={saving} error={error} onChoose={id=>{void change(s=>isStarterCompanion(s.starterCompanionId)?s:{...s,starterCompanionId:id});}}/>;
   if(mapOpen && !settingsOpen && !pending && !challenge) return <WorldMap journeys={journey} activeWorld={world} onEnter={w=>{if(homePhase)void goWorld(w);}} canEnter={homePhase} onSettings={()=>openParent()} onBack={()=>navigateRoom('village')} saving={saving} error={error}/>;
   if(journeyOpen && homePhase && !settingsOpen && !pending && !challenge) return <JourneyMap journeys={journey} world={world} onClose={()=>setJourneyOpen(false)} onWorldMap={()=>{setJourneyOpen(false);setMapOpen(true);}}/>;
   const inVillage=room==='village'&&!settingsOpen;
-  async function toggleMusic() {
-    const enabled=current.current?.focusMusicEnabled!==true;
-    if(enabled&&musicActive)music.play(musicTrack);else music.stopPreview();
-    if(!await change(s=>({...s,focusMusicEnabled:enabled})))music.stop();
-  }
-  const musicControl=<View testID="focus-music-control" style={{alignItems:'flex-end',gap:4}}><Pressable accessibilityRole="switch" accessibilityLabel="專注音樂" accessibilityState={{checked:state.focusMusicEnabled===true}} disabled={saving} onPress={()=>void toggleMusic()} style={{padding:10,borderRadius:14,borderWidth:1,borderColor:'#a7c8cc',backgroundColor:'rgba(9,36,56,.88)'}}><Text style={{fontSize:15,color:'#fff0cf'}}>♫ 音樂：{state.focusMusicEnabled?'開':'關'}</Text></Pressable>{state.focusMusicEnabled&&(music.status==='blocked'||music.status==='error')?<Pressable accessibilityRole="button" accessibilityLabel="播放專注音樂" onPress={music.retry} style={{padding:8}}><Text style={{fontSize:14,color:'#bcecf1'}}>點此播放音樂</Text></Pressable>:null}{musicActive?<TaskMusicHint enabled={state.focusMusicEnabled===true}/>:null}</View>;
   const roomTitle=settingsOpen?'家長小屋':room==='wishes'?'心願小屋':room==='companions'?'夥伴小屋':inVillage?'':scene === 'rest' ? '休息小營地' : scene === 'focus' ? `${worlds[world].name} · 專注` : worlds[world].name;
   return <SafeAreaView testID="immersive-world" style={styles.root}><WorldChrome />{inVillage?<VillageBackdrop/>:<WorldBackdrop scene={scene} world={world} completed={journey.counts[world]} />}<ScrollView testID="main-scroll" ref={pageScroll} contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
     <View testID="world-title" style={styles.header}>{familyNavigation?<Pressable testID="family-header-entry" accessibilityRole="button" accessibilityLabel="冒險小隊" onPress={familyNavigation.onMenu} style={{minWidth:48,minHeight:44,paddingHorizontal:8,alignItems:'center',justifyContent:'center',borderWidth:1,borderColor:'#c6ac67',borderRadius:10,backgroundColor:'#103448'}}><Text style={{color:'#fff0c1',fontSize:14,fontWeight:'700'}}>冒險小隊</Text></Pressable>:null}<View style={{flex:1}}>{roomTitle?<Text testID={focusActive?"focus-world-name":undefined} style={[styles.worldName,familyNavigation&&{fontSize:24,lineHeight:32},focusActive&&{fontSize:24,lineHeight:32,letterSpacing:1}]}>{roomTitle}</Text>:null}<Text testID="holton-brand-title" style={inVillage?[styles.brand,{fontSize:24,fontWeight:'800'}]:styles.brand}>HOLTON HERO</Text></View>{!inVillage?<Pressable accessibilityRole="button" accessibilityLabel={settingsOpen&&parentReturn==='wishes'?'回到心願小屋':settingsOpen&&parentReturn==='mission'?'回到任務':'回到村莊'} style={{padding:12}} onPress={()=>navigateRoom(settingsOpen?parentReturn:'village')}><Text style={styles.link}>{settingsOpen&&parentReturn==='wishes'?'回心願小屋':settingsOpen&&parentReturn==='mission'?'回到任務':'回到村莊'}</Text></Pressable>:null}</View>

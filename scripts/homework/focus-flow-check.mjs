@@ -10,7 +10,7 @@ const browser=await chromium.launch({executablePath:'/Applications/Google Chrome
 try{for(const [width,height] of [[320,740],[744,1024],[890,626]]){
  const family=randomUUID(),user=randomUUID(),a=randomUUID(),b=randomUUID();
  const kids=[{id:a,family_id:family,nickname:'哥哥',age_years:8,age_recorded_at:new Date().toISOString()},{id:b,family_id:family,nickname:'妹妹',age_years:6,age_recorded_at:new Date().toISOString()}];
- const seed=name=>({version:1,activeWorld:width===320?'forest':width===744?'sky':'cosmos',journeys:{version:2,counts:{forest:0,sky:0,cosmos:0},legacyCredit:0},starterChoiceVersion:1,starterCompanionId:'pip',onboardingDone:true,childName:name,title:name==='哥哥'?'數學作業':'閱讀',minutes:5,orbs:name==='哥哥'?10:30,homework:{enabled:false,days:{'2026-11-16':{tasks:[{id:'old',title:'國語甲本',detail:'原有功課',reported:false,confirmed:false}]}}},phase:'ready',deadline:null,remaining:300,help:false,supportUsed:['rest'],breakDeadline:null,focusElapsedMs:0,focusStartedAt:null,rewardProgress:2,dailyGoal:1,taskReward:1,history:[],guardian:{},guardianCards:[],allowEarlyFinish:true,focusMusicEnabled:false});
+ const seed=name=>({version:1,activeWorld:width===320?'forest':width===744?'sky':'cosmos',journeys:{version:2,counts:{forest:0,sky:0,cosmos:0},legacyCredit:0},starterChoiceVersion:1,starterCompanionId:'pip',onboardingDone:true,childName:name,title:name==='哥哥'?'數學作業':'閱讀',minutes:5,orbs:name==='哥哥'?10:30,homework:{enabled:false,days:{'2026-11-16':{tasks:[{id:'old',title:'國語甲本',detail:'原有功課',reported:false,confirmed:false}]}}},phase:'ready',deadline:null,remaining:300,help:false,supportUsed:['rest'],breakDeadline:null,focusElapsedMs:0,focusStartedAt:null,rewardProgress:2,dailyGoal:1,taskReward:1,history:[],guardian:{},guardianCards:[],allowEarlyFinish:true,focusMusicEnabled:false,taskSoundEnabled:width!==890});
  const saves=new Map(kids.map(c=>[c.id,{child_id:c.id,family_id:family,revision:1,state:seed(c.nickname),updated_at:new Date().toISOString()}]));const ops=new Map();let recognitionCalls=0;let recognitionMode='missing';let completions=0;let failure='';const attempts=[];
  const photos=new Map();let photoFailure=false;
  const context=await browser.newContext({viewport:{width,height},reducedMotion:"reduce",hasTouch:true,isMobile:width<800});const p=await context.newPage();p.setDefaultTimeout(12000);p.setDefaultNavigationTimeout(15000);const errors=[];console.log('viewport',width);p.on('pageerror',e=>errors.push(e.message));
@@ -82,6 +82,14 @@ try{for(const [width,height] of [[320,740],[744,1024],[890,626]]){
  await p.getByTestId('homework-countdown').waitFor();
  assert.equal(saves.get(a).state.homework.timer.remaining,900);
  assert.equal(await p.getByTestId('homework-toolbar').count(),0);
+ const playing=()=>p.evaluate(()=>{const a=document.querySelector('[data-testid="focus-music-player"]');return !!a&&!a.paused;});
+ const waitMusic=async(expected)=>{await p.waitForFunction(expected=>{const a=document.querySelector('[data-testid="focus-music-player"]');return (!!a&&!a.paused)===expected;},expected);};
+ assert.equal(await playing(),false);
+ await p.getByRole('switch',{name:'專注音樂',exact:true}).click();await waitMusic(true);
+ assert(saves.get(a).state.focusMusicEnabled);
+ await p.getByRole('switch',{name:'專注音樂',exact:true}).click();await waitMusic(false);
+ await p.getByRole('switch',{name:'專注音樂',exact:true}).click();await waitMusic(true);
+ assert((await p.getByTestId('homework-focus-help').evaluate(e=>getComputedStyle(e).backgroundImage)).includes('linear-gradient'));
  await p.screenshot({path:`reports/homework/focus-new-${width}.png`});
  await p.evaluate(()=>{localStorage.setItem('holton-family-v2::interface-language','en');window.dispatchEvent(new StorageEvent('storage',{key:'holton-family-v2::interface-language'}));});
  assert((await p.getByTestId('homework-focus-flow').innerText()).includes('Back / Need help'));
@@ -91,6 +99,7 @@ try{for(const [width,height] of [[320,740],[744,1024],[890,626]]){
  const box=await helpButton.boundingBox();assert(box.height>=48);assert(box.width>=200);
  assert.equal(await helpButton.innerText(),'返回／需要幫忙');
  await helpButton.tap();await p.getByRole('button',{name:'暫停',exact:true}).waitFor();
+ await waitMusic(false);
  assert.equal(saves.get(a).state.homework.timer.deadline,null);
  await p.getByRole('button',{name:'深呼吸',exact:true}).click();
  await p.getByRole('button',{name:'查看其他幫助卡',exact:true}).waitFor();
@@ -101,20 +110,31 @@ try{for(const [width,height] of [[320,740],[744,1024],[890,626]]){
  await p.reload();
  await p.getByRole('button',{name:'深呼吸 已使用',exact:true}).waitFor();
  assert.equal(saves.get(a).state.homework.timer.remaining,frozen);
+ await waitMusic(false);
  assert.equal(saves.get(a).state.homework.timer.deadline,null);
  
  await p.getByRole('button',{name:'查看聯絡簿',exact:true}).click();
  await p.getByRole('button',{name:'返回／關閉照片',exact:true}).click();
  assert.equal(saves.get(a).state.homework.timer.remaining,frozen);
  await p.getByRole('button',{name:'接續專注',exact:true}).click();
- await helpButton.waitFor();
+ await helpButton.waitFor();await waitMusic(true);
+ await p.waitForTimeout(450);
+ const chimesBefore=await p.evaluate(()=>window.__duckCount);
  await p.clock.setFixedTime(new Date('2026-11-15T04:16:00Z'));
- await p.getByRole('button',{name:'休息2分鐘',exact:true}).waitFor();
+ await p.getByRole('button',{name:'休息2分鐘',exact:true}).waitFor();await waitMusic(false);
+ await p.waitForTimeout(400);
+ assert.equal(await p.evaluate(()=>window.__duckCount),chimesBefore+(width===890?0:1));
+ await p.reload();await p.getByRole('button',{name:'休息2分鐘',exact:true}).waitFor();
+ assert.equal(await p.evaluate(()=>window.__duckCount),0,'expired round does not replay after reload');
  assert.equal(saves.get(a).state.orbs,10);assert(!saves.get(a).state.homework.days['2026-11-16'].tasks[0].reported);
  await p.getByRole('button',{name:'休息2分鐘',exact:true}).click();
- await p.getByTestId('homework-rest-countdown').waitFor();
+ await p.getByTestId('homework-rest-countdown').waitFor();await waitMusic(false);
+ await p.waitForTimeout(450);
+ await p.clock.setFixedTime(new Date('2026-11-15T04:19:00Z'));
+ await p.waitForTimeout(1300);
+ assert.equal(await p.evaluate(()=>window.__duckCount),width===890?0:1,'rest timer uses same reminder preference');
  await p.getByRole('button',{name:'繼續專注 15 分鐘',exact:true}).click();
- await helpButton.waitFor();assert.equal(saves.get(a).state.homework.timer.remaining,900);
+ await helpButton.waitFor();await waitMusic(true);assert.equal(saves.get(a).state.homework.timer.remaining,900);
  await helpButton.tap();await p.getByRole('button',{name:'我完成了，請確認',exact:true}).click();
  await p.getByTestId('homework-page').waitFor();
  assert(!saves.get(a).state.homework.timer);assert(saves.get(a).state.homework.days['2026-11-16'].tasks[0].reported);
