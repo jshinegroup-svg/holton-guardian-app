@@ -4,8 +4,9 @@ import type {HomeworkDay} from './model';
 export default function StarBoard({day,date,onTask,onPortal,en}:{day?:HomeworkDay;date:string;onTask:(id:string)=>void;onPortal:()=>void;en:boolean}){
  const tasks=day?.tasks??[],n=tasks.filter(t=>t.confirmed).length,ready=tasks.length>0&&n===tasks.length&&!day?.claimedAt;
  return <div className="hw-stars"><style>{`
- .hw-stars{position:relative;width:100%;max-width:320px;align-self:center;aspect-ratio:1/2;background:url('/homework/reference-plate.png') center/100% 100%;container-type:inline-size;color:#fff2cc;font-family:serif;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+ .hw-stars{position:relative;width:100%;max-width:380px;align-self:center;aspect-ratio:1/2;background:url('/homework/reference-plate.png') center/100% 100%;container-type:inline-size;color:#fff2cc;font-family:serif;-webkit-text-size-adjust:100%;text-size-adjust:100%}
  .hw-stars .plaque{position:absolute;inset:0 0 auto;height:15.7%;background:url('/homework/reference-ui.jpg') left top/300.4695% auto;mask-image:linear-gradient(#000 94%,transparent)}
+ @media (orientation:landscape){.hw-stars{max-width:320px}}
  .hw-stars .date{position:absolute;top:12.1%;left:34%;width:32%;height:3.1%;display:flex;align-items:center;justify-content:center;text-align:center;background:#10203a;border-radius:50%;font-size:3.8cqw;line-height:1.1}
  .hw-stars .progress{position:absolute;top:18.9%;left:32%;width:36%;height:3.8%;display:flex;align-items:center;justify-content:center;text-align:center;font-size:4.5cqw;line-height:1.1}
  .hw-stars .disc{position:absolute;inset:24.8% 0 auto;height:47.2%}
