@@ -76,13 +76,13 @@ try{for(const [width,height] of [[320,740],[744,1024],[890,626]]){
  assert.equal(await p.getByTestId('homework-toolbar').count(),0);
  await p.screenshot({path:`reports/homework/focus-new-${width}.png`});
  await p.evaluate(()=>{localStorage.setItem('holton-family-v2::interface-language','en');window.dispatchEvent(new StorageEvent('storage',{key:'holton-family-v2::interface-language'}));});
- assert((await p.getByTestId('homework-focus-flow').innerText()).includes('Hold 1 second'));
+ assert((await p.getByTestId('homework-focus-flow').innerText()).includes('Back / Need help'));
  await p.evaluate(()=>{localStorage.setItem('holton-family-v2::interface-language','zh-TW');window.dispatchEvent(new StorageEvent('storage',{key:'holton-family-v2::interface-language'}));});
  
- const hold=p.getByTestId('homework-hold-help');
- await hold.click();assert(!saves.get(a).state.homework.timer.helpOpen);
- async function longHold(){const box=await hold.boundingBox();await p.mouse.move(box.x+box.width/2,box.y+box.height/2);await p.mouse.down();await p.waitForTimeout(1200);await p.mouse.up();}
- await longHold();await p.getByRole('button',{name:'暫停',exact:true}).waitFor();
+ const helpButton=p.getByTestId('homework-focus-help');
+ const box=await helpButton.boundingBox();assert(box.height>=48);assert(box.width>=200);
+ assert.equal(await helpButton.innerText(),'返回／需要幫忙');
+ await helpButton.tap();await p.getByRole('button',{name:'暫停',exact:true}).waitFor();
  assert.equal(saves.get(a).state.homework.timer.deadline,null);
  await p.getByRole('button',{name:'深呼吸',exact:true}).click();
  await p.getByRole('button',{name:'查看其他幫助卡',exact:true}).waitFor();
@@ -99,18 +99,18 @@ try{for(const [width,height] of [[320,740],[744,1024],[890,626]]){
  await p.getByRole('button',{name:'返回／關閉照片',exact:true}).click();
  assert.equal(saves.get(a).state.homework.timer.remaining,frozen);
  await p.getByRole('button',{name:'接續專注',exact:true}).click();
- await hold.waitFor();
+ await helpButton.waitFor();
  await p.clock.setFixedTime(new Date('2026-11-15T04:16:00Z'));
  await p.getByRole('button',{name:'休息2分鐘',exact:true}).waitFor();
  assert.equal(saves.get(a).state.orbs,10);assert(!saves.get(a).state.homework.days['2026-11-16'].tasks[0].reported);
  await p.getByRole('button',{name:'休息2分鐘',exact:true}).click();
  await p.getByTestId('homework-rest-countdown').waitFor();
  await p.getByRole('button',{name:'繼續專注 15 分鐘',exact:true}).click();
- await hold.waitFor();assert.equal(saves.get(a).state.homework.timer.remaining,900);
- await longHold();await p.getByRole('button',{name:'我完成了，請確認',exact:true}).click();
+ await helpButton.waitFor();assert.equal(saves.get(a).state.homework.timer.remaining,900);
+ await helpButton.tap();await p.getByRole('button',{name:'我完成了，請確認',exact:true}).click();
  await p.getByTestId('homework-page').waitFor();
  assert(!saves.get(a).state.homework.timer);assert(saves.get(a).state.homework.days['2026-11-16'].tasks[0].reported);
  assert(!saves.get(a).state.homework.days['2026-11-16'].tasks[0].confirmed);assert.equal(saves.get(a).state.orbs,10);assert.equal(saves.get(b).state.orbs,30);
- assert.deepEqual(errors,[]);console.log('PASS cards, starter, hold, help, photo return, duration, report without reward',width);
+ assert.deepEqual(errors,[]);console.log('PASS cards, starter, single tap, help, photo return, duration, report without reward',width);
  await context.close();
 }}finally{await browser.close();server.close();}
