@@ -69,6 +69,7 @@ try{for(const [width,height] of [[320,740],[744,1024],[890,626]]){
  await p.getByTestId('homework-inline-time-cards').waitFor();
  assert.equal(await p.getByRole('button',{name:'選擇專注時間卡',exact:true}).count(),0);
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await p.getByTestId('homework-guide').waitFor({state:'hidden'});
  await p.screenshot({path:`reports/homework/inline-cards-${width}.png`,fullPage:true});
  await p.getByTestId('homework-time-10').click();
  assert(!saves.get(a).state.homework.timer);
