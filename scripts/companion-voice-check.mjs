@@ -55,7 +55,7 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
   HTMLMediaElement.prototype.play=function(){const s=get(this);s.at=Date.now();s.paused=false;window.__playCount++;this.dispatchEvent(new Event('playing'));return Promise.resolve();};
   HTMLMediaElement.prototype.pause=function(){const s=get(this);s.time=this.currentTime;s.paused=true;this.dispatchEvent(new Event('pause'));};HTMLMediaElement.prototype.load=function(){};
  });
- await p.addInitScript(()=>{window.__spoken=[];window.__cancelled=0;window.SpeechSynthesisUtterance=class {constructor(text){this.text=text;}};Object.defineProperty(window,'speechSynthesis',{value:{cancel(){window.__cancelled++},getVoices(){return [{lang:'zh-TW',voiceURI:'test-zh'},{lang:'en-US',voiceURI:'test-en'}]},speak(u){window.__spoken.push({text:u.text,lang:u.lang,pitch:u.pitch,rate:u.rate});}}});});
+ await p.addInitScript(()=>{window.__spoken=[];window.__cancelled=0;window.SpeechSynthesisUtterance=class {constructor(text){this.text=text;}};Object.defineProperty(window,'speechSynthesis',{value:{cancel(){window.__cancelled++},getVoices(){return [{lang:'zh-TW',name:'Mei-Jia',voiceURI:'female-zh'},{lang:'zh-TW',name:'YunJhe Natural',voiceURI:'male-zh'},{lang:'en-US',voiceURI:'test-en'}]},speak(u){window.__spoken.push({text:u.text,lang:u.lang,pitch:u.pitch,rate:u.rate,voice:u.voice?.voiceURI});}}});});
  await p.clock.setFixedTime(new Date('2026-11-15T04:00:00Z'));await p.goto(base);await p.getByLabel('6 位數家長密碼',{exact:true}).fill(String(randomInt(100000,999999)));const value=await p.getByLabel('6 位數家長密碼',{exact:true}).inputValue();await p.getByLabel('再次輸入家長密碼',{exact:true}).fill(value);assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'顯示6 位數家長密碼',exact:true}).click();assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'text');assert.equal(await p.getByLabel('再次輸入家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'隱藏6 位數家長密碼',exact:true}).click();await p.getByRole('button',{name:'繼續設定',exact:true}).click();await p.getByRole('button',{name:'已妥善保存，啟用家長密碼',exact:true}).click();
 
  await p.getByRole('button',{name:'只有 哥哥 玩',exact:true}).click();
@@ -71,7 +71,7 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  await reaction.getByTestId('companion-reaction-reply').waitFor();
  await p.waitForTimeout(2300);assert.equal(await reaction.getByTestId('companion-reaction-reply').count(),1);
  await p.waitForTimeout(1900);assert.equal(await reaction.getByTestId('companion-reaction-reply').count(),0);
- const spoken=await p.evaluate(()=>window.__spoken);assert(spoken.length>=2);assert.equal(spoken.at(-1).lang,'zh-TW');assert.equal(spoken.at(-1).pitch,width===320?1.35:width===390?1.22:.78);
+ const spoken=await p.evaluate(()=>window.__spoken);assert(spoken.length>=2);assert.equal(spoken.at(-1).lang,'zh-TW');assert.equal(spoken.at(-1).voice,'male-zh');assert.equal(spoken.at(-1).pitch,width===320?1.02:width===390?1:.97);
  await toggle.click();const count=await p.evaluate(()=>window.__spoken.length);await reaction.getByRole('button').first().click();assert.equal(await p.evaluate(()=>window.__spoken.length),count);
  assert.equal(await p.evaluate(()=>localStorage.getItem('holton-family-v2::companion-voice')),'off');
  await p.screenshot({path:`/tmp/guardian-voice-${width}.png`,fullPage:true});
