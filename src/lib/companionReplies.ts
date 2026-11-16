@@ -1,4 +1,5 @@
 import {getLocale} from '../i18n/locale';
+import {companionVoiceClips} from './companionVoiceClips';
 export type CompanionMood='ready'|'focus'|'rest'|'done';
 const replies={
  pip:{
@@ -11,16 +12,16 @@ const replies={
   ready:['準備好探險了嗎？','一起發現新冒險！','耳朵太長，收到笑話了！','胡蘿蔔帶了，勇氣也帶了！','耳朵導航，今天往前跳！'],
   focus:['我安靜陪你喔。','一小步，也很棒！','先做好眼前這件事。','耳朵收起，不偷聽橡皮擦！','這一題，輕輕跳過去！'],
   rest:['伸伸手，歇一下。','我在這裡等你喔。','深呼吸，再慢慢來。','耳朵放假，鼻子值班！','伸個懶腰，差點變長兔！'],
-  done:['耶，又前進一步！','今天有新的足跡！','這次冒險完成啦！','開心蹦跳，耳朵慢半拍！','獎盃沒有？胡蘿蔔也行！'],
+  done:['耶，又前進一步！','今天有新的足跡！','這次冒險完成啦！','開心蹦跳，耳朵慢半拍！','獎盃沒有？胡蘿蔔也行！','你做得很好！'],
  },
  bomo:{
   ready:['不用急，我陪你。','一起慢慢開始吧。','熊掌太大，擊掌輕一點！','背包鼓鼓，裝的都是勇氣！','小熊出動，先找回我的腳！'],
-  focus:['我就在你身旁。','照自己的速度做。','一次做好一小步。','分心請繞路，小熊坐這裡！','熊掌太大，我用眼睛幫忙！'],
+  focus:['我就在你身旁。','照自己的速度做。','一次做好一小步。','分心請繞路，小熊坐這裡！','熊掌太大，我用眼睛幫忙！','慢慢來，不用急。'],
   rest:['累了就歇一歇。','先讓自己舒服一點。','休息也是照顧自己。','肚子咕嚕，是休息鈴啦！','抱抱空氣，練習熊抱！'],
   done:['辛苦了，做到了。','你的用心我看見了。','給自己一個微笑吧。','想比個讚，熊掌不太聽話！','慶祝小跳，地板說好癢！'],
  },
  tidefin:{
-  ready:['鯊魚隊長，準備出航！','先游一小段，我陪你。','放心，我不吃作業！','出航囉！泳帽卡住魚鰭！','我的背包怎麼都是泡泡？'],
+  ready:['鯊魚隊長，準備出航！','先游一小段，我陪你。','放心，我不吃作業！','出航囉！泳帽卡住魚鰭！','我的背包怎麼都是泡泡？','我在這裡陪你。'],
   focus:['魚鰭收好，專心前進。','眼前這題，一口一口來。','安靜巡航，我在旁邊。','作業不是魚，別讓它溜走！','專心潛水，鼻子先別冒泡！'],
   rest:['靠岸歇歇，甩甩魚鰭。','吐個泡泡，慢慢呼吸。','休息站不賣小魚乾嗎？','泡泡枕頭，躺下就啵！','魚鰭伸展，不是要起飛！'],
   done:['漂亮！又游過一關！','擊個鰭，你做到了！','慶祝轉圈，別暈船喔！','勝利泡泡，啵啵啵！','想吹口哨，卻吐了泡泡！'],
@@ -28,7 +29,7 @@ const replies={
  stoneback:{
   ready:['小龜出發，不用比快。','一步一腳印，我陪你。','我帶了殼，沒帶書包！','殼已上鎖，鑰匙在我背上！','小龜導航：前方有一小步！'],
   focus:['慢慢寫，也在往前走。','穩穩一步，就很不錯。','我的殼幫你擋住分心。','分心敲門，我假裝不在家！','橡皮擦別跑，我追得很慢！'],
-  rest:['縮進小殼，歇一歇。','伸伸脖子，慢慢呼吸。','殼裡太小，不能翻身！','我的枕頭，住在殼裡！','伸個懶腰，殼也打哈欠！'],
+  rest:['先照顧好自己。','縮進小殼，歇一歇。','伸伸脖子，慢慢呼吸。','殼裡太小，不能翻身！','我的枕頭，住在殼裡！','伸個懶腰，殼也打哈欠！'],
   done:['慢慢走，也走到了！','這一步，穩穩收進殼。','開心翻身！欸，幫一下！','勝利舞太快，殼跟不上！','掌聲慢一點，我還在揮手！'],
  },
  emberwing:{
@@ -45,7 +46,7 @@ const replies={
  },
  bramblefang:{
   ready:['森林小狼，陪你探路！','先跨一小步，不用急。','聞到冒險！喔，是點心。','尾巴準備好，比我先出發！','勇氣聞到了，就在你旁邊！'],
-  focus:['耳朵豎好，先做眼前。','一題一腳印，我陪你。','尾巴別搖，會掃到筆！','分心別溜，我的鼻子很靈！','腳步輕輕，別吵醒鉛筆！'],
+  focus:['耳朵豎好，先做眼前。','一題一腳印，我陪你。','尾巴別搖，會掃到筆！','分心別溜，我的鼻子很靈！','腳步輕輕，別吵醒鉛筆！','我陪你一起加油。'],
   rest:['找片樹蔭，歇歇爪子。','伸伸懶腰，再慢慢走。','尾巴蓬蓬，自帶小枕頭！','爪子放假，尾巴還在搖！','打個哈欠，月亮還沒上班！'],
   done:['嗷嗚！又留下新腳印！','你跨過去了，好樣的！','開心搖尾，掃起一片葉！','嗷嗚太開心，自己嚇一跳！','勝利尾巴，停不下來啦！'],
  },
@@ -56,22 +57,28 @@ const replies={
   done:['我們一起完成了！','每一小步都算數。','把今天的努力收好。','開心轉個圈，別忘了煞車！','擊掌成功，笑容大豐收！'],
  },
 } as const;
+function voiceRole(id:string){const species=id.split(':')[0];return Object.prototype.hasOwnProperty.call(replies,species)?species as keyof typeof replies:'guardian';}
 export function companionReplies(id:string,mood:CompanionMood):readonly string[]{
- if(getLocale()==='en')return englishReplies[mood];
- const species=id.split(':')[0];
- const character=Object.prototype.hasOwnProperty.call(replies,species)?species as keyof typeof replies:'guardian';
- return replies[character][mood];
+ const role=voiceRole(id),language=getLocale()==='en'?'en':'zh';
+ const lines=language==='en'?englishReplies[mood]:replies[role][mood];
+ // Unclear takes stay out of both the bubble and playback; all moods are checked at build time.
+ return lines.filter(line=>Boolean(companionVoiceClips[role]?.[language]?.[line]));
 }
-
-/** Personal encouragement alternates with every original character line. */
+const personalVoiceLines={
+ en:{ready:'Let’s give it a try!',focus:'I’m with you, one step at a time.',done:'Well done! Another task finished!',rest:'Stretch and recharge!'},
+ zh:{ready:'我們一起加油吧！',focus:'我陪你，一步一步來。',done:'太棒了！又完成一個任務！',rest:'伸個懶腰，補充能量吧！'},
+};
+function personalLine(id:string,mood:CompanionMood){
+ const language=getLocale()==='en'?'en':'zh',line=personalVoiceLines[language][mood];
+ return companionVoiceClips[voiceRole(id)]?.[language]?.[line]?line:companionReplies(id,mood)[0];
+}
+/** Personal encouragement alternates with the available character lines. */
 export function companionReply(id:string,mood:CompanionMood,turn:number,adventurerName=''):string {
  const lines=companionReplies(id,mood);
  const name=Array.from(adventurerName.replace(/\s+/g,' ').trim()).slice(0,20).join('');
  if(!name)return lines[turn%lines.length];
  if(turn%2!==0)return lines[Math.floor(turn/2)%lines.length];
- if(getLocale()==='en'){const personal={ready:`${name}, let’s give it a try!`,focus:`${name}, I’m with you, one step at a time.`,done:`Well done, ${name}! Another task finished!`,rest:`${name}, stretch and recharge!`};return personal[mood];}
- const personal={ready:`${name}，我們一起加油吧！`,focus:`${name}，我陪你，一步一步來。`,done:`太棒了，${name}！又完成一個任務！`,rest:`${name}，伸個懶腰，補充能量吧！`};
- return personal[mood];
+ return name+(getLocale()==='en'?', ':'，')+personalLine(id,mood);
 }
 
 const englishReplies:Record<CompanionMood,readonly string[]>={
@@ -80,3 +87,9 @@ focus:["I’m right here with you.","One step at a time. No rush.","Let’s focu
 rest:["Take a break. I’ll wait with you.","Relax your shoulders and breathe.","Ready when you are.","Even brave adventurers need a rest.","Stretch up and say hello to the ceiling!"],
 done:["We did it together!","Every little step counts.","Look at the progress you made!","A little victory dance — remember the brakes!","High five! Another adventure step complete!"]
 };
+
+/** Spoken personal encouragement never sends or synthesizes a child's name. */
+export function companionSpokenReply(id:string,mood:CompanionMood,turn:number,adventurerName=''):string {
+ if(!adventurerName.trim()||turn%2!==0)return companionReply(id,mood,turn,adventurerName);
+ return personalLine(id,mood);
+}

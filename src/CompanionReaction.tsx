@@ -1,5 +1,5 @@
 import {useLocale} from './i18n/locale';
-import {companionReply,type CompanionMood} from './lib/companionReplies';
+import {companionReply,companionSpokenReply,type CompanionMood} from './lib/companionReplies';
 import {useCompanionVoice,speakCompanion,stopCompanionVoice} from './lib/companionVoice';
 import React,{useEffect,useRef,useState} from 'react';
 import {Animated,StyleSheet,View} from 'react-native';
@@ -9,6 +9,7 @@ import {Pressable,Text} from './i18n/ui';
 export default function CompanionReaction({name,adventurerName='',character,mood,reduced,children,onActivate,selected,disabled=false,alignTop=false,compact=false}:{name:string;adventurerName?:string;character:string;mood:CompanionMood;reduced:boolean;children:React.ReactNode;onActivate?:()=>void;selected?:boolean;disabled?:boolean;alignTop?:boolean;compact?:boolean}){
  const {locale}=useLocale();
  const [reply,setReply]=useState('');
+ const spoken=useRef('');
  const {enabled:voiceEnabled,setEnabled:setVoiceEnabled,supported:voiceSupported}=useCompanionVoice();
  const owner=useRef({}).current;
  const active=useRef(false),next=useRef(0);
@@ -16,14 +17,16 @@ export default function CompanionReaction({name,adventurerName='',character,mood
  const bounce=useRef(new Animated.Value(0)).current;
  useEffect(()=>()=>{if(timeout.current)clearTimeout(timeout.current);bounce.stopAnimation();stopCompanionVoice(owner);},[bounce,owner]);
  useEffect(()=>{if(reduced){bounce.stopAnimation();bounce.setValue(0);}},[reduced,bounce]);
- useEffect(()=>{if(timeout.current)clearTimeout(timeout.current);timeout.current=null;active.current=false;next.current=0;setReply('');stopCompanionVoice(owner);bounce.stopAnimation();bounce.setValue(0);},[adventurerName,character,mood,bounce,locale]);
+ useEffect(()=>{if(timeout.current)clearTimeout(timeout.current);timeout.current=null;active.current=false;next.current=0;setReply('');spoken.current='';stopCompanionVoice(owner);bounce.stopAnimation();bounce.setValue(0);},[adventurerName,character,mood,bounce,locale,owner]);
  const greet=()=>{
   if(active.current)return;
   active.current=true;
   onActivate?.();
-  const text=companionReply(character,mood,next.current++,adventurerName);
+  const turn=next.current++;
+  const text=companionReply(character,mood,turn,adventurerName);
+  spoken.current=companionSpokenReply(character,mood,turn,adventurerName);
   setReply(text);
-  if(voiceEnabled)speakCompanion(text,locale,owner,character);
+  if(voiceEnabled)speakCompanion(spoken.current,locale,owner,character);
   if(!reduced)Animated.sequence([
    Animated.timing(bounce,{toValue:1,duration:160,useNativeDriver:true}),
    Animated.timing(bounce,{toValue:0,duration:240,useNativeDriver:true}),
@@ -37,7 +40,7 @@ export default function CompanionReaction({name,adventurerName='',character,mood
     {reply&&!reduced?<View testID="companion-reaction-glow" pointerEvents="none" style={s.glow}/>:null}
    </Animated.View>
   </Pressable>
-  <Pressable testID="companion-voice-toggle" accessibilityRole="switch" aria-checked={voiceEnabled} accessibilityState={{checked:voiceEnabled,disabled:!voiceSupported}} accessibilityLabel={locale==='en'?'Companion voice':'守護獸語音'} disabled={!voiceSupported} onPress={()=>{setVoiceEnabled(!voiceEnabled);if(!voiceEnabled)speakCompanion(reply||(locale==='en'?'Voice is on.':'語音已開啟。'),locale,owner,character);}} style={s.voice}><Text style={s.voiceText}>{!voiceSupported?(locale==='en'?'Voice unavailable':'裝置不支援語音'):voiceEnabled?(locale==='en'?'🔊 Voice on':'🔊 語音開'):(locale==='en'?'🔇 Voice off':'🔇 語音關')}</Text></Pressable>
+  <Pressable testID="companion-voice-toggle" accessibilityRole="switch" aria-checked={voiceEnabled} accessibilityState={{checked:voiceEnabled,disabled:!voiceSupported}} accessibilityLabel={locale==='en'?'Companion voice':'守護獸語音'} disabled={!voiceSupported} onPress={()=>{setVoiceEnabled(!voiceEnabled);if(!voiceEnabled)speakCompanion((reply?spoken.current:'')||companionSpokenReply(character,mood,0),locale,owner,character);}} style={s.voice}><Text style={s.voiceText}>{!voiceSupported?(locale==='en'?'Voice unavailable':'裝置不支援語音'):voiceEnabled?(locale==='en'?'🔊 Voice on':'🔊 語音開'):(locale==='en'?'🔇 Voice off':'🔇 語音關')}</Text></Pressable>
   <View testID="companion-speech-slot" pointerEvents="none" style={[s.slot,compact&&{position:'absolute',top:100,left:0,width:180}]}><View testID={reply?"companion-reaction-reply":undefined} style={[s.bubble,{opacity:reply?1:0}]}><View style={s.tail}/><Text accessibilityLiveRegion="polite" style={[s.text,Array.from(reply).length>26?{fontSize:10,lineHeight:12}:reply.length>18?{fontSize:12,lineHeight:14}:null]}>{reply || " "}</Text></View></View>
  </View>;
 }

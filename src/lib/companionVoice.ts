@@ -1,42 +1,38 @@
 import {useSyncExternalStore} from 'react';
+import {companionVoiceClips} from './companionVoiceClips';
 const KEY='holton-family-v2::companion-voice';
 const read=()=>{try{return globalThis.localStorage?.getItem(KEY)==='on';}catch{return false;}};
 let enabled=read();
 let owner:object|null=null;
+let current:HTMLAudioElement|null=null;
+let generation=0;
 const listeners=new Set<()=>void>();
-const supported=()=>typeof window!=='undefined'&&'speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined';
-export function stopCompanionVoice(who?:object){if(who&&who!==owner)return;if(supported())window.speechSynthesis.cancel();owner=null;}
-export const companionVoiceProfiles:Record<string,{pitch:number;rate:number;voice:number;gender?:'male'|'female'}>={
- pip:{pitch:1.02,rate:1,voice:0},hop:{pitch:1,rate:.97,voice:1,gender:'female'},bomo:{pitch:.97,rate:.92,voice:2},
- tidefin:{pitch:.99,rate:.96,voice:2,gender:'female'},stoneback:{pitch:.96,rate:.9,voice:0},emberwing:{pitch:1.01,rate:1.02,voice:1},
- 'steel-eagle':{pitch:.98,rate:1,voice:2},bramblefang:{pitch:1,rate:.94,voice:0},guardian:{pitch:1,rate:.96,voice:0},
-};
-// Web Speech does not expose gender. Match known system voice names per role;
-// retain natural pitch and a language-matched fallback if unavailable.
-export function selectCompanionVoice(voices:SpeechSynthesisVoice[],lang:string,index:number,gender:'male'|'female'='male'){
- const normalize=(value:string)=>value.replace(/_/g,'-').toLowerCase();
- const matching=voices.filter(v=>normalize(v.lang).split('-')[0]===normalize(lang).split('-')[0]);
- const male=/(?:yun[- ]?jhe|yun[- ]?zhe|yunxi|yunjian|yunyang|yunfeng|yunhao|yunxia|yunze|yunyi|yung[- ]?yu|zhiwei|li-mu|\b(?:aaron|gordon|reed|rocko|evan|nathan|daniel|alex|david|mark|guy|andrew|brian|christopher|roger|eric|ryan)\b|雲哲|云哲|志偉|志伟|男聲|男声|\bmale\b)/i;
- const female=/(?:mei[- ]?jia|hsiao[- ]?chen|hsiao[- ]?yu|hanhan|xiaoxiao|xiaoyi|xiaohan|xiaomeng|xiaomo|xiaoxuan|\b(?:samantha|victoria|karen|moira|tessa|ava|allison|susan|zira|jenny|aria|emma|sonia)\b|美佳|曉臻|晓臻|曉雨|晓雨|女聲|女声|\bfemale\b)/i;
- const preferred=matching.filter(v=>(gender==='female'?female:male).test(v.name+' '+v.voiceURI));
- const pool=preferred.length?preferred:matching;
- const score=(v:SpeechSynthesisVoice)=>(normalize(v.lang)===normalize(lang)?10:0)+(/premium|enhanced|natural|neural/i.test(v.name+' '+v.voiceURI)?3:0);
- const ranked=[...pool].sort((a,b)=>score(b)-score(a)||a.voiceURI.localeCompare(b.voiceURI));
- const best=ranked.filter(v=>score(v)===score(ranked[0]));
- return best.length?best[index%best.length]:undefined;
+const supported=()=>typeof window!=='undefined'&&typeof Audio!=='undefined';
+/** Exact phrase matching; unknown phrases stay text-only, never system TTS. */
+export function companionAudioSource(text:string,locale:string,character='guardian'){
+ const species=character.split(':')[0];
+ const role=Object.prototype.hasOwnProperty.call(companionVoiceClips,species)?species:'guardian';
+ const file=companionVoiceClips[role]?.[locale==='en'?'en':'zh']?.[text];
+ return file?`/companion-voices/v1/${file}`:undefined;
+}
+export function stopCompanionVoice(who?:object){
+ if(who&&who!==owner)return;
+ generation++;const previous=current;current=null;owner=null;
+ if(previous){previous.onended=null;previous.onerror=null;previous.pause();previous.removeAttribute('src');previous.load();}
 }
 export function speakCompanion(text:string,locale:string,who:object,character='guardian'){
  if(!enabled||!supported())return;
+ stopCompanionVoice();
+ const src=companionAudioSource(text,locale,character);if(!src)return;
+ const ticket=generation;
  try{
-  stopCompanionVoice();owner=who;
-  const utterance=new SpeechSynthesisUtterance(text);
-  const profile=companionVoiceProfiles[character]||companionVoiceProfiles.guardian;
-  utterance.lang=locale==='en'?'en-US':'zh-TW';utterance.rate=profile.rate;utterance.pitch=profile.pitch;
-  const voices=window.speechSynthesis.getVoices();
-  const voice=selectCompanionVoice(voices,utterance.lang,profile.voice,profile.gender);
-  if(voice)utterance.voice=voice;
-  window.speechSynthesis.speak(utterance);
- }catch{/* Text remains usable even if device speech is unavailable. */}
+  const audio=new Audio(src);current=audio;owner=who;audio.preload='none';
+  const finish=()=>{if(current===audio)stopCompanionVoice(who);};
+  audio.onended=finish;audio.onerror=finish;
+  // Called synchronously from the tap to preserve Safari's user-gesture permission.
+  const playing=audio.play();
+  if(playing)void playing.then(()=>{if(ticket!==generation||current!==audio)audio.pause();}).catch(finish);
+ }catch{stopCompanionVoice(who);/* Text remains usable if playback is unavailable. */}
 }
 function setEnabled(value:boolean){enabled=value;try{globalThis.localStorage?.setItem(KEY,value?'on':'off');}catch{}if(!value)stopCompanionVoice();listeners.forEach(fn=>fn());}
 export function useCompanionVoice(){return {enabled:useSyncExternalStore(fn=>{listeners.add(fn);return()=>{listeners.delete(fn);};},()=>enabled,()=>false),setEnabled,supported:supported()};}

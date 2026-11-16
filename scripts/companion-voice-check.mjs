@@ -45,15 +45,15 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  await p.addInitScript(({user})=>{const enc=x=>btoa(JSON.stringify(x));const exp=Math.floor(Date.now()/1000)+3600;localStorage.setItem('holton-family-v2-auth',JSON.stringify({access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:user,exp,role:'authenticated'})}.test`,refresh_token:'synthetic-test',expires_at:exp,expires_in:3600,token_type:'bearer',user:{id:user,email:'fixture@example.invalid'}}));localStorage.setItem('holton-guardian-app::light-v1','original-v1-sentinel');},{user});
  await p.addInitScript(({family,a,b})=>{for(const id of [a,b])localStorage.setItem(`holton-family-v2::${family}::${id}::holton-guardian-app::spotlight-v1`,JSON.stringify({main:true,companions:true,wishes:true,parent:true,companionTap:true,music:true}));},{family,a,b});
  await p.addInitScript(()=>{
-  window.__audioLog=[];window.__playCount=0;window.__oscCount=0;window.__duckCount=0;window.addEventListener('holton-task-chime',()=>window.__duckCount++);
+  window.__voicePlayed=[];window.__voicePaused=[];window.__audioLog=[];window.__playCount=0;window.__oscCount=0;window.__duckCount=0;window.addEventListener('holton-task-chime',()=>window.__duckCount++);
   class Context {constructor(){(window.__contexts??=[]).push(this);}state='suspended';destination={};get currentTime(){return Date.now()/1000;}resume(){if(this.state==='running')return Promise.resolve();return new Promise(resolve=>setTimeout(()=>{this.state='running';resolve();},350));}close(){this.state='closed';return Promise.resolve();}createGain(){const param={value:1,setValueAtTime(v){this.value=v;window.__audioLog.push(['value',v]);},linearRampToValueAtTime(v){this.value=v;window.__audioLog.push(['peak',v]);},exponentialRampToValueAtTime(v){this.value=v;},cancelScheduledValues(){},setTargetAtTime(v){this.value=v;window.__audioLog.push(['volume',v]);}};return {gain:param,connect(){},disconnect(){}};}createOscillator(){window.__oscCount++;return {type:'sine',frequency:{value:0},connect(){},disconnect(){},start(at){window.__audioLog.push(['start',at]);},stop(at){window.__audioLog.push(['stop',at]);}};}createMediaElementSource(){return {connect(){}};}}
   window.AudioContext=Context;
   const states=new WeakMap();const get=e=>{if(!states.has(e))states.set(e,{paused:true,time:0,at:Date.now(),src:''});return states.get(e);};
   Object.defineProperty(HTMLMediaElement.prototype,'paused',{get(){return get(this).paused;}});
   Object.defineProperty(HTMLMediaElement.prototype,'currentTime',{get(){const s=get(this);return s.time+(s.paused?0:(Date.now()-s.at)/1000);},set(v){const s=get(this);s.time=v;s.at=Date.now();}});
   Object.defineProperty(HTMLMediaElement.prototype,'src',{get(){return get(this).src;},set(v){get(this).src=v;}});
-  HTMLMediaElement.prototype.play=function(){const s=get(this);s.at=Date.now();s.paused=false;window.__playCount++;this.dispatchEvent(new Event('playing'));return Promise.resolve();};
-  HTMLMediaElement.prototype.pause=function(){const s=get(this);s.time=this.currentTime;s.paused=true;this.dispatchEvent(new Event('pause'));};HTMLMediaElement.prototype.load=function(){};
+  HTMLMediaElement.prototype.play=function(){const s=get(this);s.at=Date.now();s.paused=false;window.__playCount++;if(this.getAttribute('src')?.includes('/companion-voices/'))window.__voicePlayed.push(this.getAttribute('src'));this.dispatchEvent(new Event('playing'));return Promise.resolve();};
+  HTMLMediaElement.prototype.pause=function(){const s=get(this);s.time=this.currentTime;s.paused=true;if(this.getAttribute('src')?.includes('/companion-voices/'))window.__voicePaused.push(this.getAttribute('src'));this.dispatchEvent(new Event('pause'));};HTMLMediaElement.prototype.load=function(){};
  });
  await p.addInitScript(()=>{window.__spoken=[];window.__cancelled=0;window.SpeechSynthesisUtterance=class {constructor(text){this.text=text;}};Object.defineProperty(window,'speechSynthesis',{value:{cancel(){window.__cancelled++},getVoices(){return [{lang:'zh-TW',name:'Mei-Jia',voiceURI:'female-zh'},{lang:'zh-TW',name:'YunJhe Natural',voiceURI:'male-zh'},{lang:'en-US',voiceURI:'test-en'}]},speak(u){window.__spoken.push({text:u.text,lang:u.lang,pitch:u.pitch,rate:u.rate,voice:u.voice?.voiceURI});}}});});
  await p.clock.setFixedTime(new Date('2026-11-15T04:00:00Z'));await p.goto(base);await p.getByLabel('6 位數家長密碼',{exact:true}).fill(String(randomInt(100000,999999)));const value=await p.getByLabel('6 位數家長密碼',{exact:true}).inputValue();await p.getByLabel('再次輸入家長密碼',{exact:true}).fill(value);assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'顯示6 位數家長密碼',exact:true}).click();assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'text');assert.equal(await p.getByLabel('再次輸入家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'隱藏6 位數家長密碼',exact:true}).click();await p.getByRole('button',{name:'繼續設定',exact:true}).click();await p.getByRole('button',{name:'已妥善保存，啟用家長密碼',exact:true}).click();
@@ -71,11 +71,16 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  await reaction.getByTestId('companion-reaction-reply').waitFor();
  await p.waitForTimeout(2300);assert.equal(await reaction.getByTestId('companion-reaction-reply').count(),1);
  await p.waitForTimeout(1900);assert.equal(await reaction.getByTestId('companion-reaction-reply').count(),0);
- const spoken=await p.evaluate(()=>window.__spoken);assert(spoken.length>=2);assert.equal(spoken.at(-1).lang,'zh-TW');assert.equal(spoken.at(-1).voice,character==='hop'?'female-zh':'male-zh');assert.equal(spoken.at(-1).pitch,width===320?1.02:width===390?1:.97);
- await toggle.click();const count=await p.evaluate(()=>window.__spoken.length);await reaction.getByRole('button').first().click();assert.equal(await p.evaluate(()=>window.__spoken.length),count);
+ const played=await p.evaluate(()=>window.__voicePlayed);assert(played.length>=2);assert(played.every(x=>x.startsWith('/companion-voices/v1/')));assert.equal(await p.evaluate(()=>window.__spoken.length),0);
+ await toggle.click();assert((await p.evaluate(()=>window.__voicePaused.length))>=2);const count=await p.evaluate(()=>window.__voicePlayed.length);await reaction.getByRole('button').first().click();assert.equal(await p.evaluate(()=>window.__voicePlayed.length),count);
+ assert.equal(completions,0);assert.equal(saves.get(a).state.orbs,10);
+
+
  assert.equal(await p.evaluate(()=>localStorage.getItem('holton-family-v2::companion-voice')),'off');
  await p.screenshot({path:`/tmp/guardian-voice-${width}.png`,fullPage:true});
- await toggle.click();await p.reload();assert.equal(await p.evaluate(()=>localStorage.getItem('holton-family-v2::companion-voice')),'on');
+ await p.evaluate(()=>{const key='holton-family-v2::interface-language';localStorage.setItem(key,'en');window.dispatchEvent(new StorageEvent('storage',{key}));});
+ await toggle.click();await reaction.getByRole('button').first().click();const english=await p.evaluate(()=>window.__voicePlayed.slice(-2));assert(english.every(src=>!played.includes(src)));assert.equal(await p.evaluate(()=>window.__spoken.length),0);
+ await p.reload();assert.equal(await p.evaluate(()=>localStorage.getItem('holton-family-v2::companion-voice')),'on');
  assert.equal(errors.length,0);console.log('PASS voice toggle, mute, character profile, four-second bubble',width);
  await context.close();
  }}finally{await browser.close();server.close();}
