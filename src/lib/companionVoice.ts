@@ -6,19 +6,20 @@ let owner:object|null=null;
 const listeners=new Set<()=>void>();
 const supported=()=>typeof window!=='undefined'&&'speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined';
 export function stopCompanionVoice(who?:object){if(who&&who!==owner)return;if(supported())window.speechSynthesis.cancel();owner=null;}
-export const companionVoiceProfiles:Record<string,{pitch:number;rate:number;voice:number}>={
- pip:{pitch:1.02,rate:1,voice:0},hop:{pitch:1,rate:.97,voice:1},bomo:{pitch:.97,rate:.92,voice:2},
- tidefin:{pitch:.99,rate:.96,voice:2},stoneback:{pitch:.96,rate:.9,voice:0},emberwing:{pitch:1.01,rate:1.02,voice:1},
+export const companionVoiceProfiles:Record<string,{pitch:number;rate:number;voice:number;gender?:'male'|'female'}>={
+ pip:{pitch:1.02,rate:1,voice:0},hop:{pitch:1,rate:.97,voice:1,gender:'female'},bomo:{pitch:.97,rate:.92,voice:2},
+ tidefin:{pitch:.99,rate:.96,voice:2,gender:'female'},stoneback:{pitch:.96,rate:.9,voice:0},emberwing:{pitch:1.01,rate:1.02,voice:1},
  'steel-eagle':{pitch:.98,rate:1,voice:2},bramblefang:{pitch:1,rate:.94,voice:0},guardian:{pitch:1,rate:.96,voice:0},
 };
-// Web Speech does not expose gender. Prefer known male voice names, never
-// manufacture a male voice by heavily lowering a female voice's pitch.
-export function selectCompanionVoice(voices:SpeechSynthesisVoice[],lang:string,index:number){
+// Web Speech does not expose gender. Match known system voice names per role;
+// retain natural pitch and a language-matched fallback if unavailable.
+export function selectCompanionVoice(voices:SpeechSynthesisVoice[],lang:string,index:number,gender:'male'|'female'='male'){
  const normalize=(value:string)=>value.replace(/_/g,'-').toLowerCase();
  const matching=voices.filter(v=>normalize(v.lang).split('-')[0]===normalize(lang).split('-')[0]);
  const male=/(?:yun[- ]?jhe|yun[- ]?zhe|yunxi|yunjian|yunyang|yunfeng|yunhao|yunxia|yunze|yunyi|yung[- ]?yu|zhiwei|li-mu|\b(?:aaron|gordon|reed|rocko|evan|nathan|daniel|alex|david|mark|guy|andrew|brian|christopher|roger|eric|ryan)\b|雲哲|云哲|志偉|志伟|男聲|男声|\bmale\b)/i;
- const men=matching.filter(v=>male.test(v.name+' '+v.voiceURI));
- const pool=men.length?men:matching;
+ const female=/(?:mei[- ]?jia|hsiao[- ]?chen|hsiao[- ]?yu|hanhan|xiaoxiao|xiaoyi|xiaohan|xiaomeng|xiaomo|xiaoxuan|\b(?:samantha|victoria|karen|moira|tessa|ava|allison|susan|zira|jenny|aria|emma|sonia)\b|美佳|曉臻|晓臻|曉雨|晓雨|女聲|女声|\bfemale\b)/i;
+ const preferred=matching.filter(v=>(gender==='female'?female:male).test(v.name+' '+v.voiceURI));
+ const pool=preferred.length?preferred:matching;
  const score=(v:SpeechSynthesisVoice)=>(normalize(v.lang)===normalize(lang)?10:0)+(/premium|enhanced|natural|neural/i.test(v.name+' '+v.voiceURI)?3:0);
  const ranked=[...pool].sort((a,b)=>score(b)-score(a)||a.voiceURI.localeCompare(b.voiceURI));
  const best=ranked.filter(v=>score(v)===score(ranked[0]));
@@ -32,7 +33,7 @@ export function speakCompanion(text:string,locale:string,who:object,character='g
   const profile=companionVoiceProfiles[character]||companionVoiceProfiles.guardian;
   utterance.lang=locale==='en'?'en-US':'zh-TW';utterance.rate=profile.rate;utterance.pitch=profile.pitch;
   const voices=window.speechSynthesis.getVoices();
-  const voice=selectCompanionVoice(voices,utterance.lang,profile.voice);
+  const voice=selectCompanionVoice(voices,utterance.lang,profile.voice,profile.gender);
   if(voice)utterance.voice=voice;
   window.speechSynthesis.speak(utterance);
  }catch{/* Text remains usable even if device speech is unavailable. */}
