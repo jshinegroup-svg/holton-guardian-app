@@ -100,7 +100,24 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  await p.getByLabel('我已核對孩子、日期、頁數與不確定文字；加入既有功課，不覆蓋舊項目。',{exact:true}).check();
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:'reports/homework/photo-preview-'+width+'.png'});
  assert.equal(await p.getByRole('button',{name:'確認加入2項功課',exact:true}).isDisabled(),false);
+ // A failed notebook upload must not add tasks or discard the recognized source.
+ const beforeImport=JSON.stringify(saves.get(a));const beforeCalls=recognitionCalls;
+ photoFailure=true;
+ await p.getByRole('button',{name:'確認加入2項功課',exact:true}).click();
+ await p.getByText('照片尚未同步，這次尚未加入功課。原圖與辨識結果已保留，請直接再按確認重試，不必重新選圖或辨識。',{exact:true}).waitFor();
+ assert.equal(JSON.stringify(saves.get(a)),beforeImport);
+ assert.equal(recognitionCalls,beforeCalls);
+ assert.equal(await p.getByRole('img',{name:'聯絡簿原圖',exact:true}).count(),1);
+ assert.equal(await p.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('holton-photo-draft:')).length),1);
+ // Reopen the saved draft: retry requires neither a new file nor recognition.
+ photoFailure=false;
+ await p.getByRole('button',{name:'保留草稿，稍後繼續',exact:true}).click();
+ await p.getByRole('button',{name:'拍照／上傳，自動填入',exact:true}).click();
+ assert.equal(await p.getByLabel('保存日期',{exact:true}).inputValue(),'2026-11-16');
+ await p.getByLabel('我已核對孩子、日期、頁數與不確定文字；加入既有功課，不覆蓋舊項目。',{exact:true}).check();
  await p.getByRole('button',{name:'確認加入2項功課',exact:true}).click();await p.getByText('已加入功課，原有進度保留；照片已同步，可跨裝置查看。',{exact:true}).waitFor();
+ assert.equal(recognitionCalls,beforeCalls);
+
  assert.equal(await p.evaluate(()=>Object.keys(sessionStorage).filter(k=>k.startsWith('holton-photo-draft:')).length),0);
  const saved=saves.get(a).state;assert.equal(saved.homework.days['2026-11-16'].tasks.length,3);assert.equal(saved.orbs,10);assert.equal(saved.history.length,0);assert(saved.homework.days['2026-11-16'].tasks.find(t=>t.id==='old').confirmed);assert(!saved.homework.days['2026-11-16'].tasks.filter(t=>t.id!=='old').some(t=>t.confirmed||t.reported));assert.equal(recognitionCalls,2);assert.equal(saves.get(b).state.orbs,30);assert.deepEqual(errors,[]);
  await p.getByRole('button',{name:'7天紀錄／未完成',exact:true}).click();
