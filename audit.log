@@ -160,3 +160,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-16 actor:codex approval:user-request trigger:guardian-voice — four-second reply, per-character device speech profiles and remembered toggle; typecheck/export and isolated 320/390/844 speech-control tests passed (audio mocked).
 
 2026-11-16 actor:codex approval:user-request trigger:duo-mini-layout — adapt solo village/selection/focus and duo lanes at 620 CSS px; retain mounted state across fold/rotate; typecheck/export and isolated layout/continuity checks passed; four-student mode deferred for discussion.
+
+2026-11-16 actor:codex approval:user-request trigger:24271 — clarify notebook close action as 返回／關閉照片 with English Back / Close photo; navigation and data unchanged.
