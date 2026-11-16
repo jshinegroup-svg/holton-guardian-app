@@ -126,8 +126,37 @@ try{for(const [width,height] of [[320,568],[390,700],[844,390]]){
  // Migrate an old local PDF on first view; don't send it through recognition.
  await p2.evaluate(({family,a})=>localStorage.setItem(`holton-family-v2::${family}::${a}::homework-photo:2026-11-14`,'data:application/pdf;base64,JVBERi0xLjQKJSVFT0Y='),{family,a});
  await p2.getByRole('button',{name:'查看 11/14 聯絡簿',exact:true}).click();await p2.locator('iframe[title="聯絡簿PDF"]').waitFor();assert(photos.has(a+'/2026-11-14'));
+ await p2.getByRole('button',{name:'重新讀取雲端照片',exact:true}).evaluate(async e=>{while(e.getAttribute('aria-disabled')==='true')await new Promise(r=>setTimeout(r,20))});
  await p2.getByRole('button',{name:'今天',exact:true}).click();assert.equal(await p2.getByLabel('功課日期',{exact:true}).inputValue(),'2026-11-15');
  photoFailure=true;await p2.getByRole('button',{name:'查看 11/15 聯絡簿',exact:true}).click();await p2.getByText('聯絡簿尚未讀取成功，請確認連線後重試。原照片與功課不會刪除。',{exact:true}).waitFor();photoFailure=false;
+ // Empty notebook -> adult-gated attachment -> explicit sync, then a second device reads it.
+ await p2.getByRole('button',{name:'查看 11/15 聯絡簿',exact:true}).click();
+ await p2.getByRole('button',{name:'補上聯絡簿照片',exact:true}).click();
+ await p2.getByLabel('6 位數家長密碼',{exact:true}).fill(value);
+ await p2.getByTestId('parent-pin-gate').getByRole('button',{name:'確認',exact:true}).click();
+ const fixture={name:'notebook.png',mimeType:'image/png',buffer:Buffer.from(await p2.evaluate(()=>{const c=document.createElement('canvas');c.width=8;c.height=8;return c.toDataURL('image/png').split(',')[1]}),'base64')};
+ await p2.getByLabel('從相簿／檔案選擇',{exact:true}).setInputFiles(fixture);
+ assert(!photos.has(a+'/2026-11-15'));
+ await p2.screenshot({path:`reports/homework/notebook-attach-${width}.png`});
+ assert(await p2.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+ photoFailure=true;
+ await p2.getByRole('button',{name:'確認日期並同步照片',exact:true}).click();
+ await p2.getByText('照片尚未確認保存或同步。請保留原圖，確認連線後重新上傳；不需要重新辨識。',{exact:true}).waitFor();
+ assert(!photos.has(a+'/2026-11-15'));photoFailure=false;
+ await p2.getByRole('button',{name:'確認日期並同步照片',exact:true}).click();
+ await p2.getByText('照片已同步，同一家庭帳號可跨裝置查看。',{exact:true}).waitFor();
+ assert(photos.has(a+'/2026-11-15'));
+ const attached=await p2.getByRole('img',{name:'聯絡簿',exact:true}).getAttribute('src');
+ await p.getByRole('button',{name:'今天',exact:true}).click();
+ await p.getByRole('button',{name:'查看 11/15 聯絡簿',exact:true}).click();
+ await p.getByRole('img',{name:'聯絡簿',exact:true}).waitFor();
+ assert.equal(await p.getByRole('img',{name:'聯絡簿',exact:true}).getAttribute('src'),attached);
+ await p2.getByRole('button',{name:'更換聯絡簿照片',exact:true}).click();
+ await p2.getByLabel('6 位數家長密碼',{exact:true}).fill(value);
+ await p2.getByTestId('parent-pin-gate').getByRole('button',{name:'確認',exact:true}).click();
+ await p2.getByLabel('從相簿／檔案選擇',{exact:true}).setInputFiles(fixture);
+ await p2.getByRole('button',{name:'取消補照片',exact:true}).click();
+ assert.equal(await p2.getByRole('img',{name:'聯絡簿',exact:true}).getAttribute('src'),attached);
  assert.equal(JSON.stringify(saves.get(a).state),persisted);assert.equal(recognitionCalls,2);
  await second.close();
  console.log('PASS: fresh-device image, legacy PDF migration, date shortcuts, read-only/no PIN, offline error, unchanged progress/rewards',width);
