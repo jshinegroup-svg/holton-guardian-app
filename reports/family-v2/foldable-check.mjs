@@ -28,7 +28,7 @@ try{for(const [width,height] of [[466,678]]){
  });
  // Only synthetic local test session; production does not contain a test bypass.
  await p.addInitScript(({user})=>{const enc=x=>btoa(JSON.stringify(x));const exp=Math.floor(Date.now()/1000)+3600;localStorage.setItem('holton-family-v2-auth',JSON.stringify({access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:user,exp,role:'authenticated'})}.test`,refresh_token:'synthetic-test',expires_at:exp,expires_in:3600,token_type:'bearer',user:{id:user,email:'fixture@example.invalid'}}));localStorage.setItem('holton-guardian-app::light-v1','original-v1-sentinel');},{user});
- await p.goto(base);console.log('loaded',await p.locator('body').innerText());await p.getByLabel('6 位數家長密碼',{exact:true}).fill(String(randomInt(100000,999999)));const value=await p.getByLabel('6 位數家長密碼',{exact:true}).inputValue();await p.getByLabel('再次輸入家長密碼',{exact:true}).fill(value);assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'顯示6 位數家長密碼',exact:true}).click();assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'text');assert.equal(await p.getByLabel('再次輸入家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'隱藏6 位數家長密碼',exact:true}).click();await p.getByRole('button',{name:'繼續設定',exact:true}).click();await p.getByRole('button',{name:'已妥善保存，啟用家長密碼',exact:true}).click();
+ await p.goto(base);await p.getByLabel('6 位數家長密碼',{exact:true}).fill(String(randomInt(100000,999999)));const value=await p.getByLabel('6 位數家長密碼',{exact:true}).inputValue();await p.getByLabel('再次輸入家長密碼',{exact:true}).fill(value);assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'顯示6 位數家長密碼',exact:true}).click();assert.equal(await p.getByLabel('6 位數家長密碼',{exact:true}).evaluate(e=>e.type),'text');assert.equal(await p.getByLabel('再次輸入家長密碼',{exact:true}).evaluate(e=>e.type),'password');await p.getByRole('button',{name:'隱藏6 位數家長密碼',exact:true}).click();await p.getByRole('button',{name:'繼續設定',exact:true}).click();await p.getByRole('button',{name:'已妥善保存，啟用家長密碼',exact:true}).click();
 
  await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();
  const panels=p.getByTestId('duo-child-task');await panels.nth(1).waitFor();
@@ -36,12 +36,12 @@ try{for(const [width,height] of [[466,678]]){
  await p.waitForFunction(()=>[...document.querySelectorAll('[data-testid="duo-child-task"]')].every(e=>e.textContent.includes('努力中')));
  const before=[...saves].map(([id,s])=>[id,s.state.deadline,s.state.orbs,s.state.phase]);
  // Candidate CSS viewport sizes, not a claim of physical Safari device measurements.
- for(const [w,h] of [[466,678],[678,466],[626,890],[890,626],[744,1056],[1056,744],[390,600],[844,390],[466,678]]){
+ for(const [w,h] of [[320,740],[390,844],[466,678],[619,890],[620,890],[626,890],[678,466],[744,1133],[1133,744],[768,1024],[890,626],[466,678]]){
   await p.setViewportSize({width:w,height:h});await p.waitForTimeout(200);
   const boxes=await panels.evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}));
   assert.equal(boxes.length,2);
   for(const r of boxes){assert(r.x>=0&&r.x+r.width<=w+1,JSON.stringify({w,h,r}));assert(r.y>=0&&r.y+r.height<=h+1,JSON.stringify({w,h,r}));}
-  const horizontal=w>=700||(w>=640&&w>h);
+  const horizontal=w>=620;
   assert(horizontal?Math.abs(boxes[0].y-boxes[1].y)<2:boxes[1].y>=boxes[0].y+boxes[0].height);
   assert.deepEqual([...saves].map(([id,s])=>[id,s.state.deadline,s.state.orbs,s.state.phase]),before);
   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
@@ -51,12 +51,17 @@ try{for(const [width,height] of [[466,678]]){
  await panels.nth(0).getByRole('button',{name:'進入個人畫面',exact:true}).click();
  await p.getByRole('button',{name:'繼續任務',exact:true}).click();
  await p.getByTestId('focus-companion-panel').filter({visible:true}).waitFor();
- for(const [w,h] of [[466,678],[678,466],[626,890],[890,626],[466,678]]){
+ for(const [w,h] of [[320,740],[390,844],[466,678],[619,890],[620,890],[626,890],[678,466],[744,1133],[1133,744],[890,626],[466,678]]){
   await p.setViewportSize({width:w,height:h});await p.waitForTimeout(200);
   assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   assert.deepEqual([...saves].map(([id,s])=>[id,s.state.deadline,s.state.orbs,s.state.phase]),before);
   const complete=p.getByRole('button',{name:'完成',exact:true});
   await complete.scrollIntoViewIfNeeded();assert(await complete.isVisible());
+  if(w>=620){
+   const companion=await p.getByTestId('focus-companion-panel').filter({visible:true}).boundingBox();
+   const clock=await p.getByTestId('focus-time-panel').filter({visible:true}).boundingBox();
+   assert(clock.x>=companion.x+companion.width-1,JSON.stringify({w,companion,clock}));
+  }
   await p.screenshot({path:`reports/family-v2/foldable-solo-${w}x${h}.png`});
   console.log('PASS solo fold/rotate',w,h);
  }

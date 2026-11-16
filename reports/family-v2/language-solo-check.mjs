@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=path.resolve('dist','.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(path.resolve('dist')+path.sep)){res.writeHead(403).end();return;}const data=await readFile(file);const ext=path.extname(file);res.setHeader('Content-Type',ext==='.js'?'application/javascript':ext==='.html'?'text/html':ext==='.png'?'image/png':ext==='.jpg'?'image/jpeg':'application/octet-stream');res.end(data);}catch{res.writeHead(404).end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=process.env.TEST_BASE_URL||`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
-try{for(const [width,height] of [[320,568],[390,750]]){
+try{for(const [width,height] of [[320,568],[390,750],[466,678],[620,890],[626,890],[678,466],[744,1133],[1133,744]]){
  const family=randomUUID(),user=randomUUID(),a=randomUUID(),b=randomUUID();
  const kids=[{id:a,family_id:family,nickname:'哥哥',age_years:8,age_recorded_at:new Date().toISOString()},{id:b,family_id:family,nickname:'妹妹',age_years:6,age_recorded_at:new Date().toISOString()}];
  const seed=name=>({version:1,starterChoiceVersion:1,starterCompanionId:'pip',onboardingDone:true,childName:name,title:name==='哥哥'?'數學作業':'閱讀',minutes:5,orbs:name==='哥哥'?10:30,phase:'ready',deadline:null,remaining:300,help:false,history:[],guardian:{},guardianCards:[],allowEarlyFinish:true,focusMusicEnabled:false});
@@ -39,8 +39,16 @@ try{for(const [width,height] of [[320,568],[390,750]]){
  await p.screenshot({path:`reports/family-v2/english-village-${width}.png`,fullPage:true});
  await p.getByRole('button',{name:'Start task',exact:true}).click();
  await p.getByTestId('immersive-world').waitFor();
+ const skip=p.getByRole('button',{name:'Skip tutorial',exact:true});
+ if(await skip.isVisible())await skip.click();
  await p.screenshot({path:`reports/family-v2/english-solo-${width}.png`,fullPage:true});
- console.log('remaining visible Chinese',width,(await p.locator('body').innerText()).split('\n').filter(s=>/[\u3400-\u9fff]/.test(s)).slice(0,20));
+ if(width>=620){
+ const stage=await p.getByTestId('mission-stage').boundingBox();
+ const companion=await p.getByTestId('guardian-companion').boundingBox();
+ assert(companion.x>=stage.x+stage.width-1,JSON.stringify({width,stage,companion}));
+ }
+ const prepare=p.getByRole('button',{name:'Ready to go',exact:true});
+ await prepare.scrollIntoViewIfNeeded();assert(await prepare.isVisible());
  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);
  await context.close();console.log('PASS English parent PIN, solo entry and no horizontal overflow',width);
  }
