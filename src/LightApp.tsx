@@ -87,6 +87,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const {storage,pinKey,familyMode}=useFamilyStorage();
   const {width: viewportWidth, height: viewportHeight} = useWindowDimensions();
   const [state, setState] = useState<State | null>(null);
+  useEffect(()=>{if(state?.homework?.timer)setHomeworkOpen(true)},[!!state?.homework?.timer]);
   const homeworkSelected=homeworkCardSelected;
 
   const [customDraft,setCustomDraft]=useState(String(DEFAULT_CUSTOM_MINUTES));

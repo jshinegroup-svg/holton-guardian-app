@@ -2,7 +2,7 @@ import type {LightState} from '../LightApp';
 import {advanceJourney,migrateJourneys} from '../lib/journeys';
 export type HomeworkTask={id:string;title:string;detail:string;reported?:boolean;confirmed?:boolean;waived?:boolean};
 export type HomeworkDay={tasks:HomeworkTask[];claimedAt?:string};
-export type Homework={enabled?:boolean;days:Record<string,HomeworkDay>;timer?:{date:string;task:string;mode:'focus'|'rest';deadline:number|null;remaining:number}};
+export type Homework={enabled?:boolean;days:Record<string,HomeworkDay>;timer?:{date:string;task:string;mode:'focus'|'rest';deadline:number|null;remaining:number;focusSeconds?:number;helpOpen?:boolean;helpCard?:string;helpDeadline?:number;usedHelp?:string[]}};
 export const homework=(s:LightState):Homework=>s.homework??{days:{}};
 export const dateKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 export const allConfirmed=(d?:HomeworkDay)=>!!d?.tasks.length&&d.tasks.every(t=>t.confirmed)&&!d.claimedAt;
