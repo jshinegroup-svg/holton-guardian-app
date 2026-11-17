@@ -96,3 +96,19 @@ test('matching state with unacknowledged events still requires review',async()=>
  s.storage.set(key,JSON.stringify({schema:2,revision:1,state:p.state,pending:p,queue:[p]}));s.saves.set(a,{familyId:family,childId:a,revision:2,state:{orbs:20}});
  await assert.rejects(s.repo(a).retry(),/revision_conflict/);assert.equal(s.operations.size,0);assert.equal(JSON.parse(s.storage.get(key)).pending.operationId,'reward');
 });
+
+test('background no-op recovery cannot authorize a stale screen to overwrite cloud',async()=>{
+ const s=setup(),key=childStorageKey(family,a),p={operationId:'noop-bg',expectedRevision:1,state:{orbs:10},baseState:{orbs:10},events:[]};
+ s.storage.set(key,JSON.stringify({schema:2,revision:1,state:p.state,pending:p,queue:[p]}));s.saves.set(a,{familyId:family,childId:a,revision:2,state:{orbs:30}});
+ const r=s.repo(a);await r.load();await r.retry();
+ await assert.rejects(r.save({orbs:11}),/revision_conflict/);assert.equal(s.saves.get(a).state.orbs,30);
+ await r.load();await r.save({orbs:31});assert.equal(s.saves.get(a).state.orbs,31);
+});
+
+test('JSONB object key ordering does not create a false conflict; arrays keep order',async()=>{
+ const s=setup(),r=s.repo(a);await r.save({orbs:10,homework:{days:{date:{tasks:['a','b'],confirmed:true}}}});
+ s.saves.set(a,{familyId:family,childId:a,revision:3,state:{homework:{days:{date:{confirmed:true,tasks:['a','b']}}},orbs:10}});
+ await r.save({orbs:11,homework:{days:{date:{tasks:['a','b'],confirmed:true}}}});assert.equal(s.saves.get(a).revision,4);
+ s.saves.set(a,{familyId:family,childId:a,revision:5,state:{orbs:11,homework:{days:{date:{tasks:['b','a'],confirmed:true}}}}});
+ await assert.rejects(r.save({orbs:12,homework:{days:{date:{tasks:['a','b'],confirmed:true}}}}),/revision_conflict/);
+});

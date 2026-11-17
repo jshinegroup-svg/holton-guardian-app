@@ -9,6 +9,8 @@ export interface FamilyCloud {
 export interface LocalStore {getItem(key:string):Promise<string|null>;setItem(key:string,value:string):Promise<void>}
 type Pending<T>={operationId:string;expectedRevision:number;state:T;events:FamilyEvent[];baseState?:T};
 type Cached<T>={schema:2;revision:number;state:T;pending?:Pending<T>;queue?:Pending<T>[]};
+// PostgreSQL JSONB may reorder object keys; order is not a progress change.
+function snapshot(value:unknown){return JSON.stringify(value,(_key,item)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.fromEntries(Object.keys(item).sort().map(key=>[key,item[key]])):item);}
 /** One instance per child. Local pending writes survive a failed request/reload.
  * Conflicts must be surfaced; never substitute the newest server revision and retry old state.
  */
@@ -31,7 +33,7 @@ export class ProgressRepository<T> {
   }
   async load():Promise<{state:T;revision:number;pending:boolean}|null>{
     const cached=await this.cached();
-    this.knownState=cached?JSON.stringify(cached.state):undefined;
+    this.knownState=cached?snapshot(cached.state):undefined;
     // Never overwrite unsent progress by loading an older cloud snapshot.
     if(cached?.queue?.length){this.revision=cached.revision;return {...cached,pending:true};}
     let saved:ChildSave<T>|null;
@@ -40,7 +42,7 @@ export class ProgressRepository<T> {
     if(!saved){this.revision=cached?.revision??0;return cached?{...cached,pending:false}:null;}
     if(saved.familyId!==this.familyId||saved.childId!==this.childId)throw Error('save_owner_mismatch');
     await this.local.setItem(this.key,JSON.stringify({schema:2,revision:saved.revision,state:saved.state}));
-    this.revision=saved.revision;this.knownState=JSON.stringify(saved.state);
+    this.revision=saved.revision;this.knownState=snapshot(saved.state);
     return {state:saved.state,revision:saved.revision,pending:false};
   }
   async save(state:T,events:FamilyEvent[]=[]):Promise<void>{
@@ -48,18 +50,18 @@ export class ProgressRepository<T> {
     this.busy=true;
     try{
       const previous=await this.cached();
-      if(previous&&this.knownState!==undefined&&JSON.stringify(previous.state)!==this.knownState)throw Error('revision_conflict');
+      if(previous&&this.knownState!==undefined&&snapshot(previous.state)!==this.knownState)throw Error('revision_conflict');
       const queue=previous?.queue??[];
       // Reads/migrations that change nothing must not create a stale outgoing write.
-      if(previous&&JSON.stringify(previous.state)===JSON.stringify(state)&&!events.length){
-        if(queue.length&&!offline()){try{await this.flush(previous);}catch(e){if(!transportFailure(e))throw e;this.retryAfter=Date.now()+30000;}}
+      if(previous&&snapshot(previous.state)===snapshot(state)&&!events.length){
+        if(queue.length&&!offline()){try{await this.flush(previous);this.knownState=snapshot((await this.cached())?.state);}catch(e){if(!transportFailure(e))throw e;this.retryAfter=Date.now()+30000;}}
         return;
       }
       const pending:Pending<T>={operationId:this.newId(),expectedRevision:(previous?.revision??this.revision??0)+queue.length,state,events,baseState:previous?.state};
       const next:Cached<T>={schema:2,revision:previous?.revision??this.revision??0,state,pending:queue[0]??pending,queue:[...queue,pending]};
       await this.local.setItem(this.key,JSON.stringify(next));
-      this.knownState=JSON.stringify(state);
-      try{if(!offline()&&Date.now()>=this.retryAfter)await this.flush(next);}catch(e){if(!transportFailure(e))throw e;this.retryAfter=Date.now()+30000;}
+      this.knownState=snapshot(state);
+      try{if(!offline()&&Date.now()>=this.retryAfter){await this.flush(next);this.knownState=snapshot((await this.cached())?.state);}}catch(e){if(!transportFailure(e))throw e;this.retryAfter=Date.now()+30000;}
     }finally{this.busy=false;}
   }
   async retry():Promise<void>{
@@ -79,7 +81,7 @@ export class ProgressRepository<T> {
       if(!Number.isSafeInteger(saved.revision)||saved.revision<0||!saved.state)throw Error('invalid_cloud_save');
       if(cached?.pending)await this.local.setItem(`${this.key}::conflict-backup::${cached.pending.operationId}`,JSON.stringify(cached));
       await this.local.setItem(this.key,JSON.stringify({schema:2,revision:saved.revision,state:saved.state}));
-      this.revision=saved.revision;this.knownState=JSON.stringify(saved.state);
+      this.revision=saved.revision;this.knownState=snapshot(saved.state);
     }finally{this.busy=false;}
   }
   async localState(){return (await this.cached())?.state??null;}
@@ -98,14 +100,14 @@ export class ProgressRepository<T> {
         if(!remote)throw error;
         if(remote.familyId!==this.familyId||remote.childId!==this.childId)throw Error('save_owner_mismatch');
         if(!Number.isSafeInteger(remote.revision)||remote.revision<cached.revision||!remote.state)throw Error('invalid_cloud_save');
-        const equal=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
+        const equal=(a:unknown,b:unknown)=>snapshot(a)===snapshot(b);
         const noEvents=queue.every(op=>!op.events.length);
         // Legacy queues lack baseState: only an exact cloud match proves them redundant.
         const redundant=noEvents&&(equal(cached.state,remote.state)||queue.every(op=>op.baseState!==undefined&&equal(op.baseState,op.state)));
         if(redundant){
           await this.local.setItem(`${this.key}::conflict-backup::${p.operationId}`,JSON.stringify(cached));
           await this.local.setItem(this.key,JSON.stringify({schema:2,revision:remote.revision,state:remote.state,queue:[]}));
-          this.revision=remote.revision;this.knownState=JSON.stringify(remote.state);return;
+          this.revision=remote.revision;return;
         }
         // Rebase only if the entire base snapshot still equals cloud. Never merge points,
         // timers or completed work by guessing; preserve the original operation IDs.

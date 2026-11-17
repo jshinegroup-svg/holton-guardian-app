@@ -171,3 +171,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-17 actor=codex approval=user-report trigger=24393 action=fix-homework-music-gesture-start-resume-and-interruption-recovery; tests=typecheck,export,gesture-gated-mobile-flows-320-744-890; family-data=synthetic-only
 
 2026-11-18 actor:codex approval:user trigger:24411 fix(sync): safe no-op queue recovery, base-equal rebase, foreground cloud refresh and editing guard; 12 repository + offline + mobile conflict tests pass; no production user data changed.
+2026-11-18 actor:codex approval:user trigger:24411 fix(sync): keep background recovery separate from displayed-state acknowledgement; normalize JSONB key order; 14 repository tests passed. Canceled preflight deploy before live to include these guards.
