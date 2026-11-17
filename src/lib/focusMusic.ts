@@ -47,10 +47,10 @@ export function useFocusMusic({enabled,active,trackId,previewAllowed,level='norm
  },[prepare]);
  useEffect(()=>{
   if(!enabled||Platform.OS!=='web')return;
-  const arm=()=>{try{prepare();void context.current?.resume().catch(()=>{});}catch{/* A visible retry remains available. */}};
-  document.addEventListener('pointerdown',arm,true);document.addEventListener('keydown',arm,true);
-  return()=>{document.removeEventListener('pointerdown',arm,true);document.removeEventListener('keydown',arm,true);};
- },[enabled,prepare]);
+  const arm=()=>{try{prepare();if(desiredRef.current&&!document.hidden){if(player.current?.paused||context.current?.state!=='running')play(desiredRef.current);}else void context.current?.resume().catch(()=>{});}catch{/* A visible retry remains available. */}};
+  document.addEventListener('pointerdown',arm,true);document.addEventListener('keydown',arm,true);document.addEventListener('click',arm,true);
+  return()=>{document.removeEventListener('pointerdown',arm,true);document.removeEventListener('keydown',arm,true);document.removeEventListener('click',arm,true);};
+ },[enabled,prepare,play]);
  useEffect(()=>{if(desired&&typeof document!=='undefined'&&!document.hidden)play(desired);else stop();},[desired,play,stop]);
  useEffect(()=>{
   const audio=player.current;if(!audio||!desired)return;

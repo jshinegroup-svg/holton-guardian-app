@@ -4,7 +4,7 @@ import Image from './i18n/CardImage';
 import {Pressable,Text} from './i18n/ui';
 
 /** Keep the original artwork; the whole card is the accessible start control. */
-export default function TaskStarterCard({source,disabled,reduced,onStart}:{source:ImageSourcePropType|undefined;disabled:boolean;reduced:boolean;onStart:()=>Promise<unknown>}){
+export default function TaskStarterCard({source,disabled,reduced,onStart,onActivate}:{source:ImageSourcePropType|undefined;disabled:boolean;reduced:boolean;onStart:()=>Promise<unknown>;onActivate?:()=>void}){
  const scale=useRef(new Animated.Value(1)).current;
  const locked=useRef(false),alive=useRef(true),origin=useRef<{x:number;y:number}|null>(null),dragged=useRef(false);
  const [starting,setStarting]=useState(false);
@@ -14,6 +14,7 @@ export default function TaskStarterCard({source,disabled,reduced,onStart}:{sourc
   if(disabled||locked.current||dragged.current)return;
   locked.current=true;setStarting(true);
   try{
+   onActivate?.(); // Media playback must start before the animation yields the user gesture.
    if(!reduced)await new Promise<void>(resolve=>Animated.sequence([Animated.timing(scale,{toValue:.96,duration:60,useNativeDriver:true}),Animated.spring(scale,{toValue:1,speed:28,bounciness:8,useNativeDriver:true})]).start(()=>resolve()));
    if(alive.current)await onStart();
   }finally{locked.current=false;if(alive.current)setStarting(false);}
