@@ -10,15 +10,19 @@ self.addEventListener('message',event=>{
   try{
    preparing=true;
    const response=await fetch('/offline-manifest.json',{cache:'no-store',signal:AbortSignal.timeout(45000)});if(!response.ok)throw Error('manifest_unavailable');
-   const manifest=await response.json();const cache=await caches.open('holton-public-'+manifest.version);
+   const manifest=await response.json();
+   const oldMeta=await caches.open('holton-offline-meta');
+   const oldRecord=await oldMeta.match('/manifest');const old=oldRecord?await oldRecord.json():null;
+   const oldCache=old?await caches.open('holton-public-'+old.version):null;
+   const cache=await caches.open('holton-public-'+manifest.version);
    let completed=0;
    for(let offset=0;offset<manifest.assets.length;offset+=6){
     await Promise.all(manifest.assets.slice(offset,offset+6).map(async path=>{
-     if(!await cache.match(path)){const r=await fetch(path,{cache:'no-store',signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error('asset_download_failed');await cache.put(path,r);}
+     if(!await cache.match(path)){const reused=oldCache&&old.hashes?.[path]&&old.hashes[path]===manifest.hashes?.[path]?await oldCache.match(path):null;const r=reused||await fetch(path,{cache:'no-store',signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error('asset_download_failed');await cache.put(path,r);}
      completed++;port.postMessage({completed,total:manifest.assets.length});
     }));
    }
-   const meta=await caches.open('holton-offline-meta');await meta.put('/active',new Response(manifest.version));
+   const meta=await caches.open('holton-offline-meta');await meta.put('/active',new Response(manifest.version));await meta.put('/manifest',new Response(JSON.stringify(manifest)));
    port.postMessage({done:true,version:manifest.version});
   }catch(e){port.postMessage({error:String(e.message||e)});}finally{preparing=false;}
  })());

@@ -1,4 +1,12 @@
-export async function prepareAssets(progress:(message:string)=>void){
+let running:Promise<void>|undefined;
+let checkedAt=0;
+export function prepareAssets(progress:(message:string)=>void,force=false){
+ if(running)return running;
+ if(!force&&Date.now()-checkedAt<300000)return Promise.resolve();
+ running=downloadAssets(progress).then(()=>{checkedAt=Date.now();}).finally(()=>{running=undefined;});
+ return running;
+}
+async function downloadAssets(progress:(message:string)=>void){
  if(!('serviceWorker' in navigator))throw Error('此瀏覽器不支援離線下載，請使用 Safari 或 Chrome。');
  await navigator.serviceWorker.register('/sw.js');
  const registration=await navigator.serviceWorker.ready;

@@ -12,7 +12,7 @@ try{for(const [width,height] of [[390,844]]){
  const kids=[{id:a,family_id:family,nickname:'哥哥',age_years:8,age_recorded_at:new Date().toISOString()},{id:b,family_id:family,nickname:'妹妹',age_years:6,age_recorded_at:new Date().toISOString()}];
  const seed=name=>({version:1,activeWorld:width===320?'forest':width===744?'sky':'cosmos',journeys:{version:2,counts:{forest:0,sky:0,cosmos:0},legacyCredit:0},starterChoiceVersion:1,starterCompanionId:'pip',onboardingDone:true,childName:name,title:name==='哥哥'?'數學作業':'閱讀',minutes:5,orbs:name==='哥哥'?10:30,homework:{enabled:false,days:{'2026-11-16':{tasks:[{id:'old',title:'國語甲本',detail:'原有功課',reported:false,confirmed:false}]}}},phase:'ready',deadline:null,remaining:300,help:false,supportUsed:['rest'],breakDeadline:null,focusElapsedMs:0,focusStartedAt:null,rewardProgress:2,dailyGoal:1,taskReward:1,history:[],guardian:{},guardianCards:[],allowEarlyFinish:true,focusMusicEnabled:false,taskSoundEnabled:width!==890});
  const saves=new Map(kids.map(c=>[c.id,{child_id:c.id,family_id:family,revision:1,state:seed(c.nickname),updated_at:new Date().toISOString()}]));const ops=new Map();let recognitionCalls=0;let recognitionMode='missing';let completions=0;let failure='';const attempts=[];
- const photos=new Map([[a+'/2026-11-16',{buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6kXAAAAAASUVORK5CYII=','base64'),mime:'image/png'}]]);let photoFailure=false;
+ const photos=new Map([[a+'/2026-11-16',{buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6kXAAAAAASUVORK5CYII=','base64'),mime:'image/png'}]]);let photoFailure=false;let photoReads=0;
  const context=await browser.newContext({viewport:{width,height},reducedMotion:"reduce",hasTouch:true,isMobile:width<800});const p=await context.newPage();p.setDefaultTimeout(12000);p.setDefaultNavigationTimeout(15000);const errors=[];console.log('viewport',width);p.on('pageerror',e=>errors.push(e.message));
  let networkAvailable=true;
  const apiRoute=async route=>{if(!networkAvailable){await route.abort('internetdisconnected');return;}const req=route.request(),url=new URL(req.url()),pathname=url.pathname;let data;
@@ -25,7 +25,7 @@ try{for(const [width,height] of [[390,844]]){
     if(photos.has(key)&&!replace){await route.fulfill({status:409,json:{statusCode:'409',message:'The resource already exists'}});return;}
     photos.set(key,{buffer:Buffer.from(await file.arrayBuffer()),mime:file.type});await route.fulfill({status:200,json:{Key:key}});return;
    }
-   const photo=photos.get(key);if(!photo){await route.fulfill({status:400,json:{statusCode:'404',error:'not_found',message:'Object not found'}});return;}
+   photoReads++;const photo=photos.get(key);if(!photo){await route.fulfill({status:400,json:{statusCode:'404',error:'not_found',message:'Object not found'}});return;}
    await route.fulfill({status:200,contentType:photo.mime,body:photo.buffer});return;
   }
   if(pathname.endsWith('/functions/v1/homework-recognize')){recognitionCalls++;assert.equal(req.postDataJSON().childId,a);if(recognitionMode==='missing'){await route.fulfill({status:503,json:{error:'not_configured'}});return;}data={draft:{dateText:'11月16日',tasks:[{title:'圈詞',detail:'第7課2次，本別待確認',uncertainty:''},{title:'數學課本',detail:'94–待確認頁，訂正92頁',uncertainty:'末頁不清楚'},{title:'背課文',detail:'第八課',uncertainty:''},{title:'童詩朗誦',detail:'一遍',uncertainty:''},{title:'閱讀',detail:'十分鐘',uncertainty:''},{title:'作文',detail:'我的家庭',uncertainty:''}],excluded:[{text:'家長簽名',reason:'不是書寫功課'}],warnings:[]}};}else if(pathname.endsWith('/rpc/record_usage_event'))data=null;
@@ -61,9 +61,13 @@ try{for(const [width,height] of [[390,844]]){
  await p.getByRole('button',{name:'只有 哥哥 玩',exact:true}).click();
  let firstEntry=true; const enter=async()=>{await p.getByRole('button',{name:'開始任務',exact:true}).click();for(let i=0;i<15&&await p.getByTestId('homework-card-title').count()===0;i++)await p.getByLabel('下一張任務卡',{exact:true}).click();await p.getByRole('button',{name:'進入功課模式',exact:true}).click();if(firstEntry){await p.getByRole('button',{name:'先略過',exact:true}).click();firstEntry=false;}};
  await enter();console.log('entered');
- await p.getByRole('button',{name:'準備離線使用（首次約151 MB，建議 Wi-Fi）',exact:true}).click();
+ // No download click: first preparation must run automatically.
  await new Promise(r=>setTimeout(r,3000));console.log('preparation state',await p.getByTestId('offline-prepare').innerText());
- await p.getByText('已可離線使用。請勿清除瀏覽器資料；新增功課後請再下載一次。',{exact:true}).waitFor({timeout:120000});console.log('prepared');
+ await p.getByText('已可離線使用・連網時自動更新',{exact:true}).waitFor({timeout:120000});console.log('prepared');
+ const readsBefore=photoReads;
+ await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+ await p.getByText('已可離線使用・連網時自動更新',{exact:true}).waitFor();
+ await p.waitForTimeout(1000);assert(photoReads>readsBefore,'returning to the game automatically refreshes cloud photos');
  const beforeOffline=attempts.length;const sisterBefore=JSON.stringify(saves.get(b));
  networkAvailable=false;await p.evaluate(()=>localStorage.setItem('fixture-expired','1'));await context.setOffline(true);await p.reload();console.log('reloaded offline');
  await enter();await p.getByRole('button',{name:'明天',exact:false}).first().click();

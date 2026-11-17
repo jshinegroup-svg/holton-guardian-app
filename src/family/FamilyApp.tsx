@@ -1,3 +1,4 @@
+import {useAutomaticOffline} from '../offline/useAutomaticOffline';
 import {offline} from './connectivity';
 import {LanguagePicker} from '../i18n/ui';
 import {useLocale,t} from '../i18n/locale';
@@ -23,7 +24,8 @@ function ChildGame({child,compact,musicOwner,onExpand,controls,onMenu,onSolo,sol
  const storage=useMemo(()=>makeChildStorage(child,setSync),[child.id,child.familyId]);
  useEffect(()=>{const id=crypto.randomUUID();void supabase.rpc('record_usage_event',{p_child_id:child.id,p_id:id,p_kind:'visit'});},[child.id]);
  useEffect(()=>{const sync=()=>{void storage.sync?.();};const timer=setInterval(sync,30000);window.addEventListener('online',sync);window.addEventListener('offline',sync);document.addEventListener('visibilitychange',sync);return()=>{clearInterval(timer);window.removeEventListener('online',sync);window.removeEventListener('offline',sync);document.removeEventListener('visibilitychange',sync);};},[storage]);
- const scope=useMemo(()=>({storage,pinKey:`holton-family-v2::${child.familyId}::parent-pin`,familyMode:true,childId:child.id,childName:child.nickname}),[storage,child.familyId,child.id,child.nickname]);
+ const offlinePreparation=useAutomaticOffline(storage);
+ const scope=useMemo(()=>({offlinePreparation,storage,pinKey:`holton-family-v2::${child.familyId}::parent-pin`,familyMode:true,childId:child.id,childName:child.nickname}),[storage,child.familyId,child.id,child.nickname,offlinePreparation]);
  return <FamilyStorageContext.Provider value={scope}><View onPointerDown={()=>{lastInteraction.current=Date.now();}} style={{flex:1,minWidth:0}}><View testID="family-sync-status" pointerEvents="none" style={compact?styles.syncSlot:styles.syncOverlay}><Text numberOfLines={1} accessibilityLiveRegion="polite" style={styles.sync}>{compact||sync!=='雲端已同步'?`${child.nickname} · ${t(sync)}`:''}</Text></View><LightApp familyNavigation={{sync,onMenu,onSolo}} duoControl={register} childNickname={child.nickname} compact={compact} musicOwner={musicOwner} onExpand={onExpand}/></View></FamilyStorageContext.Provider>;
 }
 export default function FamilyApp(){
