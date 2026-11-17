@@ -166,3 +166,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-17 actor:codex approval:user-request trigger:offline-homework — implement explicit offline preparation, public asset cache, scoped durable progress/photo outboxes, automatic reconnect replay, quiet offline status; typecheck/export and synthetic offline/reconnect/conflict/quota checks passed.
 
 2026-11-17 actor=codex approval=user trigger=auto-offline commit=53ce84a automatic per-child preparation, manual retry, hashed asset reuse; typecheck/export and automatic offline browser checks passed; Render dep-dbu4jl0n74is73fduv30 started.
+2026-11-17 actor=codex approval=user trigger=auto-offline followup: live check exposed stale CDN manifest; embed manifest in worker and verify each downloaded SHA-256; stale-shell auto-retry plus offline browser check PASS.

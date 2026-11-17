@@ -4,7 +4,8 @@ import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {randomUUID,randomInt} from 'node:crypto';
 import assert from 'node:assert/strict';
-const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=path.resolve('dist','.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(path.resolve('dist')+path.sep)){res.writeHead(403).end();return;}const data=await readFile(file);const ext=path.extname(file);res.setHeader('Content-Type',ext==='.js'?'application/javascript':ext==='.html'?'text/html':ext==='.png'?'image/png':ext==='.jpg'?'image/jpeg':'application/octet-stream');res.end(data);}catch{res.writeHead(404).end();}});
+let staleShell=process.env.TEST_STALE_PACKAGE==='1';
+const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=path.resolve('dist','.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(path.resolve('dist')+path.sep)){res.writeHead(403).end();return;}const data=await readFile(file);const ext=path.extname(file);res.setHeader('Content-Type',ext==='.js'?'application/javascript':ext==='.html'?'text/html':ext==='.png'?'image/png':ext==='.jpg'?'image/jpeg':'application/octet-stream');if(staleShell&&pathname==='/index.html'){staleShell=false;res.end('<html>stale deployment</html>');}else res.end(data);}catch{res.writeHead(404).end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=process.env.TEST_BASE_URL||`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
 try{for(const [width,height] of [[390,844]]){
@@ -63,6 +64,7 @@ try{for(const [width,height] of [[390,844]]){
  await enter();console.log('entered');
  // No download click: first preparation must run automatically.
  await new Promise(r=>setTimeout(r,3000));console.log('preparation state',await p.getByTestId('offline-prepare').innerText());
+ if(process.env.TEST_STALE_PACKAGE==='1'){await p.getByText('離線準備未完成・連網時會自動重試',{exact:true}).waitFor({timeout:120000});await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));}
  await p.getByText('已可離線使用・連網時自動更新',{exact:true}).waitFor({timeout:120000});console.log('prepared');
  const readsBefore=photoReads;
  await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));

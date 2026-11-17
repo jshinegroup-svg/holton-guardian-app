@@ -9,8 +9,8 @@ self.addEventListener('message',event=>{
  event.waitUntil((async()=>{
   try{
    preparing=true;
-   const response=await fetch('/offline-manifest.json',{cache:'no-store',signal:AbortSignal.timeout(45000)});if(!response.ok)throw Error('manifest_unavailable');
-   const manifest=await response.json();
+   const manifest=self.__OFFLINE_MANIFEST;
+   if(!manifest?.hashes)throw Error('offline_manifest_not_built');
    const oldMeta=await caches.open('holton-offline-meta');
    const oldRecord=await oldMeta.match('/manifest');const old=oldRecord?await oldRecord.json():null;
    const oldCache=old?await caches.open('holton-public-'+old.version):null;
@@ -18,7 +18,11 @@ self.addEventListener('message',event=>{
    let completed=0;
    for(let offset=0;offset<manifest.assets.length;offset+=6){
     await Promise.all(manifest.assets.slice(offset,offset+6).map(async path=>{
-     if(!await cache.match(path)){const reused=oldCache&&old.hashes?.[path]&&old.hashes[path]===manifest.hashes?.[path]?await oldCache.match(path):null;const r=reused||await fetch(path,{cache:'no-store',signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error('asset_download_failed');await cache.put(path,r);}
+     if(!await cache.match(path)){const reused=oldCache&&old.hashes?.[path]&&old.hashes[path]===manifest.hashes?.[path]?await oldCache.match(path):null;const r=reused||await fetch(path,{cache:'no-store',signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error('asset_download_failed');
+     const bytes=await r.clone().arrayBuffer();
+     const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(v=>v.toString(16).padStart(2,'0')).join('');
+     if(digest!==manifest.hashes[path])throw Error('素材版本更新中，將自動重試。');
+     await cache.put(path,r);}
      completed++;port.postMessage({completed,total:manifest.assets.length});
     }));
    }

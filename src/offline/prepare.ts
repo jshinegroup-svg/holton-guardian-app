@@ -8,8 +8,15 @@ export function prepareAssets(progress:(message:string)=>void,force=false){
 }
 async function downloadAssets(progress:(message:string)=>void){
  if(!('serviceWorker' in navigator))throw Error('此瀏覽器不支援離線下載，請使用 Safari 或 Chrome。');
- await navigator.serviceWorker.register('/sw.js');
- const registration=await navigator.serviceWorker.ready;
+ const registration=await navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'});
+ await registration.update();
+ const installing=registration.installing;
+ if(installing&&installing.state!=='activated')await new Promise<void>((resolve,reject)=>{
+  const timer=setTimeout(()=>{installing.removeEventListener('statechange',check);reject(Error('offline_worker_update_timeout'));},45000);
+  const check=()=>{if(installing.state==='activated'||installing.state==='redundant'){clearTimeout(timer);installing.removeEventListener('statechange',check);installing.state==='activated'?resolve():reject(Error('offline_worker_update_failed'));}};
+  installing.addEventListener('statechange',check);check();
+ });
+ await navigator.serviceWorker.ready;
  const worker=registration.active;if(!worker)throw Error('offline_worker_not_ready');
  await navigator.storage?.persist?.();
  return new Promise<void>((resolve,reject)=>{
