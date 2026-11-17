@@ -21,7 +21,11 @@ self.addEventListener('message',event=>{
      if(!await cache.match(path)){const reused=oldCache&&old.hashes?.[path]&&old.hashes[path]===manifest.hashes?.[path]?await oldCache.match(path):null;const r=reused||await fetch(path,{cache:'no-store',signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error('asset_download_failed');
      const bytes=await r.clone().arrayBuffer();
      const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(v=>v.toString(16).padStart(2,'0')).join('');
-     if(digest!==manifest.hashes[path])throw Error('素材版本更新中，將自動重試。');
+     // The CDN optimizes raster images, so encoded bytes may differ from the build.
+     // Require real image signatures; executable/page assets must match exactly.
+     const b=new Uint8Array(bytes),raster=/\.(png|jpe?g|webp|gif|ico)$/.test(path);
+     const imageBytes=(b[0]===255&&b[1]===216&&b[2]===255)||(b[0]===137&&b[1]===80&&b[2]===78&&b[3]===71)||(b[0]===71&&b[1]===73&&b[2]===70)||(b[0]===82&&b[1]===73&&b[2]===70&&b[3]===70&&b[8]===87&&b[9]===69&&b[10]===66&&b[11]===80)||(b[0]===0&&b[1]===0&&b[2]===1&&b[3]===0);
+     if(raster?!imageBytes:digest!==manifest.hashes[path])throw Error('素材版本更新中，將自動重試。');
      await cache.put(path,r);}
      completed++;port.postMessage({completed,total:manifest.assets.length});
     }));
