@@ -44,6 +44,7 @@ export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>voi
  const repo=new ProgressRepository<Record<string,unknown>>(child.familyId,child.id,photoStore(''),cloud,()=>crypto.randomUUID());
  const prefix=`holton-family-v2::${child.familyId}::${child.id}::`;
  const notebooks=new NotebookRepository(photoStore(prefix),notebookCloud(supabase,child.id));
+ const offlineChanged=()=>window.dispatchEvent(new CustomEvent('holton-offline-changed',{detail:guarded}));
  let syncConflict=false;
  let previous:Record<string,unknown>|null=null;
  const status=async()=>onSync(offline()?'離線使用中・進度已存本機':(await repo.hasPending()||await notebooks.hasPending())?'進度已存本機・待同步（含獎勵）':'雲端已同步');
@@ -61,10 +62,10 @@ export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>voi
   if(key!=='holton-guardian-app::light-v1')return AsyncStorage.getItem(prefix+key);
   try{let saved=await repo.load();
   if(saved?.pending&&!offline()){try{await repo.retry();saved=await repo.load();}catch(e){if(!transportFailure(e))throw e;}}
-  previous=saved?.state??null;await status();return previous?JSON.stringify(previous):null;}catch(e){onSync(syncErrorMessage(e));throw e;}
+  previous=saved?.state??null;await status();offlineChanged();return previous?JSON.stringify(previous):null;}catch(e){onSync(syncErrorMessage(e));throw e;}
  },
  async setItem(key,value){
-  if(key.startsWith('homework-photo:')){await notebooks.write(key.slice('homework-photo:'.length),value);await status();return;}
+  if(key.startsWith('homework-photo:')){await notebooks.write(key.slice('homework-photo:'.length),value);await status();offlineChanged();return;}
   if(key!=='holton-guardian-app::light-v1')return AsyncStorage.setItem(prefix+key,value);
   const next=JSON.parse(value);const events:import('./types').FamilyEvent[]=[];const at=new Date().toISOString();
   if(next.phase==='active'&&previous?.phase==='preparing'){
@@ -75,7 +76,8 @@ export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>voi
   if(previous&&next.companionCardId!==previous.companionCardId&&next.companionCardId)events.push({id:crypto.randomUUID(),kind:'card_selected',occurredAt:at,cardId:next.companionCardId});
   if(previous&&next.cardId!==previous.cardId&&next.cardId)events.push({id:crypto.randomUUID(),kind:'card_selected',occurredAt:at,cardId:next.cardId});
   onSync(offline()?'離線使用中・進度已存本機':'正在儲存到雲端…');
-  try{await repo.save(next,events);previous=next;await status();}
+  const homeworkChanged=JSON.stringify(next.homework?.days)!==JSON.stringify((previous as any)?.homework?.days);
+  try{await repo.save(next,events);previous=next;await status();if(homeworkChanged)offlineChanged();}
   catch(e){onSync(syncErrorMessage(e));throw e;}
  },
  async removeItem(key){if(key==='holton-guardian-app::light-v1')throw Error('Protected child save');return AsyncStorage.removeItem(prefix+key);}

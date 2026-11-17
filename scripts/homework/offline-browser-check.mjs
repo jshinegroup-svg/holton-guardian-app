@@ -13,7 +13,7 @@ try{for(const [width,height] of [[390,844]]){
  const kids=[{id:a,family_id:family,nickname:'哥哥',age_years:8,age_recorded_at:new Date().toISOString()},{id:b,family_id:family,nickname:'妹妹',age_years:6,age_recorded_at:new Date().toISOString()}];
  const seed=name=>({version:1,activeWorld:width===320?'forest':width===744?'sky':'cosmos',journeys:{version:2,counts:{forest:0,sky:0,cosmos:0},legacyCredit:0},starterChoiceVersion:1,starterCompanionId:'pip',onboardingDone:true,childName:name,title:name==='哥哥'?'數學作業':'閱讀',minutes:5,orbs:name==='哥哥'?10:30,homework:{enabled:false,days:{'2026-11-16':{tasks:[{id:'old',title:'國語甲本',detail:'原有功課',reported:false,confirmed:false}]}}},phase:'ready',deadline:null,remaining:300,help:false,supportUsed:['rest'],breakDeadline:null,focusElapsedMs:0,focusStartedAt:null,rewardProgress:2,dailyGoal:1,taskReward:1,history:[],guardian:{},guardianCards:[],allowEarlyFinish:true,focusMusicEnabled:false,taskSoundEnabled:width!==890});
  const saves=new Map(kids.map(c=>[c.id,{child_id:c.id,family_id:family,revision:1,state:seed(c.nickname),updated_at:new Date().toISOString()}]));const ops=new Map();let recognitionCalls=0;let recognitionMode='missing';let completions=0;let failure='';const attempts=[];
- const photos=new Map([[a+'/2026-11-16',{buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6kXAAAAAASUVORK5CYII=','base64'),mime:'image/png'}]]);let photoFailure=false;let photoReads=0;
+ const photos=new Map([[a+'/2026-11-16',{buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6kXAAAAAASUVORK5CYII=','base64'),mime:'image/png'}]]);let photoFailure=process.env.TEST_PHOTO_RECOVERY==='1';let photoReads=0;
  const context=await browser.newContext({viewport:{width,height},reducedMotion:"reduce",hasTouch:true,isMobile:width<800});const p=await context.newPage();p.setDefaultTimeout(12000);p.setDefaultNavigationTimeout(15000);const errors=[];console.log('viewport',width);p.on('pageerror',e=>errors.push(e.message));
  let networkAvailable=true;
  const apiRoute=async route=>{if(!networkAvailable){await route.abort('internetdisconnected');return;}const req=route.request(),url=new URL(req.url()),pathname=url.pathname;let data;
@@ -47,6 +47,7 @@ try{for(const [width,height] of [[390,844]]){
  await p.addInitScript(({user})=>{const enc=x=>btoa(JSON.stringify(x));const exp=Math.floor(Date.now()/1000)+(localStorage.getItem('fixture-expired')?-3600:3600);localStorage.setItem('holton-family-v2-auth',JSON.stringify({access_token:`${enc({alg:'HS256',typ:'JWT'})}.${enc({sub:user,exp,role:'authenticated'})}.test`,refresh_token:'synthetic-test',expires_at:exp,expires_in:3600,token_type:'bearer',user:{id:user,email:'fixture@example.invalid'}}));localStorage.setItem('holton-guardian-app::light-v1','original-v1-sentinel');},{user});
  await p.addInitScript(({family,a,b})=>{for(const id of [a,b])localStorage.setItem(`holton-family-v2::${family}::${id}::holton-guardian-app::spotlight-v1`,JSON.stringify({main:true,companions:true,wishes:true,parent:true,companionTap:true,music:true}));},{family,a,b});
  await p.addInitScript(()=>{
+  window.__offlineChanges=0;window.addEventListener('holton-offline-changed',()=>window.__offlineChanges++);
   window.__audioLog=[];window.__playCount=0;window.__oscCount=0;window.__duckCount=0;window.addEventListener('holton-task-chime',()=>window.__duckCount++);
   class Context {constructor(){(window.__contexts??=[]).push(this);}state='suspended';destination={};get currentTime(){return Date.now()/1000;}resume(){if(this.state==='running')return Promise.resolve();return new Promise(resolve=>setTimeout(()=>{this.state='running';resolve();},350));}close(){this.state='closed';return Promise.resolve();}createGain(){const param={value:1,setValueAtTime(v){this.value=v;window.__audioLog.push(['value',v]);},linearRampToValueAtTime(v){this.value=v;window.__audioLog.push(['peak',v]);},exponentialRampToValueAtTime(v){this.value=v;},cancelScheduledValues(){},setTargetAtTime(v){this.value=v;window.__audioLog.push(['volume',v]);}};return {gain:param,connect(){},disconnect(){}};}createOscillator(){window.__oscCount++;return {type:'sine',frequency:{value:0},connect(){},disconnect(){},start(at){window.__audioLog.push(['start',at]);},stop(at){window.__audioLog.push(['stop',at]);}};}createMediaElementSource(){return {connect(){}};}}
   window.AudioContext=Context;
@@ -64,10 +65,16 @@ try{for(const [width,height] of [[390,844]]){
  await enter();console.log('entered');
  // No download click: first preparation must run automatically.
  await new Promise(r=>setTimeout(r,3000));console.log('preparation state',await p.getByTestId('offline-prepare').innerText());
+ if(process.env.TEST_PHOTO_RECOVERY==='1'){
+  await p.getByText('離線準備未完成・連網時會自動重試',{exact:true}).waitFor({timeout:120000});
+  assert(await p.evaluate(async()=>!!await (await caches.open('holton-offline-meta')).match('/active')),'photo failure does not block package download');
+  photoFailure=false;await p.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
+ }
  if(process.env.TEST_STALE_PACKAGE==='1'){await p.getByText('離線準備未完成・連網時會自動重試',{exact:true}).waitFor({timeout:120000});await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));}
  await p.getByText('已可離線使用・連網時自動更新',{exact:true}).waitFor({timeout:120000});console.log('prepared');
+ assert.equal(await p.getByRole('button',{name:'重試離線準備',exact:true}).count(),0,'ready state has no download action');
  const readsBefore=photoReads;
- await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+ await p.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
  await p.getByText('已可離線使用・連網時自動更新',{exact:true}).waitFor();
  await p.waitForTimeout(1000);assert(photoReads>readsBefore,'returning to the game automatically refreshes cloud photos');
  const beforeOffline=attempts.length;const sisterBefore=JSON.stringify(saves.get(b));
@@ -88,7 +95,9 @@ try{for(const [width,height] of [[390,844]]){
  await p.getByRole('button',{name:'返回／關閉照片',exact:true}).click();
  await p.getByRole('button',{name:'接續專注',exact:true}).click();
  await p.getByTestId('homework-focus-help').tap();
+ const changesBefore=await p.evaluate(()=>window.__offlineChanges);
  await p.getByRole('button',{name:'我完成了，請確認',exact:true}).click();
+ await p.waitForFunction(n=>window.__offlineChanges>n,changesBefore);
  assert.equal(attempts.length,beforeOffline);
  assert((await p.getByTestId('family-sync-status').innerText()).includes('離線使用中'));
  networkAvailable=true;await p.evaluate(()=>localStorage.removeItem('fixture-expired'));await context.setOffline(false);
