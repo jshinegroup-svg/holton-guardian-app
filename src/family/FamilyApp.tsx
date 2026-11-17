@@ -1,3 +1,4 @@
+import {offline} from './connectivity';
 import {LanguagePicker} from '../i18n/ui';
 import {useLocale,t} from '../i18n/locale';
 import PasswordInput from '../PasswordInput';
@@ -21,6 +22,7 @@ function ChildGame({child,compact,musicOwner,onExpand,controls,onMenu,onSolo,sol
  useEffect(()=>{let seconds=0;const flush=()=>{if(!seconds)return;const count=seconds;seconds=0;void supabase.rpc('record_usage_event',{p_child_id:child.id,p_id:crypto.randomUUID(),p_kind:'active_time',p_elapsed_seconds:count});};const timer=setInterval(()=>{if(!document.hidden&&Date.now()-lastInteraction.current<30000)seconds++;if(seconds>=30)flush();},1000);return()=>{clearInterval(timer);flush();};},[child.id]);
  const storage=useMemo(()=>makeChildStorage(child,setSync),[child.id,child.familyId]);
  useEffect(()=>{const id=crypto.randomUUID();void supabase.rpc('record_usage_event',{p_child_id:child.id,p_id:id,p_kind:'visit'});},[child.id]);
+ useEffect(()=>{const sync=()=>{void storage.sync?.();};const timer=setInterval(sync,30000);window.addEventListener('online',sync);window.addEventListener('offline',sync);document.addEventListener('visibilitychange',sync);return()=>{clearInterval(timer);window.removeEventListener('online',sync);window.removeEventListener('offline',sync);document.removeEventListener('visibilitychange',sync);};},[storage]);
  const scope=useMemo(()=>({storage,pinKey:`holton-family-v2::${child.familyId}::parent-pin`,familyMode:true,childId:child.id,childName:child.nickname}),[storage,child.familyId,child.id,child.nickname]);
  return <FamilyStorageContext.Provider value={scope}><View onPointerDown={()=>{lastInteraction.current=Date.now();}} style={{flex:1,minWidth:0}}><View testID="family-sync-status" pointerEvents="none" style={compact?styles.syncSlot:styles.syncOverlay}><Text numberOfLines={1} accessibilityLiveRegion="polite" style={styles.sync}>{compact||sync!=='雲端已同步'?`${child.nickname} · ${t(sync)}`:''}</Text></View><LightApp familyNavigation={{sync,onMenu,onSolo}} duoControl={register} childNickname={child.nickname} compact={compact} musicOwner={musicOwner} onExpand={onExpand}/></View></FamilyStorageContext.Provider>;
 }
@@ -40,6 +42,7 @@ export default function FamilyApp(){
   let live=true;
   const {data}=supabase.auth.onAuthStateChange((event,s)=>{if(!live)return;setSession(s);if(event==='PASSWORD_RECOVERY'){setRecovering(true);setRecoveryError(false);}});
   void (async()=>{try{
+   if(offline()){const raw=await AsyncStorage.getItem('holton-family-v2-auth');if(live)setSession(raw?JSON.parse(raw):null);return;}
    const initialized=await supabase.auth.initialize();
    const {data,error}=await supabase.auth.getSession();if(!live)return;
    const unresolvedCode=authCallback.code&&typeof location!=="undefined"&&new URLSearchParams(location.search).has("code");

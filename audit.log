@@ -162,3 +162,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-16 actor:codex approval:user-request trigger:duo-mini-layout — adapt solo village/selection/focus and duo lanes at 620 CSS px; retain mounted state across fold/rotate; typecheck/export and isolated layout/continuity checks passed; four-student mode deferred for discussion.
 
 2026-11-16 actor:codex approval:user-request trigger:24271 — clarify notebook close action as 返回／關閉照片 with English Back / Close photo; navigation and data unchanged.
+
+2026-11-17 actor:codex approval:user-request trigger:offline-homework — implement explicit offline preparation, public asset cache, scoped durable progress/photo outboxes, automatic reconnect replay, quiet offline status; typecheck/export and synthetic offline/reconnect/conflict/quota checks passed.

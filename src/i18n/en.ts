@@ -1,5 +1,7 @@
 /** Interface copy only; names, custom tasks, saved records and card artwork stay intact. */
 export const english:Record<string,string> = {
+'離線使用中・進度已存本機':'Offline · Progress saved on this device',
+'進度已存本機・待同步（含獎勵）':'Saved on device · Sync pending (including rewards)',
 '點卡片，開始任務':'Tap the card to start',
 
 '冒險小隊 · 第二版測試中':'Adventure Squad · V2 Preview',

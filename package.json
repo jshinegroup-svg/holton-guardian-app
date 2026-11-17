@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "doctor": "npx expo-doctor",
     "config:public": "npx expo config --type public",
-    "export:web": "npx expo export --platform web",
+    "export:web": "npx expo export --platform web && node scripts/build-offline.mjs",
     "build:readiness": "node ./scripts/build-readiness.mjs",
     "assets:audit": "python3 ./scripts/card-asset-tool.py audit",
     "assets:coverage": "python3 ./scripts/card-coverage-audit.py",
