@@ -26,9 +26,9 @@ test('child save never overwrites sibling or V1 storage',async()=>{
  assert.equal(s.saves.get(b).state.orbs,30);assert.equal(s.storage.get('holton-guardian-app::light-v1'),'original');
 });
 test('lost response survives repository recreation; retry uses same operation',async()=>{
- const s=setup();s.lose();await assert.rejects(s.repo(a).save({orbs:10}),/network_response_lost/);
+ const s=setup();s.lose();await s.repo(a).save({orbs:10});
  const reloaded=s.repo(a);assert.equal((await reloaded.load()).pending,true);
- await assert.rejects(reloaded.save({orbs:20}),/pending_save_requires_retry/);
+ // The persisted operation is retried before a new reward is applied.
  await reloaded.retry();assert.equal(s.operations.size,1);assert.equal((await reloaded.load()).pending,false);assert.equal(s.saves.get(a).revision,1);
 });
 test('stale-device write conflicts without overwriting cloud or pending local save',async()=>{
@@ -51,7 +51,7 @@ test('same-browser second tab cannot adopt newer cache revision to overwrite sta
  assert.equal(s.saves.get(a).state.orbs,20);
  await two.useCloud();assert.equal((await two.load()).state.orbs,20);
  const backups=[...s.storage].filter(([key])=>key.includes('::conflict-backup::'));
- assert.equal(backups.length,1);assert.equal(JSON.parse(backups[0][1]).pending.state.orbs,11);
+ assert.equal(backups.length,0); // Stale tab was rejected before staging a write.
  await two.save({orbs:21});assert.equal(s.saves.get(a).state.orbs,21);
 });
 test('conflict recovery does not mutate cloud, sibling, or pending operation when cloud load fails',async()=>{
@@ -64,4 +64,35 @@ test('conflict recovery does not mutate cloud, sibling, or pending operation whe
  await assert.rejects(repo.useCloud(),/save_owner_mismatch/);assert.equal(JSON.stringify([...s.storage]),before);
  s.cloud.load=original;const operations=s.operations.size;await repo.useCloud();
  assert.equal(s.operations.size,operations);assert.equal(s.saves.get(b).state.orbs,30);assert.equal((await repo.load()).state.orbs,50);
+});
+
+test('unchanged save does not create an outgoing operation or bump revision',async()=>{
+ const s=setup(),r=s.repo(a);await r.save({orbs:10});const count=s.operations.size;
+ await r.save({orbs:10});assert.equal(s.operations.size,count);assert.equal((await r.load()).pending,false);
+});
+test('revision-only difference rebases original queued IDs, lost ACK stays exactly once',async()=>{
+ const s=setup(),r=s.repo(a);await r.save({orbs:10});
+ s.saves.set(a,{familyId:family,childId:a,revision:3,state:{orbs:10}});
+ s.lose();await r.save({orbs:20});assert.equal(s.saves.get(a).revision,4);
+ assert.equal(await r.hasPending(),true);const id=JSON.parse(s.storage.get(childStorageKey(family,a))).pending.operationId;
+ await s.repo(a).retry();assert.equal(s.operations.size,2);assert(s.operations.has(id));assert.equal(s.saves.get(a).state.orbs,20);
+});
+test('legacy identical queue auto-recovers with backup without cloud mutation',async()=>{
+ const s=setup(),key=childStorageKey(family,a);const pending={operationId:'legacy',expectedRevision:1,state:{orbs:20},events:[]};
+ s.storage.set(key,JSON.stringify({schema:2,revision:1,state:pending.state,pending,queue:[pending]}));
+ s.saves.set(a,{familyId:family,childId:a,revision:3,state:{orbs:20}});
+ const r=s.repo(a);await r.load();await r.retry();assert.equal(await r.hasPending(),false);assert.equal(s.operations.size,0);
+ assert(s.storage.has(key+'::conflict-backup::legacy'));assert.equal(s.saves.get(a).revision,3);
+});
+test('proven no-op queue adopts newer cloud; unknown legacy differences never discarded',async()=>{
+ const s=setup(),key=childStorageKey(family,a),p={operationId:'noop',expectedRevision:1,state:{orbs:10},baseState:{orbs:10},events:[]};
+ s.storage.set(key,JSON.stringify({schema:2,revision:1,state:p.state,pending:p,queue:[p]}));s.saves.set(a,{familyId:family,childId:a,revision:2,state:{orbs:30}});
+ const r=s.repo(a);await r.load();await r.retry();assert.equal((await r.localState()).orbs,30);assert.equal(s.operations.size,0);
+ delete p.baseState;s.storage.set(key,JSON.stringify({schema:2,revision:1,state:p.state,pending:p,queue:[p]}));
+ await assert.rejects(s.repo(a).retry(),/revision_conflict/);assert.equal(JSON.parse(s.storage.get(key)).state.orbs,10);
+});
+test('matching state with unacknowledged events still requires review',async()=>{
+ const s=setup(),key=childStorageKey(family,a),p={operationId:'reward',expectedRevision:1,state:{orbs:20},events:[{kind:'task_completed',id:'event'}]};
+ s.storage.set(key,JSON.stringify({schema:2,revision:1,state:p.state,pending:p,queue:[p]}));s.saves.set(a,{familyId:family,childId:a,revision:2,state:{orbs:20}});
+ await assert.rejects(s.repo(a).retry(),/revision_conflict/);assert.equal(s.operations.size,0);assert.equal(JSON.parse(s.storage.get(key)).pending.operationId,'reward');
 });

@@ -15,7 +15,7 @@ export function syncErrorMessage(error:unknown):string {
  if(/42501|PGRST301|PGRST303/.test(code)||/not_authorized|JWT expired|Invalid JWT/i.test(message))return '登入驗證或存取權限有問題，待同步操作仍保留。請聯絡維護人員協助，先不要登出或清除資料。';
  if(/quota|storage.*full/i.test(message)||String((error as any)?.name)==='QuotaExceededError')return '這台裝置的儲存空間不足，這次變更尚未確認保存。請大人協助，先不要關閉畫面或清除遊戲資料。';
  return /revision_conflict|unexpected_revision/.test(message)
-  ?'另一台裝置的進度已更新，為避免覆蓋，暫停同步。這台的待同步操作仍保留；請先停止在兩台同時操作同一位冒險者。'
+  ?'這台保留的操作與另一台裝置的雲端進度不同，暫時無法安全合併。兩邊資料均保留；這不代表兩台正在同時使用。請由大人核對後選擇要接續的進度。'
   :/cloud_timeout|fetch|network|timeout|abort|offline/i.test(message)?'連線暫時中斷或回應太久，操作尚未確認同步。網路恢復後，點「重試同步」即可接續，不必重整或清除資料。'
   :'同步尚未完成，原因需要進一步確認。待同步操作仍保留，請聯絡維護人員；不要清除資料。';
 }

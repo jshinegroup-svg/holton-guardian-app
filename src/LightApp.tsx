@@ -1,3 +1,4 @@
+import {transportFailure} from './family/connectivity';
 import HomeworkGuide from './homework/HomeworkGuide';
 import HomeworkAdventure from './homework/HomeworkAdventure';
 import type {Homework} from './homework/model';
@@ -210,8 +211,10 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     if (busy.current || syncBlocked.current || !current.current) return false;
     busy.current = true; setSaving(true); setError('');
     try {
-      const next = transform(current.current);
+      let next = transform(current.current);
       await storage.setItem(KEY, JSON.stringify(next));
+      const committed=await storage.savedState?.();
+      if(committed)next=JSON.parse(committed);
       if (next.phase === 'done' && current.current.phase === 'finishing') celebrate.current = true;
       if (next.phase !== 'done') celebrate.current = false;
       current.current = next; setState(next); setNow(Date.now()); return true;
@@ -233,6 +236,37 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     }catch(e){setError(syncErrorMessage(e));}
     finally{busy.current=false;setSaving(false);}
   }
+  // Returning to a phone must pull cloud progress as well as flush outgoing work.
+  // Hold the same UI write guard; never apply a remote snapshot over an in-flight action.
+  const homeworkEditing=useRef(false);
+  const refreshView=useRef<()=>boolean>(()=>true);
+  refreshView.current=()=>{
+    if(!familyMode||!storage.refresh||syncBlocked.current||document.hidden)return true;
+    if(busy.current||!current.current)return false;
+    if(homeworkEditing.current||settingsOpen||taskDetailsOpen||customNeedsApply)return true;
+    busy.current=true;setSaving(true);
+    void storage.refresh().then(raw=>{
+      if(!raw)return;
+      const data:State=JSON.parse(raw);
+      if(data.version!==1||!Array.isArray(data.history)||!Number.isFinite(data.orbs))throw Error('invalid_state');
+      if(JSON.stringify(data)!==JSON.stringify(current.current)){
+        celebrate.current=false;current.current=data;setState(data);setTitle(data.title);setMinutes(String(data.minutes));setGoal(String(data.dailyGoal??3));setNow(Date.now());
+      }
+      syncBlocked.current=false;setNeedsSync(false);setError('');
+    }).catch(e=>{
+      // Temporary connectivity loss is normal offline operation, not a conflict screen.
+      if(!transportFailure(e)){syncBlocked.current=true;setNeedsSync(true);setError(syncErrorMessage(e));}
+    }).finally(()=>{busy.current=false;setSaving(false);});
+    return true;
+  };
+  useEffect(()=>{
+    if(!familyMode)return;
+    let deferred:ReturnType<typeof setTimeout>|undefined;
+    const refresh=()=>{clearTimeout(deferred);if(!refreshView.current())deferred=setTimeout(refresh,250);};
+    const timer=setInterval(refresh,30000);
+    window.addEventListener('online',refresh);window.addEventListener('pageshow',refresh);document.addEventListener('visibilitychange',refresh);
+    return()=>{clearInterval(timer);clearTimeout(deferred);window.removeEventListener('online',refresh);window.removeEventListener('pageshow',refresh);document.removeEventListener('visibilitychange',refresh);};
+  },[storage,familyMode]);
   const duoReady=!homeworkSelected&&!homeworkOpen&&!state?.homework?.timer&&!!state&&isStarterCompanion(state.starterCompanionId)&&['ready','preparing'].includes(state.phase)&&!!title.trim()&&minutes.trim()!==''&&Number.isInteger(Number(minutes))&&Number(minutes)>=0&&Number(minutes)<=MAX_CUSTOM_MINUTES&&!saving&&!needsSync&&!customNeedsApply;
   async function startDuo(at:number){
     if(!duoReady||busy.current)return false;
@@ -489,7 +523,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     if(!await change(s=>({...s,focusMusicEnabled:enabled})))music.stop();
   }
   const musicControl=<View testID="focus-music-control" style={{alignItems:'flex-end',gap:4}}><Pressable accessibilityRole="switch" accessibilityLabel="專注音樂" accessibilityState={{checked:state.focusMusicEnabled===true}} disabled={saving} onPress={()=>void toggleMusic()} style={{padding:10,borderRadius:14,borderWidth:1,borderColor:'#a7c8cc',backgroundColor:'rgba(9,36,56,.88)'}}><Text style={{fontSize:15,color:'#fff0cf'}}>♫ 音樂：{state.focusMusicEnabled?'開':'關'}</Text></Pressable>{state.focusMusicEnabled&&(music.status==='blocked'||music.status==='error')?<Pressable accessibilityRole="button" accessibilityLabel="播放專注音樂" onPress={music.retry} style={{padding:8}}><Text style={{fontSize:14,color:'#bcecf1'}}>點此播放音樂</Text></Pressable>:null}{musicActive&&!homeworkTimer?<TaskMusicHint enabled={state.focusMusicEnabled===true}/>:null}</View>;
-  if((homeworkOpen||state.homework?.timer)&&homePhase&&!settingsOpen) return <HomeworkAdventure startMusic={()=>{if(musicOwner&&current.current?.focusMusicEnabled===true)music.play(musicTrack)}} stopMusic={music.stop} recovery={needsSync?<View>{button(locale==='en'?'Retry sync':'重試同步',()=>void retrySync(),true)}{button(locale==='en'?'Use cloud progress':'改用雲端進度',()=>void retrySync(true),true)}</View>:null} state={state} change={change} error={error} button={button} musicControl={musicOwner?musicControl:null} chime={{arm:armChime,play:playChime,stop:stopChime}} onClose={()=>setHomeworkOpen(false)}/>;
+  if((homeworkOpen||state.homework?.timer)&&homePhase&&!settingsOpen) return <HomeworkAdventure editingRef={homeworkEditing} startMusic={()=>{if(musicOwner&&current.current?.focusMusicEnabled===true)music.play(musicTrack)}} stopMusic={music.stop} recovery={needsSync?<View>{button(locale==='en'?'Retry sync':'重試同步',()=>void retrySync(),true)}{button(locale==='en'?'Use cloud progress':'改用雲端進度',()=>void retrySync(true),true)}</View>:null} state={state} change={change} error={error} button={button} musicControl={musicOwner?musicControl:null} chime={{arm:armChime,play:playChime,stop:stopChime}} onClose={()=>setHomeworkOpen(false)}/>;
   if(!starterId&&homePhase&&!state.guardianChallenge) return <StarterCompanionPicker busy={saving} error={error} onChoose={id=>{void change(s=>isStarterCompanion(s.starterCompanionId)?s:{...s,starterCompanionId:id});}}/>;
   if(mapOpen && !settingsOpen && !pending && !challenge) return <WorldMap journeys={journey} activeWorld={world} onEnter={w=>{if(homePhase)void goWorld(w);}} canEnter={homePhase} onSettings={()=>openParent()} onBack={()=>navigateRoom('village')} saving={saving} error={error}/>;
   if(journeyOpen && homePhase && !settingsOpen && !pending && !challenge) return <JourneyMap journeys={journey} world={world} onClose={()=>setJourneyOpen(false)} onWorldMap={()=>{setJourneyOpen(false);setMapOpen(true);}}/>;

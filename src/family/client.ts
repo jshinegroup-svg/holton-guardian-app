@@ -49,6 +49,12 @@ export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>voi
  let previous:Record<string,unknown>|null=null;
  const status=async()=>onSync(offline()?'離線使用中・進度已存本機':(await repo.hasPending()||await notebooks.hasPending())?'進度已存本機・待同步（含獎勵）':'雲端已同步');
  const store:ScopedStorage={
+ async savedState(){previous=await repo.localState();return previous?JSON.stringify(previous):null;},
+ async refresh(){
+  if(offline())return null;
+  await repo.retry();const saved=await repo.load();previous=saved?.state??null;
+  syncConflict=false;await status();return previous?JSON.stringify(previous):null;
+ },
  async prepareOffline(){
   await notebooks.flush();await repo.retry();const saved=await repo.localState();
   if(!saved)throw Error('請先開啟這位孩子的功課，再下載。');
@@ -77,7 +83,7 @@ export function makeChildStorage(child:ChildProfile,onSync:(message:string)=>voi
   if(previous&&next.cardId!==previous.cardId&&next.cardId)events.push({id:crypto.randomUUID(),kind:'card_selected',occurredAt:at,cardId:next.cardId});
   onSync(offline()?'離線使用中・進度已存本機':'正在儲存到雲端…');
   const homeworkChanged=JSON.stringify(next.homework?.days)!==JSON.stringify((previous as any)?.homework?.days);
-  try{await repo.save(next,events);previous=next;await status();if(homeworkChanged)offlineChanged();}
+  try{await repo.save(next,events);previous=await repo.localState();await status();if(homeworkChanged)offlineChanged();}
   catch(e){onSync(syncErrorMessage(e));throw e;}
  },
  async removeItem(key){if(key==='holton-guardian-app::light-v1')throw Error('Protected child save');return AsyncStorage.removeItem(prefix+key);}

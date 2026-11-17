@@ -369,7 +369,7 @@ Object.assign(english, {
 '故事收藏卡 · 無點數獎勵':'Story collectible · No points',
 '正在重試尚未同步的進度…':'Retrying unsynced progress…',
 '正在儲存到雲端…':'Saving to cloud…',
-'另一台裝置的進度已更新，為避免覆蓋，暫停同步。這台的待同步操作仍保留；請先停止在兩台同時操作同一位冒險者。':'Another device updated this adventurer. Sync is paused to prevent overwriting. Pending changes are kept here. Stop playing this adventurer on both devices at once.',
+  '這台保留的操作與另一台裝置的雲端進度不同，暫時無法安全合併。兩邊資料均保留；這不代表兩台正在同時使用。請由大人核對後選擇要接續的進度。': "This device has unsynced changes that differ from the cloud. Both copies are kept. This does not mean both devices are being used now. Ask an adult to review which progress to continue.",
 '連線暫時中斷或回應太久，操作尚未確認同步。網路恢復後，點「重試同步」即可接續，不必重整或清除資料。':'The connection was interrupted or timed out. Sync is not yet confirmed. When connected, select Retry sync. No refresh or data clearing is needed.',
 '暱稱請填寫 1～20 個字。':'Enter a nickname of 1–20 characters.',
 '請選擇孩子的年齡。':'Select the child’s age.',

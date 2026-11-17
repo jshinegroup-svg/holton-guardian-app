@@ -33,13 +33,24 @@ try{for(const [width,height] of [[320,568],[390,700]]){
  await p.goto(base);await p.getByRole('alert').filter({hasText:'家庭資料讀取失敗'}).waitFor();await p.getByRole('button',{name:'重新讀取家庭',exact:true}).click();
  const value=String(randomInt(100000,999999));await p.getByLabel('6 位數家長密碼',{exact:true}).fill(value);await p.getByLabel('再次輸入家長密碼',{exact:true}).fill(value);await p.getByRole('button',{name:'繼續設定',exact:true}).click();await p.getByRole('button',{name:'已妥善保存，啟用家長密碼',exact:true}).click();
  await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();const first=p.getByTestId('duo-child-task').nth(0);await first.getByRole('button',{name:'開始任務',exact:true}).waitFor();
+ // Simulate phone A changing cloud while phone B is suspended; resume must pull,
+ // not write B's old snapshot or require the cloud-recovery buttons.
+ const beforeHandoff=saves.get(a);const writesBefore=ops.size;
+ saves.set(a,{...beforeHandoff,revision:beforeHandoff.revision+1,state:{...beforeHandoff.state,orbs:40}});
+ await p.waitForTimeout(500);await p.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
+ await p.waitForFunction(async({family,a})=>{
+ const db=await new Promise(resolve=>{const r=indexedDB.open('holton-offline-photos',1);r.onsuccess=()=>resolve(r.result)});
+ const raw=await new Promise(resolve=>{const r=db.transaction('photos').objectStore('photos').get(`holton-family-v2::${family}::${a}`);r.onsuccess=()=>resolve(r.result)});db.close();return raw&&JSON.parse(raw).state.orbs===40;
+ },{family,a});
+ assert.equal(await p.getByTestId('sync-recovery').count(),0);assert.equal(ops.size,writesBefore);
+ console.log('PASS foreground handoff pulls latest without outgoing write',width);
  const stale=saves.get(a);saves.set(a,{...stale,revision:stale.revision+1,state:{...stale.state,orbs:50}});
  await first.getByRole('button',{name:'開始任務',exact:true}).click();await p.getByTestId('sync-recovery').waitFor();assert.equal(saves.get(a).state.orbs,50);
  await p.getByRole('button',{name:'重試同步',exact:true}).click();await p.getByRole('button',{name:'改用雲端最新進度',exact:true}).click();await p.getByRole('button',{name:'取消，保留目前操作',exact:true}).click();
- assert.equal(saves.get(a).state.orbs,50);assert.equal(await p.evaluate(({family,a})=>!!JSON.parse(localStorage.getItem(`holton-family-v2::${family}::${a}`)).pending,{family,a}),true);
+ assert.equal(saves.get(a).state.orbs,50);assert.equal(await p.evaluate(async({family,a})=>{const db=await new Promise(resolve=>{const r=indexedDB.open('holton-offline-photos',1);r.onsuccess=()=>resolve(r.result)});const raw=await new Promise(resolve=>{const r=db.transaction('photos').objectStore('photos').get(`holton-family-v2::${family}::${a}`);r.onsuccess=()=>resolve(r.result)});db.close();return !!JSON.parse(raw).pending;},{family,a}),true);
  await p.getByRole('button',{name:'改用雲端最新進度',exact:true}).click();await p.screenshot({path:`reports/family-v2/conflict-confirm-${width}.png`,fullPage:true});await p.getByRole('button',{name:'確認使用雲端進度',exact:true}).click();await p.getByTestId('sync-recovery').waitFor({state:'hidden'});
  assert.equal(saves.get(a).state.orbs,50);assert.equal(saves.get(b).state.orbs,30);
- const backups=await p.evaluate(({family,a})=>Object.keys(localStorage).filter(k=>k.startsWith(`holton-family-v2::${family}::${a}::conflict-backup::`)).map(k=>JSON.parse(localStorage.getItem(k))),{family,a});assert.equal(backups.length,1);assert(backups[0].pending);
+ const backups=await p.evaluate(async({family,a})=>{const db=await new Promise(resolve=>{const r=indexedDB.open('holton-offline-photos',1);r.onsuccess=()=>resolve(r.result)});const result=await new Promise(resolve=>{const values=[];const r=db.transaction('photos').objectStore('photos').openCursor();r.onsuccess=()=>{const c=r.result;if(!c){resolve(values);return}if(String(c.key).startsWith(`holton-family-v2::${family}::${a}::conflict-backup::`))values.push(JSON.parse(c.value));c.continue()}});db.close();return result;},{family,a});assert.equal(backups.length,1);assert(backups[0].pending);
  await first.getByRole('button',{name:'開始任務',exact:true}).click();await p.waitForFunction(()=>document.querySelector('[data-testid="duo-child-task"]')?.textContent.includes('努力中'));assert.equal(saves.get(a).state.orbs,50);
  await p.reload();await p.getByRole('button',{name:'開始雙人冒險',exact:true}).click();await p.getByTestId('duo-child-task').nth(1).waitFor();assert.equal(saves.get(a).state.phase,'active');assert.equal(saves.get(a).state.orbs,50);assert.equal(saves.get(b).state.orbs,30);assert.deepEqual(errors,[]);
  console.log('PASS family read failure/retry, conflict/retry/cancel, explicit cloud recovery + pending archive, continued task + reload, sibling intact',width);await context.close();

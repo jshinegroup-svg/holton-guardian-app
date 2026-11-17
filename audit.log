@@ -169,3 +169,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-17 actor=codex approval=user trigger=auto-offline followup: live check exposed stale CDN manifest; embed manifest in worker and verify each downloaded SHA-256; stale-shell auto-retry plus offline browser check PASS.
 2026-11-17 actor=codex approval=user trigger=auto-offline-and-rest-size CDN raster optimization requires signature validation instead of source-byte digest; executable/page hash verification retained. Rest countdown 24 to 72px white; 320/390/744 layout PASS; stale-shell retry/offline test PASS.
 2026-11-17 actor=codex approval=user-report trigger=24393 action=fix-homework-music-gesture-start-resume-and-interruption-recovery; tests=typecheck,export,gesture-gated-mobile-flows-320-744-890; family-data=synthetic-only
+
+2026-11-18 actor:codex approval:user trigger:24411 fix(sync): safe no-op queue recovery, base-equal rebase, foreground cloud refresh and editing guard; 12 repository + offline + mobile conflict tests pass; no production user data changed.

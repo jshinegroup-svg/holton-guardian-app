@@ -7,7 +7,7 @@ export interface FamilyCloud {
   save<T>(args:{childId:string;expectedRevision:number;operationId:string;state:T;events:FamilyEvent[]}):Promise<{revision:number;duplicate:boolean}>;
 }
 export interface LocalStore {getItem(key:string):Promise<string|null>;setItem(key:string,value:string):Promise<void>}
-type Pending<T>={operationId:string;expectedRevision:number;state:T;events:FamilyEvent[]};
+type Pending<T>={operationId:string;expectedRevision:number;state:T;events:FamilyEvent[];baseState?:T};
 type Cached<T>={schema:2;revision:number;state:T;pending?:Pending<T>;queue?:Pending<T>[]};
 /** One instance per child. Local pending writes survive a failed request/reload.
  * Conflicts must be surfaced; never substitute the newest server revision and retry old state.
@@ -50,7 +50,12 @@ export class ProgressRepository<T> {
       const previous=await this.cached();
       if(previous&&this.knownState!==undefined&&JSON.stringify(previous.state)!==this.knownState)throw Error('revision_conflict');
       const queue=previous?.queue??[];
-      const pending:Pending<T>={operationId:this.newId(),expectedRevision:(previous?.revision??this.revision??0)+queue.length,state,events};
+      // Reads/migrations that change nothing must not create a stale outgoing write.
+      if(previous&&JSON.stringify(previous.state)===JSON.stringify(state)&&!events.length){
+        if(queue.length&&!offline()){try{await this.flush(previous);}catch(e){if(!transportFailure(e))throw e;this.retryAfter=Date.now()+30000;}}
+        return;
+      }
+      const pending:Pending<T>={operationId:this.newId(),expectedRevision:(previous?.revision??this.revision??0)+queue.length,state,events,baseState:previous?.state};
       const next:Cached<T>={schema:2,revision:previous?.revision??this.revision??0,state,pending:queue[0]??pending,queue:[...queue,pending]};
       await this.local.setItem(this.key,JSON.stringify(next));
       this.knownState=JSON.stringify(state);
@@ -80,10 +85,36 @@ export class ProgressRepository<T> {
   async localState(){return (await this.cached())?.state??null;}
   async hasPending(){return !!(await this.cached())?.queue?.length;}
   private async flush(cached:Cached<T>):Promise<void>{
-    const queue=[...(cached.queue??[])];
+    let queue=[...(cached.queue??[])];
+    let recovered=false;
     while(queue.length){
       const p=queue[0];
-      const result=await this.cloud.save({childId:this.childId,...p});
+      let result:{revision:number;duplicate:boolean};
+      try{result=await this.cloud.save({childId:this.childId,...p});}
+      catch(error){
+        const message=String((error as any)?.message??error);
+        if(recovered||!/revision_conflict/.test(message))throw error;
+        const remote=await this.cloud.load<T>(this.childId);
+        if(!remote)throw error;
+        if(remote.familyId!==this.familyId||remote.childId!==this.childId)throw Error('save_owner_mismatch');
+        if(!Number.isSafeInteger(remote.revision)||remote.revision<cached.revision||!remote.state)throw Error('invalid_cloud_save');
+        const equal=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
+        const noEvents=queue.every(op=>!op.events.length);
+        // Legacy queues lack baseState: only an exact cloud match proves them redundant.
+        const redundant=noEvents&&(equal(cached.state,remote.state)||queue.every(op=>op.baseState!==undefined&&equal(op.baseState,op.state)));
+        if(redundant){
+          await this.local.setItem(`${this.key}::conflict-backup::${p.operationId}`,JSON.stringify(cached));
+          await this.local.setItem(this.key,JSON.stringify({schema:2,revision:remote.revision,state:remote.state,queue:[]}));
+          this.revision=remote.revision;this.knownState=JSON.stringify(remote.state);return;
+        }
+        // Rebase only if the entire base snapshot still equals cloud. Never merge points,
+        // timers or completed work by guessing; preserve the original operation IDs.
+        if(p.baseState===undefined||!equal(p.baseState,remote.state))throw error;
+        queue=queue.map((op,index)=>({...op,expectedRevision:remote.revision+index}));
+        cached={...cached,revision:remote.revision,queue,pending:queue[0]};
+        await this.local.setItem(this.key,JSON.stringify(cached));
+        recovered=true;continue;
+      }
       if(result.revision!==p.expectedRevision+1)throw Error('unexpected_revision');
       queue.shift();
       // A lost acknowledgement retries the original operation ID, never a new award.

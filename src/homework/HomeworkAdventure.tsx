@@ -16,12 +16,13 @@ import type {LightState} from '../LightApp';
 import {homework,dateKey,allConfirmed,claimHomework,updateDay} from './model';
 import StarBoard from './StarBoard';
 import SavedHomeworkEditor from './SavedHomeworkEditor';
-type Props={startMusic?:()=>void;stopMusic?:()=>void;chime:{arm:()=>void;play:()=>Promise<boolean>;stop:()=>void};musicControl?:React.ReactNode;recovery?:React.ReactNode;state:LightState;change:(fn:(s:LightState)=>LightState)=>Promise<boolean>;onClose:()=>void;error:string;button:(label:string,fn:()=>void,secondary?:boolean,disabled?:boolean)=>React.ReactNode};
-export default function HomeworkAdventure({state,change,onClose,error,button,recovery,musicControl,chime,startMusic,stopMusic}:Props){
+type Props={editingRef?:{current:boolean};startMusic?:()=>void;stopMusic?:()=>void;chime:{arm:()=>void;play:()=>Promise<boolean>;stop:()=>void};musicControl?:React.ReactNode;recovery?:React.ReactNode;state:LightState;change:(fn:(s:LightState)=>LightState)=>Promise<boolean>;onClose:()=>void;error:string;button:(label:string,fn:()=>void,secondary?:boolean,disabled?:boolean)=>React.ReactNode};
+export default function HomeworkAdventure({editingRef,state,change,onClose,error,button,recovery,musicControl,chime,startMusic,stopMusic}:Props){
  const {locale}=useLocale(),en=locale==='en',tr=(zh:string,english:string)=>en?english:zh;
  const {storage,familyMode,childName,offlinePreparation}=useFamilyStorage();const h=homework(state);
  const [date,setDate]=useState(h.timer?.date??dateKey()),[page,setPage]=useState('map'),[selected,setSelected]=useState(h.timer?.task??''),[gate,setGate]=useState('');
  const [draft,setDraft]=useState<string[]>([]),[details,setDetails]=useState<Record<string,string>>({}),[custom,setCustom]=useState(''),[notice,setNotice]=useState(''),[photo,setPhoto]=useState('');
+ useEffect(()=>{if(editingRef)editingRef.current=['setup','import','review','edit','attach'].includes(page);return()=>{if(editingRef)editingRef.current=false}},[page,editingRef]);
  const [focusMinutes,setFocusMinutes]=useState<10|15>(10);
  const [photoBusy,setPhotoBusy]=useState(false);
  const [attachment,setAttachment]=useState<File|null>(null);
