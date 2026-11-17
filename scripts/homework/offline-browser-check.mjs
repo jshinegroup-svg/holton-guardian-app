@@ -70,7 +70,7 @@ try{for(const [width,height] of [[390,844]]){
   assert(await p.evaluate(async()=>!!await (await caches.open('holton-offline-meta')).match('/active')),'photo failure does not block package download');
   photoFailure=false;await p.evaluate(()=>window.dispatchEvent(new Event('pageshow')));
  }
- if(process.env.TEST_STALE_PACKAGE==='1'){await p.getByText('離線準備未完成・連網時會自動重試',{exact:true}).waitFor({timeout:120000});await p.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));}
+ // A stale first shell must recover without a manual retry or synthetic foreground event.
  await p.getByText('已可離線使用・連網時自動更新',{exact:true}).waitFor({timeout:120000});console.log('prepared');
  assert.equal(await p.getByRole('button',{name:'重試離線準備',exact:true}).count(),0,'ready state has no download action');
  const readsBefore=photoReads;
