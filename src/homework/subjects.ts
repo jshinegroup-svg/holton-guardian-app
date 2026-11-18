@@ -17,6 +17,7 @@ export function normalizeSubjectTasks(tasks:HomeworkTask[]):HomeworkTask[]{
    // A merged task is complete only when every original task was complete.
    existing.confirmed=!!existing.confirmed&&!!task.confirmed;
    existing.reported=!!existing.reported&&!!task.reported;
+   existing.drawCounted=!!existing.drawCounted||!!task.drawCounted;
    existing.waived=!!existing.waived&&!!task.waived;
   }else result.push({...task,title,detail});
  }

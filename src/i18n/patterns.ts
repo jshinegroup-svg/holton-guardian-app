@@ -7,6 +7,8 @@ export const patterns: [RegExp,string][] = [
 [/^(.+) ✓ (−|＋)$/, '$1 ✓ $2'],[/^(.+) (−|＋)$/, '$1 $2'],
 [/^今日任務 (\d+) \/ (\d+)(.*)$/, 'Today: $1 / $2 tasks $3'],
 [/^([●○ ]*)再完成 (\d+) 次抽世界卡$/, '$1$2 more tasks to draw a world card'],
+[/^抽卡進度 (\d+)／3$/, 'Card progress: $1 / 3'],
+[/^每3次完成抽1張 · 已收藏 (\d+) 張$/, 'One draw per 3 completions · $1 cards collected'],
 [/^今天全完成也能抽卡 · 已收藏 (\d+) 張$/, 'Finish today’s goal for another draw · $1 collected'],
 [/^(\d+) 能量球 · (\d+) 筆任務 · (\d+) 張守護獸卡 · (\d+) 筆心願紀錄$/, '$1 energy · $2 tasks · $3 guardians · $4 wishes'],
 [/^最近 (\d+) 天$/, 'Last $1 days'],

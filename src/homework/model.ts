@@ -1,8 +1,9 @@
+import {addDrawCredit} from '../lib/drawProgress';
 import type {LightState} from '../LightApp';
 import {advanceJourney,migrateJourneys} from '../lib/journeys';
-export type HomeworkTask={id:string;title:string;detail:string;reported?:boolean;confirmed?:boolean;waived?:boolean};
+export type HomeworkTask={id:string;title:string;detail:string;reported?:boolean;confirmed?:boolean;waived?:boolean;drawCounted?:boolean};
 export type HomeworkDay={tasks:HomeworkTask[];claimedAt?:string};
-export type Homework={enabled?:boolean;days:Record<string,HomeworkDay>;timer?:{date:string;task:string;mode:'focus'|'rest';deadline:number|null;remaining:number;focusSeconds?:number;helpOpen?:boolean;helpCard?:string;helpDeadline?:number;usedHelp?:string[]}};
+export type Homework={enabled?:boolean;drawReceipts?:string[];days:Record<string,HomeworkDay>;timer?:{date:string;task:string;mode:'focus'|'rest';deadline:number|null;remaining:number;focusSeconds?:number;helpOpen?:boolean;helpCard?:string;helpDeadline?:number;usedHelp?:string[]}};
 export const homework=(s:LightState):Homework=>s.homework??{days:{}};
 export const dateKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 export const allConfirmed=(d?:HomeworkDay)=>!!d?.tasks.length&&d.tasks.every(t=>t.confirmed)&&!d.claimedAt;
@@ -28,4 +29,18 @@ export function editSavedHomework(s:LightState,from:string,to:string,expected:Ho
  const updated={...day,tasks:day.tasks.map(t=>{const e=edits.find(e=>e.id===t.id)!;return {...t,title:e.title.trim(),detail:e.detail.trim()}})};
  const days={...h.days};delete days[from];days[to]=updated;
  return {...s,homework:{...h,days}};
+}
+
+// Existing confirmed tasks are historical: never backfill rewards on upgrade.
+export function confirmHomeworkTask(s:LightState,date:string,id:string,now=new Date()):LightState {
+ const h=homework(s),d=h.days[date],t=d?.tasks.find(t=>t.id===id);
+ if(!t||t.confirmed||t.waived||d.claimedAt||date>dateKey(now))return s;
+ const receipt=JSON.stringify([date,id]);
+ const receipts=new Set(h.drawReceipts??[]);
+ for(const [key,day] of Object.entries(h.days))for(const task of day.tasks)
+  if(task.confirmed||task.drawCounted)receipts.add(JSON.stringify([key,task.id]));
+ const eligible=!t.drawCounted&&!receipts.has(receipt);
+ receipts.add(receipt);
+ const next={...s,homework:{...h,drawReceipts:[...receipts],days:{...h.days,[date]:{...d,tasks:d.tasks.map(task=>task.id===id?{...task,confirmed:true,drawCounted:true}:task)}}}};
+ return eligible?addDrawCredit(next,`homework:${receipt}`):next;
 }

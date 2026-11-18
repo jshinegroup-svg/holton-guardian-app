@@ -172,3 +172,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 
 2026-11-18 actor:codex approval:user trigger:24411 fix(sync): safe no-op queue recovery, base-equal rebase, foreground cloud refresh and editing guard; 12 repository + offline + mobile conflict tests pass; no production user data changed.
 2026-11-18 actor:codex approval:user trigger:24411 fix(sync): keep background recovery separate from displayed-state acknowledgement; normalize JSONB key order; 14 repository tests passed. Canceled preflight deploy before live to include these guards.
+
+2026-11-18 actor=codex approval=user trigger=24419 change=homework-confirmed-task-draw-credit; preserve legacy balances/draws; remove daily-goal bonus; tests=model,edit,offline,repository,typecheck,3-width-focus,3-width-draw; artifacts=src/lib/drawProgress.ts,src/homework,src/LightApp.tsx,src/AdventureVillage.tsx,src/i18n,scripts/homework

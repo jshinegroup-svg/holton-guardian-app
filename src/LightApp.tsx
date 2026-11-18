@@ -1,3 +1,4 @@
+import {addDrawCredit} from './lib/drawProgress';
 import {transportFailure} from './family/connectivity';
 import HomeworkGuide from './homework/HomeworkGuide';
 import HomeworkAdventure from './homework/HomeworkAdventure';
@@ -409,14 +410,9 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     const reward=s.minutes===0?rewardForFocusMs(s.focusElapsedMs??0):(s.taskReward??1);
     const completionId=`${at.getTime()}-${Math.random().toString(36).slice(2,8)}`;
     const history = [...s.history, { id: completionId, outcome:'completed' as const, elapsedSeconds:Math.floor((s.focusElapsedMs??0)/1000), world:s.activeWorld??'forest', title: s.title, at: at.toISOString(), minutes: s.minutes, reward, cardId: s.cardId, finishId: s.finishId, helpUsed: s.helpUsed, supportUsed: s.supportUsed }];
-    const count = history.filter(item => item.outcome!=='unfinished' && day(new Date(item.at)) === dateKey).length;
-    const progress = (s.rewardProgress ?? 0) + 1;
-    const triple = progress >= 3;
-    const allDone = count >= (s.dailyGoal ?? 3) && s.dailyRewardDay !== dateKey;
-    const reason = triple && allDone ? '完成 3 次任務，而且今天任務全完成了！' : triple ? '又完成 3 次任務！' : '今天任務全完成了！';
-    return { ...s, taskReward:reward, journeys:advanceJourney(migrateJourneys(s).journeys,s.activeWorld??'forest',completionId), phase: 'done', taskOutcome:'completed', taskReminderShown:!!s.taskReminderShown, focusStartedAt:null, deadline: null, help: false, orbs: s.orbs + reward, history,
-      rewardProgress: progress % 3, dailyRewardDay: allDone ? dateKey : s.dailyRewardDay,
-      draws: [...(s.draws ?? []), ...(triple || allDone ? [{ id: String(at.getTime()), reason }] : [])] };
+    const rewarded=addDrawCredit(s,completionId);
+    return { ...rewarded, taskReward:reward, journeys:advanceJourney(migrateJourneys(s).journeys,s.activeWorld??'forest',completionId), phase: 'done', taskOutcome:'completed', taskReminderShown:!!s.taskReminderShown, focusStartedAt:null, deadline: null, help: false, orbs: s.orbs + reward, history };
+
   }
   const taskDue=state.phase==='active'&&!state.help&&focusElapsed>=focusTargetMs(state);
   function stopUnfinished(s:State):State {
@@ -534,7 +530,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
     {soundBlocked&&state.phase==='active'&&state.taskSoundEnabled!==false?<View style={styles.card}><Text style={styles.caption}>時間到了。裝置未能自動播放聲音。</Text>{button('播放到時提示音',()=>{armChime();setTimeout(()=>void playChime().then(ok=>setSoundBlocked(!ok)),100);},true)}</View>:null}
     {inVillage&&resumeTutorial&&(homePhase||state.phase==='preparing')?button('繼續新手教學',()=>{void (async()=>{if(state.phase==='done'&&!await change(s=>({...s,phase:'ready',deadline:null,help:false,remaining:s.minutes*60})))return;setTutorialReplay(n=>Math.abs(n)+1);})();},true):null}
-    {inVillage?<AdventureVillage childName={normalizeChildName(childNickname??state.childName)} reduced={reduceMotion} orbs={state.orbs} world={worlds[world].name} steps={journey.counts[world]} today={today.length} goal={state.dailyGoal??3} task={state.title} ongoing={!homePhase} saving={saving} onStart={()=>void startFromVillage()} onVisit={place=>{if(place==='map')setMapOpen(true);else if(place==='parent')openParent();else navigateRoom(place);}}/>:null}
+    {inVillage?<AdventureVillage childName={normalizeChildName(childNickname??state.childName)} reduced={reduceMotion} orbs={state.orbs} world={worlds[world].name} steps={journey.counts[world]} today={today.length} goal={state.dailyGoal??3} drawProgress={state.rewardProgress??0} task={state.title} ongoing={!homePhase} saving={saving} onStart={()=>void startFromVillage()} onVisit={place=>{if(place==='map')setMapOpen(true);else if(place==='parent')openParent();else navigateRoom(place);}}/>:null}
     {!settingsOpen&&homePhase&&room==='mission'?<><View style={{flexDirection:'row',justifyContent:'space-between',gap:8}}>{button('冒險地圖',()=>setMapOpen(true),true)}{button('看看我的旅程',()=>setJourneyOpen(true),true)}</View>{state.phase==='ready'?<View style={{gap:8}}>{journey.counts[world]===0?<Text style={[styles.body,{padding:12,backgroundColor:'rgba(8,35,49,.7)',borderRadius:14}]}>{worlds[world].intro}</Text>:null}<JourneyHint journeys={journey} world={world} onPress={()=>setJourneyOpen(true)}/></View>:null}</>:null}
 
     {settingsOpen ? <>
@@ -578,7 +574,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
         <Text style={styles.label}>任務名稱</Text><TextInput accessibilityLabel="任務名稱" value={title} onChangeText={setTitle} maxLength={80} editable={!['preparing', 'active', 'finishing'].includes(state.phase)} style={styles.input} placeholder="今天想完成的小事" placeholderTextColor="#b5c9d4" />
         <Text style={styles.label}>建議時間（分鐘，0 為不限時）</Text><TextInput accessibilityLabel="陪伴時間（分鐘）" value={minutes} onChangeText={setMinutes} keyboardType="number-pad" editable={!['preparing', 'active', 'finishing'].includes(state.phase)} style={styles.input} />
         <Text style={styles.label}>今日預計完成幾次任務（1～20）</Text><TextInput accessibilityLabel="今日任務數" value={goal} onChangeText={setGoal} keyboardType="number-pad" editable={!['preparing', 'active', 'finishing'].includes(state.phase)} style={styles.input} />
-        <Text style={styles.caption}>達到今日目標可抽一次世界卡；每累積完成 3 次也可抽一次。同時達成合併一次。三次進度跨日保留；每日目標獎勵一天一次。</Text>
+        <Text style={styles.caption}>一般任務完成或功課單項經大人確認，各累積1格；每3格抽1張，跨日保留。每日目標不另送抽卡；功課整份寶箱仍領10點，抽卡不重複計算。</Text>
         {notice ? <Text accessibilityRole="alert" style={styles.error}>{notice}</Text> : null}
         {['preparing', 'active', 'finishing'].includes(state.phase) ? <Text style={styles.body}>任務正在進行，完成後再設定下一件事。</Text> : <>{button('儲存每日目標',saveGoal,true)}{button('儲存任務', saveTask)}</>}
         {state.phase === 'ready' && state.title ? <Text style={styles.caption}>目前任務：{state.title} · {durationLabel(state.minutes)}</Text> : null}
@@ -651,7 +647,7 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
       {state.phase !== 'active' ? companionScene : null}</View>
       {homePhase ? <>
       {button(`✦ 能量球 ${state.orbs} · ${walletOpen ? '收起加法' : '看看加法'}`, () => setWalletOpen(!walletOpen), true, false, <><EnergyAmount value={state.orbs}/> · {walletOpen?'收起加法':'看看加法'}</>)}
-      {walletOpen ? <View style={styles.scorePanel} accessibilityLiveRegion="polite"><Text style={styles.section}>我的可用能量球</Text><EnergyMath total={state.orbs} /><Text accessibilityLabel={`可用能量球 ${state.orbs} 顆`} style={[styles.energyNumber, { fontSize: Math.min(40, 180 / String(state.orbs).length) }]}><EnergyAmount value={state.orbs} size={32} style={[styles.energyNumber,{fontSize:Math.min(40,180/String(state.orbs).length)}]}/></Text><Text style={styles.body}>今天任務 <EnergyAmount kind="gain" value={today.reduce((sum, item) => sum + (item.reward ?? 1), 0)}/> · 世界卡 <EnergyAmount kind="gain" value={todayExchangePoints}/></Text><Text style={styles.caption}>守護獸兌換已用 <EnergyAmount kind="cost" value={(state.guardianCards ?? []).filter(item => item.source === 'sunday').reduce((sum, item) => sum + item.cost, 0)}/></Text><Text style={styles.section}>今日任務 {today.length} / {state.dailyGoal ?? 3} {today.length >= (state.dailyGoal ?? 3) ? '✓ 全完成' : ''}</Text><Text style={styles.body}>{'● '.repeat(state.rewardProgress ?? 0)}{'○ '.repeat(3 - (state.rewardProgress ?? 0))} 再完成 {3 - (state.rewardProgress ?? 0)} 次抽世界卡</Text><Text style={styles.caption}>今天全完成也能抽卡 · 已收藏 {state.collection?.length ?? 0} 張</Text></View>
+      {walletOpen ? <View style={styles.scorePanel} accessibilityLiveRegion="polite"><Text style={styles.section}>我的可用能量球</Text><EnergyMath total={state.orbs} /><Text accessibilityLabel={`可用能量球 ${state.orbs} 顆`} style={[styles.energyNumber, { fontSize: Math.min(40, 180 / String(state.orbs).length) }]}><EnergyAmount value={state.orbs} size={32} style={[styles.energyNumber,{fontSize:Math.min(40,180/String(state.orbs).length)}]}/></Text><Text style={styles.body}>今天任務 <EnergyAmount kind="gain" value={today.reduce((sum, item) => sum + (item.reward ?? 1), 0)}/> · 世界卡 <EnergyAmount kind="gain" value={todayExchangePoints}/></Text><Text style={styles.caption}>守護獸兌換已用 <EnergyAmount kind="cost" value={(state.guardianCards ?? []).filter(item => item.source === 'sunday').reduce((sum, item) => sum + item.cost, 0)}/></Text><Text style={styles.section}>今日任務 {today.length} / {state.dailyGoal ?? 3} {today.length >= (state.dailyGoal ?? 3) ? '✓ 全完成' : ''}</Text><Text style={styles.body}>{'● '.repeat(state.rewardProgress ?? 0)}{'○ '.repeat(3 - (state.rewardProgress ?? 0))} 再完成 {3 - (state.rewardProgress ?? 0)} 次抽世界卡</Text><Text style={styles.caption}>每3次完成抽1張 · 已收藏 {state.collection?.length ?? 0} 張</Text></View>
       : null}
       <View testID="scene-footer">{button('夥伴小屋',()=>navigateRoom('companions'),true)}{button('心願小屋',()=>navigateRoom('wishes'),true)}</View>
 
