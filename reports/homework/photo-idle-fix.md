@@ -5,3 +5,5 @@ User confirms the notebook photo page flickers without touch on iPhone. Source i
 Replace 500ms page clock with date-only minute/visibility refresh (same-day state bails out); share memoized NotebookMedia for regular and focus views, keeping decoded img/iframe isolated from timer/sync renders. Block display avoids inline baseline layout, dark backing prevents white empty backing. Focus deadlines and progress logic unchanged.
 
 Typecheck and web/offline export passed. Synthetic photo-idle checks at 320/390/844: stable node, zero idle load/attribute mutations/removal, foreground preservation, explicit refresh, return, no family-state change. Focus regression 320/744/890 passed cards/start/help/photo return/duration/report. Real iPhone visual acceptance pending.
+
+65-second continuous idle regression also passed at390, spanning30-second sync and60-second offline refresh: no photo reload, mutation or removal; manual refresh/back retained.

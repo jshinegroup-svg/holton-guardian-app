@@ -8,7 +8,7 @@ let staleShell=process.env.TEST_STALE_PACKAGE==='1';
 const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=path.resolve(process.env.TEST_DIST||'dist','.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(path.resolve(process.env.TEST_DIST||'dist')+path.sep)){res.writeHead(403).end();return;}const data=await readFile(file);const ext=path.extname(file);res.setHeader('Content-Type',ext==='.js'?'application/javascript':ext==='.html'?'text/html':ext==='.png'?'image/png':ext==='.jpg'?'image/jpeg':'application/octet-stream');if(staleShell&&pathname==='/index.html'){staleShell=false;res.end('<html>stale deployment</html>');}else res.end(data);}catch{res.writeHead(404).end();}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=process.env.TEST_BASE_URL||`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});
-try{for(const [width,height] of [[320,740],[390,844],[844,390]]){
+try{for(const [width,height] of (process.env.LONG_IDLE==='1'?[[390,844]]:[[320,740],[390,844],[844,390]])){
  const family=randomUUID(),user=randomUUID(),a=randomUUID(),b=randomUUID();
  const kids=[{id:a,family_id:family,nickname:'哥哥',age_years:8,age_recorded_at:new Date().toISOString()},{id:b,family_id:family,nickname:'妹妹',age_years:6,age_recorded_at:new Date().toISOString()}];
  const seed=name=>({version:1,activeWorld:width===320?'forest':width===744?'sky':'cosmos',journeys:{version:2,counts:{forest:0,sky:0,cosmos:0},legacyCredit:0},starterChoiceVersion:1,starterCompanionId:'pip',onboardingDone:true,childName:name,title:name==='哥哥'?'數學作業':'閱讀',minutes:5,orbs:name==='哥哥'?10:30,homework:{enabled:false,days:{'2026-11-16':{tasks:[{id:'old',title:'國語甲本',detail:'原有功課',reported:false,confirmed:false}]}}},phase:'ready',deadline:null,remaining:300,help:false,supportUsed:['rest'],breakDeadline:null,focusElapsedMs:0,focusStartedAt:null,rewardProgress:2,dailyGoal:1,taskReward:1,history:[],guardian:{},guardianCards:[],allowEarlyFinish:true,focusMusicEnabled:false,taskSoundEnabled:width!==890});
@@ -69,7 +69,7 @@ try{for(const [width,height] of [[320,740],[390,844],[844,390]]){
  await p.getByRole('button',{name:'查看 11/16 聯絡簿',exact:true}).click();
  const img=p.getByRole('img',{name:'Homework notebook',exact:true}).or(p.getByRole('img',{name:'聯絡簿',exact:true}));await img.waitFor();
  await p.evaluate(()=>{const el=document.querySelector('img[alt="聯絡簿"],img[alt="Homework notebook"]');window.photoNode=el;window.photoStats={loads:0,mutations:0,removed:0};el.addEventListener('load',()=>window.photoStats.loads++);new MutationObserver(ms=>{window.photoStats.mutations+=ms.length}).observe(el,{attributes:true});new MutationObserver(()=>{if(!el.isConnected)window.photoStats.removed++}).observe(document.body,{childList:true,subtree:true})});
- await p.waitForTimeout(6500);
+ await p.waitForTimeout(process.env.LONG_IDLE==='1'?65000:6500);
  const stable=await p.evaluate(()=>({...window.photoStats,connected:window.photoNode.isConnected}));console.log('PHOTO IDLE',stable);assert.deepEqual(stable,{loads:0,mutations:0,removed:0,connected:true});
  await p.evaluate(()=>window.dispatchEvent(new Event('pageshow')));await p.waitForTimeout(1500);assert(await p.evaluate(()=>window.photoNode.isConnected));
  await p.getByRole('button',{name:'重新讀取雲端照片',exact:true}).click();await p.waitForTimeout(500);assert(await img.isVisible());
