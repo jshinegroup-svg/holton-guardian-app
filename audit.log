@@ -176,3 +176,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-18 actor=codex approval=user trigger=24419 change=homework-confirmed-task-draw-credit; preserve legacy balances/draws; remove daily-goal bonus; tests=model,edit,offline,repository,typecheck,3-width-focus,3-width-draw; artifacts=src/lib/drawProgress.ts,src/homework,src/LightApp.tsx,src/AdventureVillage.tsx,src/i18n,scripts/homework
 
 2026-11-18 actor=codex approval=user trigger=24486 fix=retain-mounted-game-on-auth-loss; modal-reauth-same-account-keeps-deadline; identity-change-resets-family; explicit-signout-local-only; checks=typecheck,web-build,refresh-success/transient/invalid,same-account-continuity,local-logout,password-recovery,offline-repository; device-root-cause-unconfirmed
+2026-11-19 actor=codex approval=user:24532 trigger=idle-notebook-flicker: isolate media, remove subsecond date rendering; synthetic tests passed, iPhone root cause unproven.
