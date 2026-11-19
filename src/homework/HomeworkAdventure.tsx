@@ -7,7 +7,7 @@ import PhotoImport from './PhotoImport';
 import HomeworkGuide,{HOMEWORK_GUIDE_KEY} from './HomeworkGuide';
 import {subjects,normalizeSubjectTasks} from './subjects';
 import SubjectIcon from './SubjectIcon';
-import React,{useEffect,useState} from 'react';
+import React,{useCallback,useEffect,useState} from 'react';
 import {View,ScrollView,StyleSheet,Pressable} from 'react-native';
 import {Text,TextInput} from '../i18n/ui';
 import {useLocale} from '../i18n/locale';
@@ -17,6 +17,12 @@ import type {LightState} from '../LightApp';
 import {homework,dateKey,allConfirmed,claimHomework,confirmHomeworkTask,updateDay} from './model';
 import StarBoard from './StarBoard';
 import SavedHomeworkEditor from './SavedHomeworkEditor';
+
+// React DOM reapplies input type/name on renders. Keep the native date control
+// out of parent clock/context updates to avoid WebKit repainting idle text.
+const HomeworkDateInput=React.memo(function HomeworkDateInput({label,date,disabled,onDate}:{label:string;date:string;disabled:boolean;onDate:(date:string)=>void}){
+ return <input aria-label={label} type="date" value={date} disabled={disabled} onChange={e=>{if(e.target.value)onDate(e.target.value)}} style={{fontSize:16,padding:6,maxWidth:'100%',color:'#ffffff',WebkitTextFillColor:'#ffffff',opacity:1,backgroundColor:'#102f40',border:'1px solid #d8bc76',borderRadius:10,colorScheme:'dark'}}/>;
+});
 type Props={editingRef?:{current:boolean};startMusic?:()=>void;stopMusic?:()=>void;chime:{arm:()=>void;play:()=>Promise<boolean>;stop:()=>void};musicControl?:React.ReactNode;recovery?:React.ReactNode;state:LightState;change:(fn:(s:LightState)=>LightState)=>Promise<boolean>;onClose:()=>void;error:string;button:(label:string,fn:()=>void,secondary?:boolean,disabled?:boolean)=>React.ReactNode};
 export default function HomeworkAdventure({editingRef,state,change,onClose,error,button,recovery,musicControl,chime,startMusic,stopMusic}:Props){
  const {locale}=useLocale(),en=locale==='en',tr=(zh:string,english:string)=>en?english:zh;
@@ -41,7 +47,7 @@ export default function HomeworkAdventure({editingRef,state,change,onClose,error
  const taskChange=(id:string)=>save(s=>confirmHomeworkTask(s,date,id));
  const dateAt=(offset:number)=>{const d=new Date(`${today}T12:00:00`);d.setDate(d.getDate()+offset);return dateKey(d)};
  const viewLabel=tr(`查看 ${date.slice(5).replace('-','/')} 聯絡簿`,`Notebook · ${date.slice(5)}`);
- function browseDate(next:string){if(timer||photoBusy)return;setDate(next);setSelected('');setPhoto('');setNotice('');setPage('map')}
+ const browseDate=useCallback((next:string)=>{if(timer||photoBusy)return;setDate(next);setSelected('');setPhoto('');setNotice('');setPage('map')},[timer,photoBusy]);
  async function showPhoto(target=date){
   if(photoBusy)return;if(timer&&target!==date){setNotice(tr('請先結束計時。','End the timer first.'));return}
   setPhotoBusy(true);setNotice(tr('正在讀取聯絡簿…','Loading notebook…'));
@@ -84,7 +90,7 @@ export default function HomeworkAdventure({editingRef,state,change,onClose,error
  }
 [data-testid=homework-toolbar] [role=button]{min-height:44px;height:100%;padding:8px 6px!important}[data-testid=homework-toolbar] [role=button]>div{font-size:15px!important;line-height:20px!important}`}</style>
  {recovery}{error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}{notice?<Text accessibilityLiveRegion="polite" style={styles.text}>{notice}</Text>:null}
- <div className="hw-datebar"><label style={{color:'#fff0c1'}}>{tr('功課日期','Homework date')} <input aria-label={tr('功課日期','Homework date')} type="date" value={date} disabled={!!timer||photoBusy||page==='review'||page==='import'||page==='edit'||page==='attach'} onChange={e=>{if(e.target.value){browseDate(e.target.value)}}} style={{fontSize:16,padding:6,maxWidth:'100%',color:'#ffffff',WebkitTextFillColor:'#ffffff',opacity:1,backgroundColor:'#102f40',border:'1px solid #d8bc76',borderRadius:10,colorScheme:'dark'}}/></label>
+ <div className="hw-datebar"><label style={{color:'#fff0c1'}}>{tr('功課日期','Homework date')} <HomeworkDateInput label={tr('功課日期','Homework date')} date={date} disabled={!!timer||photoBusy||page==='review'||page==='import'||page==='edit'||page==='attach'} onDate={browseDate}/></label>
  {['map','history','detail','photo'].includes(page)?<View testID="homework-date-shortcuts" style={{flexDirection:'row',gap:8}}>{[-1,0,1].map((offset)=><Pressable key={offset} accessibilityRole="button" aria-pressed={date===dateAt(offset)} disabled={!!timer||photoBusy} onPress={()=>browseDate(dateAt(offset))} style={{flex:1,minWidth:0,alignItems:'center',justifyContent:'center',borderRadius:999,opacity:(timer||photoBusy)? .45:1}}><Text>{tr(['昨天','今天','明天'][offset+1],['Yesterday','Today','Tomorrow'][offset+1])+(date===dateAt(offset)?' ✓':'')}</Text></Pressable>)}</View>:null}
  </div>
  {page==='photo'?<><Text style={styles.text}>{childName||''} · {date} · {tr('聯絡簿','Notebook')}</Text>{button(tr('返回／關閉照片','Back / Close photo'),()=>{setPhoto('');setPage('map')},true,photoBusy)}{photo?(<NotebookMedia source={photo} label={tr('聯絡簿','Homework notebook')}/>):<Text style={styles.text}>{tr('這天還沒有聯絡簿照片，可以由家長直接補上，不必重新建立功課。','No notebook yet. A grown-up can attach one without recreating homework.')}</Text>}{button(photo?tr('更換聯絡簿照片','Replace notebook'):tr('補上聯絡簿照片','Add notebook photo'),()=>{setAttachment(null);setGate('attach')},true,photoBusy||!!timer)}{button(tr('重新讀取雲端照片','Refresh notebook'),()=>void showPhoto(),true,photoBusy)}</>:null}
