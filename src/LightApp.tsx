@@ -58,7 +58,7 @@ const RECOVERY_KEY = 'holton-guardian-app::before-replace-v1';
 type State=LightState;
 type RecordItem = { outcome?:'completed'|'unfinished';elapsedSeconds?:number; world?:WorldId; reward?: number; id: string; title: string; at: string; minutes: number; cardId?: string; finishId?: string; helpUsed?: boolean; supportUsed?: string[] };
 const worldEnergyReward=(id?:string)=>worldPointValues[id??'']?<><EnergyAmount kind="gain" value={worldPointValues[id!]} size={20}/> 可兌換</>:worldRewardLabel(id);
-export type LightState = { homework?:Homework; taskSoundSeconds?:number; taskSoundId?:ReminderSound; taskSoundLevel?:SoundLevel; focusMusicLevel?:SoundLevel; lastCustomMinutes?:number; focusTargetMs?:number; taskOutcome?:'completed'|'unfinished';continueAfterDue?:boolean; guardianSundayOnly?:boolean; starterChoiceVersion?:1;starterCompanionId?:StarterCompanionId; focusMusicEnabled?:boolean;focusMusicTrackId?:FocusMusicId; childName?:string; allowEarlyFinish?:boolean;taskSoundEnabled?:boolean;taskReminderShown?:boolean; focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
+export type LightState = { homeworkCardSelected?:boolean; homework?:Homework; taskSoundSeconds?:number; taskSoundId?:ReminderSound; taskSoundLevel?:SoundLevel; focusMusicLevel?:SoundLevel; lastCustomMinutes?:number; focusTargetMs?:number; taskOutcome?:'completed'|'unfinished';continueAfterDue?:boolean; guardianSundayOnly?:boolean; starterChoiceVersion?:1;starterCompanionId?:StarterCompanionId; focusMusicEnabled?:boolean;focusMusicTrackId?:FocusMusicId; childName?:string; allowEarlyFinish?:boolean;taskSoundEnabled?:boolean;taskReminderShown?:boolean; focusElapsedMs?:number;focusStartedAt?:number|null; onboardingDone?:boolean; journeys?:Journeys;activeWorld?:WorldId; guardianChallenge?: GuardianChallenge; shopEnabled?: boolean; wishes?: Wish[]; wishReceipts?: WishReceipt[]; taskCategory?: string; reduceMotion?: boolean; taskReward?: number; worldReminderDismissedDay?: string; worldRedemptions?: WorldRedemption[]; supportCardId?: string; supportUsed?: string[]; breakDeadline?: number | null; helpUsed?: boolean; finishId?: string; guardianCards?: GuardianReceipt[]; companionCardId?: string; starterRestoreAt?: string; dailyGoal?: number; rewardProgress?: number; dailyRewardDay?: string; draws?: WorldDraw[]; collection?: WorldDraw[]; version: 1; cardId?: string; title: string; minutes: number; orbs: number; phase: 'ready' | 'preparing' | 'active' | 'finishing' | 'done'; deadline: number | null; remaining: number; help: boolean; history: RecordItem[]; guardian: Partial<PersistedAppState> };
 const cardIdForMinutes=(minutes:number)=>timeChallenges.find(card=>card.minutes===minutes)?.id??CUSTOM_TIME_CARD_ID;
 const day = (date: Date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 const initial = (old: Partial<PersistedAppState> | null): State => ({ version: 1, starterChoiceVersion:1,...(old?{starterCompanionId:'pip' as const}:{}),onboardingDone:!!old, shopEnabled: true, wishes: starterWishes(), title: '', minutes: 5, orbs: typeof old?.orbs === 'number' ? old.orbs : 0, phase: 'ready', deadline: null, remaining: 300, help: false, history: [], guardian: { coreGuardianName: old?.coreGuardianName, coreGuardianId: old?.coreGuardianId, coreGuardianArchetype: old?.coreGuardianArchetype, coreGuardianStateVariant: old?.coreGuardianStateVariant, coreGuardianLevel: old?.coreGuardianLevel } });
@@ -85,12 +85,11 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const {locale}=useLocale();
   const [homeworkGuideOpen,setHomeworkGuideOpen]=useState(false);
   const [homeworkOpen,setHomeworkOpen]=useState(false);
-  const [homeworkCardSelected,setHomeworkCardSelected]=useState(false);
   const {storage,pinKey,familyMode}=useFamilyStorage();
   const {width: viewportWidth, height: viewportHeight} = useWindowDimensions();
   const [state, setState] = useState<State | null>(null);
   useEffect(()=>{if(state?.homework?.timer)setHomeworkOpen(true)},[!!state?.homework?.timer]);
-  const homeworkSelected=homeworkCardSelected;
+  const homeworkSelected=state?.homeworkCardSelected===true;
 
   const [customDraft,setCustomDraft]=useState(String(DEFAULT_CUSTOM_MINUTES));
   const [customNeedsApply,setCustomNeedsApply]=useState(false);
@@ -311,10 +310,10 @@ export default function LightApp({childNickname,compact=false,musicOwner=true,on
   const stepCard = (delta:number) => {
     const index=homeworkSelected?taskDeck.length-1:customSelected?timeChallenges.length:timeChallenges.indexOf(displayCard);
     const next=(index+delta+taskDeck.length)%taskDeck.length;
-    if(taskDeck[next].id===homeworkCard.id){setHomeworkCardSelected(true);return;}
+    if(taskDeck[next].id===homeworkCard.id){void change(s=>s.phase!=='ready'?s:{...s,homeworkCardSelected:true});return;}
     const card=timeChallenges[next];
     const n=card?.minutes??(validCustomMinutes(state.lastCustomMinutes??0)?state.lastCustomMinutes!:DEFAULT_CUSTOM_MINUTES);
-    void change(s=>s.phase!=='ready'?s:{...s,cardId:card?.id??CUSTOM_TIME_CARD_ID,minutes:n,remaining:n*60}).then(saved=>{if(saved){setHomeworkCardSelected(false);setMinutes(String(n));setCustomDraft(String(n));setCustomNeedsApply(!card);}});
+    void change(s=>s.phase!=='ready'?s:{...s,homeworkCardSelected:false,cardId:card?.id??CUSTOM_TIME_CARD_ID,minutes:n,remaining:n*60}).then(saved=>{if(saved){setMinutes(String(n));setCustomDraft(String(n));setCustomNeedsApply(!card);}});
   };
   const customValue=parseCustomMinutes(customDraft);
   const customPending=customSelected&&(customNeedsApply||customValue!==state.minutes);
