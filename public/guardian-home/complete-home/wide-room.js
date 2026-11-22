@@ -1,9 +1,10 @@
 (()=>{
  const stage=$('.stage'),viewport=document.createElement('div');viewport.className='room-viewport';viewport.setAttribute('aria-label','加寬小屋，左右滑動查看');stage.before(viewport);viewport.append(stage);
- const controls=document.createElement('div');controls.className='view-controls';controls.innerHTML='<button type="button" aria-label="向左看">‹</button><p>左右滑看小屋 · 橫向更寬敞</p><button type="button" aria-label="回到夥伴">找夥伴</button><button type="button" aria-label="向右看">›</button>';viewport.after(controls);
- const toolbar=document.createElement('div');toolbar.className='play-toolbar';toolbar.setAttribute('aria-label','小屋玩具與照護');controls.after(toolbar);
+ const shell=document.createElement('div');shell.className='room-shell';viewport.before(shell);shell.append(viewport);
+ const controls=document.createElement('div');controls.className='view-controls';controls.innerHTML='<button type="button" aria-label="向左看">‹</button><p>左右滑看小屋 · 橫向更寬敞</p><button type="button" aria-label="回到夥伴">找夥伴</button><button type="button" aria-label="向右看">›</button>';shell.after(controls);
+ const toolbar=document.createElement('div');toolbar.className='play-toolbar';toolbar.setAttribute('aria-label','小屋玩具與照護');shell.append(toolbar);
  for(const selector of ['.prop-feed','.prop-brush','.prop-bell','#voice','.prop-dance','.prop-jump','.prop-turn','.prop-stretch'])toolbar.append($(selector));
- toolbar.after($('.hold-voice-status'));
+ controls.after($('.hold-voice-status'));
  let manualUntil=0,followFrame=0,previous=0;
  function camera(){stage.style.setProperty('--camera-x',viewport.scrollLeft+'px');stage.style.setProperty('--camera-width',Math.min(viewport.clientWidth,stage.clientWidth)+'px')}
  function center(smooth=false){const r=pet.getBoundingClientRect(),v=viewport.getBoundingClientRect();viewport.scrollTo({left:viewport.scrollLeft+r.left+r.width/2-v.left-v.width/2,behavior:smooth?'smooth':'instant'});camera()}

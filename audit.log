@@ -202,3 +202,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-22 actor=bot approval=user:24702 trigger=replace-mirror-cushion added direct-manipulation feather and bubble wand; original assets/voices/data preserved; mobile interaction checks passed.
 
 2026-11-22 actor=codex approval=user:24705 trigger=bubble-repeat-tap — preserve existing bubbles on repeated presses, immediate three-bubble burst, hold continuation, 10s lifetime and 90-bubble performance cap; update runtime cache versions and interaction verification.
+
+2026-11-22 actor=codex approval=user:24708 trigger=floating-side-tools — move existing eight controls into touch-through left/right overlay outside scene scroller; preserve gameplay and responsive landscape layout.

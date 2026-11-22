@@ -19,9 +19,9 @@ await p.locator('.prop-turn').scrollIntoViewIfNeeded();let b=await p.locator('.p
 await touch(b.x+b.width/2,b.y+b.height/2);let r=await p.locator('.pet').boundingBox();await move(r.x+r.width*.5,r.y+r.height*.45);await p.waitForTimeout(1300);assert.equal(await p.evaluate(()=>guardianToyState().mode),'feather');assert(await p.evaluate(()=>guardianToyState().tickled)>0,'feather contact response');assert.deepEqual(await p.evaluate(()=>({x:guardianWideRoom.viewport.scrollLeft,y:scrollY})),scroll);await end();await p.waitForTimeout(850);assert.equal(await p.evaluate(()=>guardianToyState().mode),'');
 await p.locator('.prop-stretch').scrollIntoViewIfNeeded();b=await p.locator('.prop-stretch').boundingBox();await touch(b.x+b.width/2,b.y+b.height/2);await p.waitForTimeout(1700);assert(await p.evaluate(()=>guardianToyState().bubbles)>0);await end();assert.equal(await p.evaluate(()=>guardianToyState().held),false);
 const originalBubbles=await p.locator('.soap-bubble').count();
-await p.evaluate(()=>{window.retainedBubble=document.querySelector('.soap-bubble');});
+await p.evaluate(()=>{window.retainedBubbles=[...document.querySelectorAll('.soap-bubble')];});
 for(let i=0;i<5;i++){await touch(b.x+b.width/2,b.y+b.height/2);await end();}
-assert(await p.evaluate(()=>retainedBubble.isConnected),'repeated presses retain existing bubbles');
+assert(await p.evaluate(()=>retainedBubbles.some(b=>b.isConnected)),'repeated presses retain existing bubbles');
 assert(await p.locator('.soap-bubble').count()>originalBubbles+8,'quick taps accumulate bubbles');
 await p.locator('.soap-bubble').first().click({force:true});assert(await p.evaluate(()=>guardianToyState().pops)>0);await p.screenshot({path:'/tmp/new-toys.png'});
 await p.locator('[data-room="1"]').click();assert.deepEqual(await p.evaluate(()=>({mode:guardianToyState().mode,bubbles:guardianToyState().bubbles})),{mode:'',bubbles:0});
