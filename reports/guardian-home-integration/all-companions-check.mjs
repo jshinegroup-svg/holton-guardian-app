@@ -17,8 +17,8 @@ try{
 for(const id of ids){
  await p.goto(base+'/guardian-home/complete-home/index.html?companions='+ids.join(',')+'&companion='+id);
  await p.waitForFunction(()=>window.guardianFace?.ready);
- assert.equal(await p.locator('#home-companion').inputValue(),id);
- assert.equal(await p.locator('#home-companion option').count(),8);
+ assert.equal(await p.locator('#home-companion').getAttribute('data-companion'),id);
+ assert.equal(await p.evaluate(()=>guardianAllowed.length),8);
  await p.screenshot({path:`reports/guardian-home-integration/companion-${id}.png`,fullPage:true});
  await p.locator('.sound').click();
  if(await p.locator('.sound').getAttribute('aria-pressed')==='false')await p.locator('.sound').click();
@@ -40,7 +40,7 @@ for(const id of ids){
  await p.locator('#voice').scrollIntoViewIfNeeded();const mic=await p.locator('#voice').boundingBox();await touch(mic.x+mic.width/2,mic.y+mic.height/2);await p.waitForFunction(()=>guardianHoldState().recording);await p.waitForTimeout(400);await end();await p.waitForFunction(()=>guardianHoldState().playing);
  console.log('PASS',id,'render, fixed voice, touch feed/brush, bell, ball, rooms, music, hold recording');
 }
-await p.goto(base+'/guardian-home/complete-home/index.html?companions=pip,stoneback&companion=hop');await p.waitForFunction(()=>window.guardianFace?.ready);assert.equal(await p.locator('#home-companion').inputValue(),'pip');assert.equal(await p.locator('#home-companion option:disabled').count(),6);
-await p.locator('#home-companion').selectOption('stoneback');await p.waitForFunction(()=>window.guardianProfile?.id==='stoneback'&&window.guardianFace?.ready);assert.equal(await p.locator('#home-companion option:disabled').count(),6);
+await p.goto(base+'/guardian-home/complete-home/index.html?companions=pip,stoneback&companion=hop');await p.waitForFunction(()=>window.guardianFace?.ready);assert.equal(await p.locator('#home-companion').getAttribute('data-companion'),'pip');assert.equal(await p.evaluate(()=>guardianAllowed.length),2);
+await p.locator('#home-companion').click();await p.locator('#home-roster button[data-companion=stoneback]').click();await p.waitForFunction(()=>window.guardianProfile?.id==='stoneback'&&window.guardianFace?.ready);assert.equal(await p.evaluate(()=>guardianAllowed.length),2);
 assert.deepEqual(errors,[]);console.log('PASS roster ownership filtering, fallback and switching');
 }finally{await browser.close();await new Promise(r=>server.close(r));}

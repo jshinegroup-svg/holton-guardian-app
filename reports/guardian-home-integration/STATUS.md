@@ -42,3 +42,8 @@ Final production: Render dep-dc18dnqfngtc73eubu40 Live5fd3e48 at14:10:22 Taipei.
 - Build, 320/390 roster and switching checks, and 390/1024 embedded gameplay/progress checks passed. Actual screenshots reviewed. Production deployment pending.
 
 Production: ef629e5 deployed successfully via Render dep-dc18sinf3r2c73c0sf3g. Hosted portrait rendering, allowed-only lists, current selection, modal switching and legacy fallback all PASS.
+
+## Wider rooms applied — user 24697
+- Applied approved forest4:3/cloud3:2/cosmos~16:9 generated proposals unchanged, original rooms.png retained. Portrait uses 720px-minimum world and native horizontal camera scrolling; desktop opens wider, short landscape fits scene beside toy dock. Find-companion/arrows and chase/call camera tracking added. No new art generation in this batch.
+- Moved existing care/music/microphone/actions into accessible dock; original handlers/audio retained. Floor physics and bell targets now use actual stage aspect ratio; resize resets old coordinates. Kept vertical scrolling and drag-only locking, including long-press mic protections. Sleep hotspot follows each illustrated bed.
+- Build passed. Three-room390/844/1024 feed, bell, ball contact, music and hold-record tests passed; all8 companions touch feed/brush/voice passed. Integrated390/1024 account progress unchanged, microphone released on exit. Native CDP horizontal pan/recenter/prop isolation/orientation reset passed; fixed sleep hotspot pan-y-only setting found by test. Screenshots reviewed. Physical iPhone feel awaits Jerry.

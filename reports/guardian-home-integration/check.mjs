@@ -50,17 +50,17 @@ try{for(const [width,height] of [[390,844],[1024,900]]){
    for(let i=1;i<=10;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+dy*i/10}]});await p.waitForTimeout(25);}
    await cdp.send('Input.dispatchTouchEvent',{type:cancel?'touchCancel':'touchEnd',touchPoints:[]});await p.waitForTimeout(350);
   };
-  const room=await f.locator('.stage').boundingBox();
+  const room=await f.locator('.room-viewport').boundingBox();
   await swipe(room.x+10,room.y+200,-130);
   assert(await f.evaluate(()=>scrollY)>30,'room background must scroll');
   await f.evaluate(()=>scrollTo(0,0));await p.waitForTimeout(400);
   for(const selector of ['.prop-feed','.prop-brush','.prop-bell','.ball']){
-   const box=await f.locator(selector).boundingBox();assert(box,selector);
+   await f.locator(selector).scrollIntoViewIfNeeded();const box=await f.locator(selector).boundingBox();assert(box,selector);
    const beforeScroll=await f.evaluate(()=>scrollY);
    await swipe(box.x+box.width/2,box.y+box.height/2,-65,true);
    assert(Math.abs(await f.evaluate(()=>scrollY)-beforeScroll)<2,selector+' must not scroll while dragged');
   }
-  const after=await f.locator('.stage').boundingBox();await swipe(after.x+10,after.y+200,-100);
+  await f.evaluate(()=>scrollTo(0,0));const after=await f.locator('.room-viewport').boundingBox();await swipe(after.x+10,after.y+200,-100);
   assert(await f.evaluate(()=>scrollY)>30,'scroll must work after cancelled drag');
   await f.evaluate(()=>scrollTo(0,0));await p.waitForTimeout(400);await cdp.detach();
   await f.locator('[data-room="1"]').click();await f.locator('[data-room="0"]').click();
@@ -71,16 +71,16 @@ try{for(const [width,height] of [[390,844],[1024,900]]){
  await f.locator('.ball').click();await p.waitForTimeout(800);
  await f.locator('[data-room="1"]').click();await f.locator('[data-room="2"]').click();await f.locator('[data-room="0"]').click();
  await f.locator('.sound').click();await f.waitForFunction(()=>guardianHome.state().speaking);
- const apple=await f.locator('.prop-feed').boundingBox(),pet=await f.locator('.stage .pet').boundingBox();
+ await f.locator('.prop-feed').scrollIntoViewIfNeeded();await f.evaluate(()=>guardianWideRoom.center());const apple=await f.locator('.prop-feed').boundingBox(),pet=await f.locator('.stage .pet').boundingBox();
  await p.mouse.move(apple.x+apple.width/2,apple.y+apple.height/2);await p.mouse.down();await p.waitForTimeout(1400);const stablePet=await f.locator('.stage .pet').boundingBox();const mouth=await f.evaluate(()=>guardianProfile.mouth);await p.mouse.move(stablePet.x+stablePet.width*mouth[0],stablePet.y+stablePet.height*mouth[1]);await f.waitForFunction(()=>guardianCareState().eaten);await p.mouse.up();await f.waitForFunction(()=>guardianHome.state().joy);
  await p.screenshot({path:`reports/guardian-home-integration/home-${width}.png`,fullPage:true});
- const mic=await f.locator('#voice').boundingBox();await p.mouse.move(mic.x+mic.width/2,mic.y+mic.height/2);await p.mouse.down();await f.waitForFunction(()=>guardianHoldState().recording);await p.waitForTimeout(700);await p.mouse.up();await f.waitForFunction(()=>guardianHoldState().playing);
+ await f.locator('#voice').scrollIntoViewIfNeeded();const mic=await f.locator('#voice').boundingBox();await p.mouse.move(mic.x+mic.width/2,mic.y+mic.height/2);await p.mouse.down();await f.waitForFunction(()=>guardianHoldState().recording);await p.waitForTimeout(700);await p.mouse.up();await f.waitForFunction(()=>guardianHoldState().playing);
  await p.getByRole('button',{name:'離開守護獸小屋，回到村莊',exact:true}).click();
  await p.getByTestId('adventure-village').waitFor();assert.equal(await p.locator('iframe').count(),0);assert.equal(JSON.stringify([...saves]),before);
  if(width===390){
  await p.getByRole('button',{name:'夥伴小屋',exact:true}).click();await p.getByRole('button',{name:'進入守護獸小屋',exact:true}).click();
  const f2=await (await p.getByTestId('guardian-home-frame').elementHandle()).contentFrame();await f2.waitForFunction(()=>window.guardianFace?.ready);
- const m=await f2.locator('#voice').boundingBox();await p.mouse.move(m.x+m.width/2,m.y+m.height/2);await p.mouse.down();await f2.waitForFunction(()=>guardianHoldState().recording);
+ await f2.locator('#voice').scrollIntoViewIfNeeded();const m=await f2.locator('#voice').boundingBox();await p.mouse.move(m.x+m.width/2,m.y+m.height/2);await p.mouse.down();await f2.waitForFunction(()=>guardianHoldState().recording);
  await f2.evaluate(()=>{parent.__testMicTracks=stream.getTracks()});
  await p.getByRole('button',{name:'離開守護獸小屋，回到村莊',exact:true}).evaluate(e=>e.click());await p.mouse.up();
  await p.waitForFunction(()=>window.__testMicTracks.every(t=>t.readyState==='ended'));console.log('PASS microphone released on frame close');

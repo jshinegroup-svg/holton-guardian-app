@@ -10,7 +10,7 @@
  const oldReact=react;react=function(kind,text){oldReact(kind,text);speak(kind==='cuddle'?'pet':kind==='laugh'?'play':'hello')};
  window.addEventListener('guardian-fed',()=>{pet.classList.add('fed-joy');say('好好吃！謝謝你，我吃得好開心！');hearts();speak('fed');clearTimeout(joyTimer);joyTimer=setTimeout(()=>pet.classList.remove('fed-joy'),1950)});
  new MutationObserver(()=>{if(pet.dataset.care==='comfortable'&&performance.now()-lastBrush>4000){lastBrush=performance.now();speak('pet')}}).observe(pet,{attributes:true,attributeFilter:['data-care']});
- $('.stage').addEventListener('pointerdown',()=>{if(state.sound)init().resume().catch(()=>{})},{capture:true});
+ $('.app').addEventListener('pointerdown',()=>{if(state.sound)init().resume().catch(()=>{})},{capture:true});
  const oldSound=$('.sound').onclick;$('.sound').onclick=()=>{oldSound();if(!state.sound){stop();say('互動音效與固定台詞已關閉。')}else{say('互動音效與固定台詞已開啟。');speak('hello')}};
  document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();clearTimeout(joyTimer);pet.classList.remove('fed-joy')}});window.addEventListener('pagehide',stop);
  window.guardianHome={state:()=>{
