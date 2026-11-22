@@ -6,3 +6,6 @@
 .toy-pop{position:absolute;z-index:12;color:#ffebaf;font-size:40px;pointer-events:none;transform:translate(-50%,-50%);animation:toy-pop .45s ease-out forwards}
 @keyframes toy-pop{to{opacity:0;transform:translate(-50%,-50%) scale(1.8)}}
 @media(prefers-reduced-motion:reduce){.toy-pop{animation:none}}
+
+.bubble-wand{position:absolute;z-index:16;width:64px;height:64px;padding:4px;border:1px solid #d8c18c99;border-radius:50%;background:#174851bb;box-shadow:0 4px 12px #00182066;transform:translate(-50%,-50%);touch-action:none;-webkit-touch-callout:none;user-select:none}
+.play-toolbar .wand-deployed{border-color:#9cf7ed;box-shadow:0 0 12px #9cf7ed66}
