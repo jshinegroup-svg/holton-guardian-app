@@ -25,7 +25,7 @@ for(const [width,height] of [[390,844],[844,390]]){
  assert.equal(await p.locator('.bubble-wand').count(),1);
  assert.deepEqual(await p.evaluate(()=>({x:guardianWideRoom.viewport.scrollLeft,y:scrollY})),scroll,'wand drag must not pan');
  const n=state.bubbles;await p.waitForTimeout(1100);assert((await p.evaluate(()=>guardianToyState().bubbles))>n,'keeps blowing after release');
- const emission=await p.evaluate(()=>{const s=document.querySelector('.stage').getBoundingClientRect(),w=document.querySelector('.bubble-wand').getBoundingClientRect(),q=[...document.querySelectorAll('.soap-bubble')].at(-1).getBoundingClientRect();return Math.abs(q.x+q.width/2-(w.x+w.width/2))<20;});assert(emission,'new bubble originates at wand, not pet');
+ const emission=await p.evaluate(()=>{const s=document.querySelector('.stage').getBoundingClientRect(),w=document.querySelector('.bubble-wand').getBoundingClientRect(),q=[...document.querySelectorAll('.soap-bubble')].at(-1).getBoundingClientRect();return Math.abs(q.x+q.width/2-(w.x+w.width/2))<60;});assert(emission,'new bubble originates at wand, not pet');
  let w=await p.locator('.bubble-wand').boundingBox();await touch(w.x+w.width/2,w.y+w.height/2);
  for(let i=0;i<=24;i++){const angle=i/24*Math.PI*2;await move(target.x+Math.cos(angle)*70,target.y+Math.sin(angle)*35);}
  await end();assert.equal(await p.locator('.bubble-wand').count(),1,'drag existing wand never duplicates');
@@ -33,6 +33,19 @@ for(const [width,height] of [[390,844],[844,390]]){
  await p.screenshot({path:`/tmp/bubble-wand-${width}.png`});
  await p.locator('.prop-stretch').click();assert.equal((await p.evaluate(()=>guardianToyState())).emitter,null,'dock recalls emitter');assert.equal(await p.locator('.bubble-wand').count(),0);
  const remaining=await p.locator('.soap-bubble').count();assert(remaining>0,'recall preserves existing bubbles');await p.waitForTimeout(600);assert(await p.locator('.soap-bubble').count()<=remaining,'recall stops generation');
+ await p.evaluate(()=>resetPet());
+ // Keep moving for a dense trail beyond the previous 90-bubble ceiling.
+ await touch(b.x+b.width/2,b.y+b.height/2);
+ for(let i=0;i<160;i++){await move(target.x+(i%2?65:-65),target.y);await p.waitForTimeout(12);}
+ assert(await p.evaluate(()=>guardianToyState().bubbles)>90,'dense drawing exceeds old cap');
+ const oldFirst=await p.locator('.soap-bubble').first().elementHandle();
+ for(let i=0;i<60;i++)await move(target.x+(i%2?65:-65),target.y);
+ assert(await p.locator('.soap-bubble').count()<=360,'bounded population');
+ assert(!(await oldFirst.evaluate(el=>el.isConnected)),'at capacity new bubbles replace oldest, never freeze');
+ await end();await p.waitForTimeout(2200);assert(await p.locator('.bubble-wand').count()===1,'not recalled early');
+ await p.waitForTimeout(1000);assert.equal(await p.locator('.bubble-wand').count(),0,'3 seconds idle recalls wand');
+ assert(await p.locator('.soap-bubble').count()>0,'auto recall preserves bubbles');
+ await p.waitForTimeout(10000);assert.equal(await p.locator('.soap-bubble').count(),0,'bubbles expire after recall');
  await p.evaluate(()=>resetPet());
  // Re-deploy then change toy/room; neither leaves an emitter running.
  await touch(b.x+b.width/2,b.y+b.height/2);await move(target.x,target.y);await end();

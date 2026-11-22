@@ -6,7 +6,8 @@
  const bubbleArt='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M19 58L32 29" stroke="#e9bf76" stroke-width="7" stroke-linecap="round"/><circle cx="36" cy="21" r="13" fill="#72d9dc33" stroke="#a7f3ef" stroke-width="4"/><circle cx="14" cy="15" r="7" fill="#d4aff64d" stroke="#e6d4ff" stroke-width="2"/><path d="M30 16Q33 10 39 12" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>';
  for(const [b,name,label,art] of [[feather,'逗逗羽毛','羽毛，抓著移動逗夥伴',featherArt],[blower,'吹泡泡','泡泡棒，可拖進房間持續吹泡泡，也可點一下吹泡泡',bubbleArt]]){b.classList.add('interactive-toy','care-source');b.dataset.caption=name;b.setAttribute('aria-label',label);b.innerHTML=art;b.onclick=e=>{e.preventDefault();e.stopImmediatePropagation()};b.removeAttribute('data-action');}
  let held=null,ghost=null,mode='',raf=0,last=0,nextBubble=0,until=0,tickled=0,pops=0,petPops=0;
- let wand=null,emitter=null,trailAnchor=null;
+ let wand=null,emitter=null,trailAnchor=null,lastWandMove=0;
+ const MAX_BUBBLES=360,WAND_IDLE_MS=3000;
  let px=.5,py=.8,target=null;const bubbles=[];const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  function stopHold(){const h=held;held=null;if(h){h.b.classList.remove('care-held');h.b.setAttribute('aria-pressed','false');if(h.b.hasPointerCapture(h.id))h.b.releasePointerCapture(h.id)}ghost?.remove();ghost=null;}
  function recall(){wand?.remove();wand=null;emitter=null;trailAnchor=null;blower.classList.remove('wand-deployed');blower.dataset.caption='吹泡泡';blower.setAttribute('aria-label','泡泡棒，可拖進房間持續吹泡泡，也可點一下吹泡泡');}
@@ -16,8 +17,9 @@
  function inRoom(e){const r=stage.parentElement.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;}
  function overDock(e){return !!document.elementFromPoint(e.clientX,e.clientY)?.closest('.play-toolbar');}
  function place(point){
+  if(!emitter||Math.hypot((point.x-emitter.x)*stage.clientWidth,(point.y-emitter.y)*stage.clientHeight)>1)lastWandMove=performance.now();
   emitter={...point};
-  if(!wand){wand=document.createElement('button');wand.type='button';wand.className='bubble-wand interactive-toy care-source';wand.setAttribute('aria-label','移動泡泡棒，按 Escape 收回');wand.innerHTML=bubbleArt;stage.append(wand);bind(wand,'bubbles');blower.classList.add('wand-deployed');blower.dataset.caption='收回泡泡棒';blower.setAttribute('aria-label','收回泡泡棒，停止持續吹泡泡');}
+  if(!wand){wand=document.createElement('button');wand.type='button';wand.className='bubble-wand interactive-toy care-source';wand.setAttribute('aria-label','移動泡泡棒，停下 3 秒自動收回，按 Escape 收回');wand.innerHTML=bubbleArt;stage.append(wand);bind(wand,'bubbles');blower.classList.add('wand-deployed');blower.dataset.caption='收回泡泡棒';blower.setAttribute('aria-label','收回泡泡棒，停止持續吹泡泡');}
   wand.style.left=point.x*100+'%';wand.style.top=point.y*100+'%';
  }
  function move(e){
@@ -36,10 +38,11 @@
 
  function react(){sprite.style.backgroundPosition='100% 0%';tickled=performance.now();if(state.sound)tone();}
  function pop(q,byPet=false){const i=bubbles.indexOf(q);if(i<0)return;bubbles.splice(i,1);q.el.remove();pops++;if(byPet)petPops++;const star=document.createElement('span');star.className='toy-pop';star.textContent='✧';star.style.left=q.x*100+'%';star.style.top=q.y*100+'%';stage.append(star);setTimeout(()=>star.remove(),450);react();}
- function spawn(point=emitter,trail=false){if(bubbles.length>=90)return;const el=document.createElement('button');el.type='button';el.className='soap-bubble';el.setAttribute('aria-label','點破泡泡');const q={el,x:point?point.x:Math.max(.08,Math.min(.92,px+(Math.random()-.5)*.35)),y:point?Math.max(.04,point.y-.05):.9,born:performance.now(),speed:trail?.003:point?.018+Math.random()*.012:.025+Math.random()*.035,trail,phase:Math.random()*6};el.style.width=(44+Math.random()*14)+'px';el.style.height=el.style.width;el.onpointerdown=e=>{e.stopPropagation()};el.onclick=e=>{e.stopPropagation();pop(q)};el.style.left=q.x*100+'%';el.style.top=q.y*100+'%';stage.append(el);bubbles.push(q);}
+ function spawn(point=emitter,trail=false){if(bubbles.length>=MAX_BUBBLES){const oldest=bubbles.shift();oldest.el.remove();}const el=document.createElement('button');el.type='button';el.className='soap-bubble';el.setAttribute('aria-label','點破泡泡');const q={el,x:point?point.x:Math.max(.08,Math.min(.92,px+(Math.random()-.5)*.35)),y:point?Math.max(.04,point.y-.05):.9,born:performance.now(),speed:trail?.003:point?.018+Math.random()*.012:.025+Math.random()*.035,trail,phase:Math.random()*6};el.style.width=(44+Math.random()*14)+'px';el.style.height=el.style.width;el.onpointerdown=e=>{e.stopPropagation()};el.onclick=e=>{e.stopPropagation();pop(q)};el.style.left=q.x*100+'%';el.style.top=q.y*100+'%';stage.append(el);bubbles.push(q);}
  function draw(t){if(!mode)return;const dt=Math.min(.04,(t-last)/1000||.016);last=t;const h=stage.clientHeight,w=stage.clientWidth;let goal=target;
  if(mode==='bubbles'){
-  if((held||emitter)&&t>=nextBubble){spawn();nextBubble=t+(emitter?240:420);}
+  if(emitter&&t-lastWandMove>=WAND_IDLE_MS){stopHold();recall();say('泡泡棒收好了，再拖出來繼續玩！');}
+  if((held||emitter)&&t>=nextBubble){for(let i=0;i<(emitter?3:1);i++)spawn(emitter?{x:Math.max(.04,Math.min(.96,emitter.x+(Math.random()-.5)*.09)),y:emitter.y+(Math.random()-.5)*.04}:null);nextBubble=t+(emitter?150:420);}
   for(const q of [...bubbles]){q.y=Math.max(.04,q.y-q.speed*dt);if(!q.trail)q.x+=Math.sin(t/700+q.phase)*dt*.006;q.el.style.left=q.x*100+'%';q.el.style.top=q.y*100+'%';if(t-q.born>=10000){q.el.remove();bubbles.splice(bubbles.indexOf(q),1)}}
   const q=bubbles.reduce((a,b)=>!a||Math.abs(b.x-px)<Math.abs(a.x-px)?b:a,null);goal=q?{x:q.x,y:Math.max(.62,Math.min(.88,q.y+.15))}:null;
   if(q&&t-tickled>900&&Math.abs(q.x-px)<.09&&Math.abs(q.y-(py-.15))<.085&&t-q.born>700){pop(q,true);}
@@ -54,7 +57,7 @@
  if(!held&&((mode==='feather'&&t>until)||(mode==='bubbles'&&!emitter&&!bubbles.length))){resetPet();return}raf=requestAnimationFrame(draw);
  }
  function start(e,b,kind){if(e.button!==0||held||panel.open||phase!=='idle'||voiceSource)return;e.preventDefault();e.stopPropagation();const continuing=kind==='bubbles'&&mode==='bubbles';if(!continuing){resetPet();mode=kind;px=.5;py=.8;tickled=0;}last=performance.now();pet.classList.add('toy-playing');held={id:e.pointerId,b,startX:e.clientX,startY:e.clientY,moved:false,recall:kind==='bubbles'&&b===blower&&!!emitter};b.classList.add('care-held');b.setAttribute('aria-pressed','true');b.setPointerCapture(e.pointerId);
-  if(kind==='feather'){ghost=document.createElement('span');ghost.className='feather-ghost';ghost.innerHTML=featherArt;stage.append(ghost);move(e);say('把羽毛移到我旁邊，逗逗我吧！')}else{if(!emitter)for(let i=0;i<3;i++)spawn();nextBubble=performance.now()+240;say('把泡泡棒拖進小屋，放開也會繼續吹！拖著畫出泡泡路線。')}
+  if(kind==='feather'){ghost=document.createElement('span');ghost.className='feather-ghost';ghost.innerHTML=featherArt;stage.append(ghost);move(e);say('把羽毛移到我旁邊，逗逗我吧！')}else{if(!emitter)for(let i=0;i<3;i++)spawn();nextBubble=performance.now()+240;say('拖著泡泡棒畫路線，停下 3 秒會自動收回。')}
   if(!raf)raf=requestAnimationFrame(draw);
  }
  function bind(b,kind){
