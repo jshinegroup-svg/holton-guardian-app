@@ -199,3 +199,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-22 actor:codex approval:user-24688-and-followup trigger:live-verification — ef629e5 live; hosted picture picker and owned-only checks passed.
 2026-11-22 actor:codex approval:user-24697 trigger:apply-wide-rooms — apply three approved assets, panoramic room/camera/toy dock, aspect-aware ball and bell; targeted visual, touch, all-species and account tests passed.
 2026-11-22 actor:codex approval:user-24697 trigger:wide-home-live-verification — Render394a378 live; hosted three-room390/844/1024 gameplay and native gesture tests passed.
+2026-11-22 actor=bot approval=user:24702 trigger=replace-mirror-cushion added direct-manipulation feather and bubble wand; original assets/voices/data preserved; mobile interaction checks passed.

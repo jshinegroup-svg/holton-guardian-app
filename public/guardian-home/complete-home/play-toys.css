@@ -1,0 +1,8 @@
+.play-toolbar .interactive-toy{background-image:none!important;background-color:#174851;border:1px solid #bda36b;touch-action:none;-webkit-touch-callout:none;user-select:none}
+.interactive-toy svg{display:block;width:85%;height:85%;margin:auto;pointer-events:none}
+.stage .pet.toy-playing{transition:none!important}
+.feather-ghost{position:absolute;width:72px;height:72px;transform:translate(-50%,-65%) rotate(-15deg);z-index:15;pointer-events:none;filter:drop-shadow(0 4px 3px #0005)}
+.soap-bubble{position:absolute;z-index:7;transform:translate(-50%,-50%);border-radius:50%;border:2px solid #d4fcffee;background:radial-gradient(circle at 30% 22%,#fff 0 4%,#ffffff70 5% 10%,#93f4f733 18%,#e1b0ff33 60%,#b8ffffaa 95%);box-shadow:inset -3px -3px 8px #ffd7ff88,0 0 7px #ffffff40;padding:0;touch-action:manipulation;-webkit-touch-callout:none;user-select:none}
+.toy-pop{position:absolute;z-index:12;color:#ffebaf;font-size:40px;pointer-events:none;transform:translate(-50%,-50%);animation:toy-pop .45s ease-out forwards}
+@keyframes toy-pop{to{opacity:0;transform:translate(-50%,-50%) scale(1.8)}}
+@media(prefers-reduced-motion:reduce){.toy-pop{animation:none}}
