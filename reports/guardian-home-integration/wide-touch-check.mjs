@@ -31,9 +31,17 @@ assert.deepEqual(await p.evaluate(()=>({x:guardianWideRoom.viewport.scrollLeft,y
 await p.locator('.ball').click();await p.waitForFunction(()=>guardianBallState().active);await p.setViewportSize({width:844,height:390});await p.waitForTimeout(400);assert.equal(await p.evaluate(()=>guardianBallState().active),false,'rotation cancels old-coordinate simulation');
 await p.locator('[data-room="2"]').click();await p.waitForTimeout(400);await p.screenshot({path:'/tmp/wide-landscape-final.png'});
 const scene=await p.locator('.stage').boundingBox(),mic=await p.locator('#voice').boundingBox();assert(scene.y>=0&&scene.y+scene.height<=390);assert(mic.y>=0&&mic.y+mic.height<=390);
-for(const [width,height] of [[320,740],[390,844],[844,390],[1024,900]]){
+for(const [width,height] of [[320,740],[390,844],[844,390],[844,320],[1024,900],[1366,1024]]){
  await p.setViewportSize({width,height});await p.waitForTimeout(250);
  const shell=await p.locator('.room-shell').boundingBox();
+ const scene=await p.locator('.stage').boundingBox();
+ assert.equal(Math.round(scene.width),1024,'iPad-scale world never shrinks to fit phone');
+ assert(Math.abs(shell.width-Math.min(width,1024))<1,'room fills available width up to iPad limit');
+ const offset=await p.evaluate(()=>guardianWideRoom.viewport.scrollLeft);
+ assert(scene.x<=shell.x+1&&scene.x+scene.width>=shell.x+shell.width-1,'no blank side gutters');
+ if(width<1024){await p.evaluate(()=>{guardianWideRoom.viewport.scrollLeft=0});await p.waitForTimeout(100);await p.evaluate(()=>{guardianWideRoom.viewport.scrollLeft=100});await p.waitForTimeout(100);assert(await p.evaluate(()=>guardianWideRoom.viewport.scrollLeft)>50,'phone panorama pans in both orientations');}
+ await p.evaluate(x=>{guardianWideRoom.viewport.scrollLeft=x},offset);await p.waitForTimeout(100);
+
  for(const b of await p.locator('.play-toolbar .room-prop').all()){
   const r=await b.boundingBox();assert(r.width>=44&&r.height>=44);
   assert(r.x>=0&&r.x+r.width<=width&&r.y>=shell.y&&r.y+r.height<=shell.y+shell.height,'tools fit room shell');

@@ -1,10 +1,10 @@
-.app{display:block!important;max-width:1200px;min-height:100dvh}
+.app{display:block!important;max-width:1024px;min-height:100dvh}
 header{max-width:620px;margin:auto;padding:10px 14px 8px!important}
 header h1{font-size:21px;margin:3px 0 8px}.companion-note{display:none}
 .room-viewport{width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x pan-y pinch-zoom;scrollbar-width:thin}
-.app .stage{width:max(100%,720px);height:auto;max-height:none;aspect-ratio:var(--room-ratio,4/3);touch-action:pan-x pan-y pinch-zoom}
-.stage .room{background-size:100% 100%!important;background-position:center!important}
-.stage .pet{left:34%;top:var(--idle-top,45%);width:32%;touch-action:pan-x pan-y pinch-zoom}
+.app .stage{width:1024px;height:clamp(400px,calc(100dvh - 300px),768px);max-height:none;aspect-ratio:auto;touch-action:pan-x pan-y pinch-zoom}
+.stage .room{background-size:cover!important;background-position:center!important}
+.stage .pet{scale:var(--pet-scale,1);transform-origin:50% 82%;left:34%;top:var(--idle-top,45%);width:32%;touch-action:pan-x pan-y pinch-zoom}
 .stage .pet.sleep{left:var(--bed-x);top:var(--bed-y);width:18%}
 .stage .prop-bed{left:var(--bed-x);top:var(--bed-y);width:18%;height:22%;right:auto}
 .stage .ball{width:9%;left:65%;top:73%;right:auto}
@@ -32,12 +32,12 @@ header h1{font-size:21px;margin:3px 0 8px}.companion-note{display:none}
 .nav{flex-direction:row!important;max-width:620px;margin:auto;padding:8px 12px!important}footer{padding:6px 12px}
 
 @media(orientation:landscape) and (max-height:520px) and (min-width:600px){
- .app{display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-rows:64px calc(100dvh - 114px) 50px auto;align-content:start}
+ .app{display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-rows:64px max(230px,calc(100dvh - 114px)) 50px auto;align-content:start}
  header{grid-column:1;grid-row:1;display:flex;align-items:center;gap:12px;max-width:none;width:100%;padding:5px 10px!important}
  header small,header h1,.companion-picker label{display:none}header .tabs{flex:1}.companion-picker{width:220px;margin:0}.companion-picker button{min-height:48px;padding:2px 8px}.companion-picker .companion-thumb{width:40px;height:40px}
- .room-shell{grid-column:1;grid-row:2;height:calc(100dvh - 114px)}
+ .room-shell{grid-column:1;grid-row:2;height:max(230px,calc(100dvh - 114px))}
  .room-viewport{height:100%}
- .app .stage{width:min(100%,calc((100dvh - 114px)*var(--room-ratio)));margin:auto}
+ .app .stage{width:1024px;height:100%;margin:0}
  .play-toolbar{grid-template-columns:48px 48px;grid-template-rows:repeat(4,50px);gap:6px}
  .play-toolbar .room-prop{width:48px;height:50px;min-height:44px}.play-toolbar .room-prop:after{font-size:10px}
  .view-controls{grid-column:1;grid-row:3;padding:2px 4px}.hold-voice-status{position:fixed;top:auto;bottom:8px;left:20%;width:60%;z-index:30;font-size:11px;padding:6px}
@@ -48,3 +48,10 @@ header h1{font-size:21px;margin:3px 0 8px}.companion-note{display:none}
 .stage.room-changing .pet{transition:none!important}
 
 .stage .prop-bed{touch-action:pan-x pan-y pinch-zoom}
+
+/* Camera HUD belongs to the visible frame, never to the scrolling world. */
+.room-shell>.topline{left:76px;right:76px;width:auto;z-index:21;pointer-events:none}
+.room-shell>.topline .sound{pointer-events:auto}
+.room-shell>.bubble{left:76px;right:76px;width:auto;max-width:460px;top:60px;font-size:13px;padding:8px;z-index:21}
+.stage .ball,.stage.free-play .ball{width:clamp(44px,calc(var(--scene-height,500px)*.18),82px);height:auto;aspect-ratio:1}
+@media(orientation:landscape) and (max-height:520px) and (min-width:600px){.room-shell>.bubble{top:48px;font-size:11px;padding:4px}}
