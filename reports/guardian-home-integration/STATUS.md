@@ -33,3 +33,5 @@ Live verification: Render dep-dc181556e07s73cjkr70 deployed 1001101 at 13:43 Tai
 - Typecheck/build pass. Eight-species actual CDP touch tests pass feeding, brushing, ball, bell, rooms, music, fixed speech and hold/release recording; roster filtering/fallback/reload switching pass. 390/1024 integrated synthetic-family checks pass with unchanged child saves and microphone cleanup. Screenshots inspected. Physical iPhone visual/gesture acceptance remains pending.
 
 Rollout follow-up: first hosted main-app test briefly loaded the previous app bundle while the new assets were already live, omitting roster query. Recheck confirmed new bundle passes roster. Hardened missing-roster fallback to legacy Stoneback-only instead of all species; all-species tests now pass an explicit fixture roster.
+
+Final production: Render dep-dc18dnqfngtc73eubu40 Live5fd3e48 at14:10:22 Taipei. Eight-species hosted gameplay and390/1024 account checks passed on a2aa97e; final legacy/owned/full-roster targeted hosted checks passed after5fd3e48.
