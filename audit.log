@@ -198,3 +198,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-22 actor:codex approval:user-24688-and-followup trigger:owned-only-picture-picker — hide unavailable companions; add existing-art portrait selector; build, mobile roster and integrated gameplay checks passed.
 2026-11-22 actor:codex approval:user-24688-and-followup trigger:live-verification — ef629e5 live; hosted picture picker and owned-only checks passed.
 2026-11-22 actor:codex approval:user-24697 trigger:apply-wide-rooms — apply three approved assets, panoramic room/camera/toy dock, aspect-aware ball and bell; targeted visual, touch, all-species and account tests passed.
+2026-11-22 actor:codex approval:user-24697 trigger:wide-home-live-verification — Render394a378 live; hosted three-room390/844/1024 gameplay and native gesture tests passed.
