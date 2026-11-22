@@ -18,3 +18,7 @@ Validation:
 - Physical iPhone Safari not tested in this environment; user acceptance still needed.
 
 Production verification: Render deploy dep-dc17j1l9fdbs73a1k470 is Live at commit a979dd5. The same synthetic-family browser checks passed against https://holton-family-v2.onrender.com at390/1024, including mic release on close and unchanged child saves. All20 new media HEAD responses and byte lengths verified.
+
+## iPhone scrolling correction — user 24668
+- Removed room-wide pan suppression. Background, pet and tap-only controls allow vertical scrolling; ball, apple, brush, bell and hold microphone retain gesture locking. Touch fallback checks the gesture origin, so moving off a prop stays locked without global state.
+- Bumped embedded page/CSS/touch-guard versions. Build passed; mobile CDP gestures verify background scrolling, all four prop locks, and scrolling after cancellation. Existing 390/1024 integration checks pass (feed, ball, recording, exit and unchanged saves). Physical iPhone acceptance remains pending.

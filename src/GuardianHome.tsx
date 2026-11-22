@@ -12,7 +12,7 @@ export default function GuardianHome({visible,onClose}:{visible:boolean;onClose:
     <Text style={{color:'#fff0c1',flex:1}}>守護獸小屋</Text>
    </View>
    {Platform.OS==='web'?React.createElement('iframe',{
-    title:'守護獸互動小屋',src:'/guardian-home/complete-home/index.html?v=integrated1',
+    title:'守護獸互動小屋',src:'/guardian-home/complete-home/index.html?v=integrated2',
     allow:'microphone',style:{border:0,width:'100%',flex:1,minHeight:0,background:'#071820'},
     'data-testid':'guardian-home-frame'
    }):<Text style={{color:'#fff0c1',padding:20}}>請使用網頁版開啟互動小屋。</Text>}

@@ -41,6 +41,30 @@ try{for(const [width,height] of [[390,844],[1024,900]]){
  const frame=await p.getByTestId('guardian-home-frame').elementHandle();const f=await frame.contentFrame();
  await f.waitForFunction(()=>window.guardianFace?.ready);
  assert(await f.evaluate(()=>guardianFace.state().active));
+ if(width===390){
+  const cdp=await context.newCDPSession(p);
+  const swipe=async(x,y,dy,cancel=false)=>{
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
+   for(let i=1;i<=10;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+dy*i/10}]});await p.waitForTimeout(25);}
+   await cdp.send('Input.dispatchTouchEvent',{type:cancel?'touchCancel':'touchEnd',touchPoints:[]});await p.waitForTimeout(350);
+  };
+  const room=await f.locator('.stage').boundingBox();
+  await swipe(room.x+10,room.y+200,-130);
+  assert(await f.evaluate(()=>scrollY)>30,'room background must scroll');
+  await f.evaluate(()=>scrollTo(0,0));await p.waitForTimeout(400);
+  for(const selector of ['.prop-feed','.prop-brush','.prop-bell','.ball']){
+   const box=await f.locator(selector).boundingBox();assert(box,selector);
+   const beforeScroll=await f.evaluate(()=>scrollY);
+   await swipe(box.x+box.width/2,box.y+box.height/2,-65,true);
+   assert(Math.abs(await f.evaluate(()=>scrollY)-beforeScroll)<2,selector+' must not scroll while dragged');
+  }
+  const after=await f.locator('.stage').boundingBox();await swipe(after.x+10,after.y+200,-100);
+  assert(await f.evaluate(()=>scrollY)>30,'scroll must work after cancelled drag');
+  await f.evaluate(()=>scrollTo(0,0));await p.waitForTimeout(400);await cdp.detach();
+  await f.locator('[data-room="1"]').click();await f.locator('[data-room="0"]').click();
+  console.log('PASS touch background scroll, prop locks, cancellation releases scroll');
+ }
+
  assert.equal(await f.locator('#voice').getAttribute('aria-label'),'長按麥克風錄音，放開回放，最長九秒');
  await f.locator('.ball').click();await p.waitForTimeout(800);
  await f.locator('[data-room="1"]').click();await f.locator('[data-room="2"]').click();await f.locator('[data-room="0"]').click();

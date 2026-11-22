@@ -79,8 +79,7 @@
 .stage .pet.being-called{transition:none}
 .pet.being-called .guardian-sprite{animation:none}
 
-/* V10: no one-finger page pan/pull-to-refresh from the interactive room.
-   Keep browser zoom and scrolling outside the room; never fix/lock body. */
-html,body{overscroll-behavior-y:none}
-.stage{touch-action:pinch-zoom;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.stage .room-prop,.stage .pet{touch-action:none;-webkit-touch-callout:none}
+/* Only draggable props and hold-to-record capture a pan; the room can scroll. */
+.stage{touch-action:pan-y pinch-zoom;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.stage .room-prop,.stage .pet{touch-action:pan-y pinch-zoom;-webkit-touch-callout:none}
+.stage .ball,.stage .care-source,.stage #voice{touch-action:none}

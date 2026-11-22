@@ -184,3 +184,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-22 actor:codex approval:user-24661-and-followup trigger:four-music-groups-and-guardian-integration — added 20 licensed tracks and complete guardian-home surface; scoped progress unchanged; typecheck/build/browser/offline checks passed.
 
 2026-11-22 actor:codex approval:user trigger:production-verification — Render a979dd5 live; production browser fixtures and20 media checks passed.
+
+2026-11-22 actor:codex approval:user-24668 trigger:iphone-scroll — scoped gesture locks to draggable props and microphone; build and touch/integration tests passed.
