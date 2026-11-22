@@ -211,3 +211,4 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 
 2026-11-22 actor=codex approval=user:24719 trigger=draggable-bubble-wand — persistent room-position emitter, redrawable freehand bubble trails, recall and lifecycle cleanup; retains tap bursts and10s expiry; no account/voice changes.
 2026-11-22 actor=codex approval=user-24722 trigger=bubble-feedback change=360-bubble-rolling-cap,dense-emission,3s-idle-recall,cache-bump,touch-regression
+2026-11-22 actor=codex approval=user-24725 trigger=guide-update change=six-page-welcome,companion-guide,task-card-anchor,portrait-hint,in-home-help,cache,regressions

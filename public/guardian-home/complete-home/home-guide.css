@@ -1,0 +1,6 @@
+.landscape-hint{margin:8px 0 0;padding:7px 10px;background:#1c4850;border:1px solid #aa965c;border-radius:12px;color:#fff0c1;font-size:14px;line-height:1.45}
+.landscape-hint small{display:block;font-size:11px;color:#d1e2df}
+@media(orientation:landscape){.landscape-hint{display:none}}
+.view-controls{flex-wrap:wrap}
+.view-controls .home-guide-button{font-size:12px;padding:6px 10px}
+.home-guide{line-height:1.65}.home-guide h2{margin-top:0}.home-guide ul{list-style:none;padding:0}.home-guide li{padding:10px 0;border-bottom:1px solid #ffffff20}.home-guide b{color:#ffe7aa}

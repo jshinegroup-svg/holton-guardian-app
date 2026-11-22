@@ -15,7 +15,7 @@ type Step={selector:string;text:string;delay?:number;action?:'mission'|'picker';
 const companionStep:Step={selector:'[data-testid="guardian-companion"] [data-testid="companion-reaction"]',text:'點點你的夥伴，看看他想跟你說什麼！他會用文字泡泡回應，做任務時也可以點他陪你一下。',delay:1400};
 const main:Step[]=[
  {selector:'[aria-label="開始任務"]',text:'先點這裡，進入今天的任務。',action:'mission'},
- {selector:'[aria-label="上一張時間卡"]',text:'點一下左箭頭，換一張時間卡。最後一張是「自訂時間」，可填 1～999 分鐘再按「用這個時間」；也可選「不限時」。'},
+ {selector:'[aria-label="上一張任務卡"]',text:'左右箭頭可以換任務卡：固定時間、不限時、自訂時間，以及「功課冒險」。自訂時間可填 1～999 分鐘，再按「用這個時間」。這次先帶你認識一般任務；教學不會替你換卡。',info:true},
  {selector:'[data-testid="task-title-entry"]',text:'點這裡，挑今天想完成的一件小事。',action:'picker'},
  {selector:'[data-testid="tutorial-task-categories"]',text:'從亮起的五種類別中，點一件今天想做的事。'},
  companionStep,
@@ -33,7 +33,7 @@ const rooms:Record<string,Step[]>={
   {selector:'[data-testid="focus-music-settings"] [aria-label^="試聽"]',text:'點這裡試聽 20 秒。試聽不等於選用，也不會開啟任務自動播放。'},
   {selector:'[data-testid="focus-music-settings"] [role="radio"][aria-label^="選用"]',text:'喜歡這首就按「選用」。任務開始是否播放，由「任務開始時播放」開關決定；也能在計時器旁開關。'},
  ],
- companions:[{selector:'[data-testid="guardian-companion"] [aria-label^="摸摸"]',text:'點一下夥伴，他會發光、用文字泡泡陪你，不會花點數。'},{selector:'[aria-label="我的守護獸收藏"]',text:'點這裡打開收藏；點已擁有的角色，就能選他今天陪你。',info:true,passThrough:true}],
+ companions:[{selector:'[aria-label="進入守護獸小屋"]',text:'進小屋和已取得的夥伴一起玩！看圖選夥伴，拖道具餵食、梳毛、吹泡泡；長按麥克風學說話。橫向玩會更有趣喔，直向也能左右滑看。小屋內可隨時開啟「玩法指南」。',info:true},{selector:'[data-testid="guardian-companion"] [aria-label^="摸摸"]',text:'點一下夥伴，他會發光、用文字泡泡陪你，不會花點數。'},{selector:'[aria-label="我的守護獸收藏"]',text:'點這裡打開收藏；點已擁有的角色，就能選他今天陪你。',info:true,passThrough:true}],
  wishes:[{selector:'[data-testid="wish-guide-card"], [data-testid="wish-guide-empty"]',text:'這是心願卡與需要的點數。點數足夠時可以選取，最後確認才扣點；教學不會替你兌換。',info:true}],
  parent:[{selector:'[aria-label="任務與目標"]',text:'在這裡設定任務、每日目標與是否允許提早完成。每位冒險者各自保存設定與進度。',info:true},{selector:'[aria-label="音樂"]',text:'背景音樂與時間到提醒分開設定。可試聽、選音效、調音量，並設定提醒播放幾秒。',info:true},{selector:'[aria-label="完成紀錄"]',text:'查看完成、未完成與使用幫忙卡的紀錄。想重看這套導覽，到「設定與教學 → 重新觀看操作教學」。',info:true}],
 };
@@ -133,7 +133,7 @@ export default function SpotlightGuide({allowed,room,replay,phase,pickerOpen,has
    <div style={{fontSize:13,color:'#e2c682'}}>{t("操作教學 · ")}{index+1}／{steps.length}</div>
    <p style={{fontSize:16,lineHeight:1.55,margin:'7px 0 10px'}}>{t(rect?step.text:'正在定位操作位置…')}</p>
    {notice?<p role="alert">{t(notice)}</p>:null}
-   <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}><button style={{...buttonStyle,background:'transparent'}} onClick={requestSkip}>{t("略過教學")}</button>{step.info?<button style={buttonStyle} onClick={advance}>{t(mode==='main'?'完成教學，先不開始':'知道了')}</button>:null}</div>
+   <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}><button style={{...buttonStyle,background:'transparent'}} onClick={requestSkip}>{t("略過教學")}</button>{step.info?<button style={buttonStyle} onClick={advance}>{t(mode==='main'?(index===steps.length-1?'完成教學，先不開始':'知道了'):'知道了')}</button>:null}</div>
    </>}
   </div>
  </div>,document.body);
