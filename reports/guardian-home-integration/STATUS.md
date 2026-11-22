@@ -22,3 +22,5 @@ Production verification: Render deploy dep-dc17j1l9fdbs73a1k470 is Live at commi
 ## iPhone scrolling correction — user 24668
 - Removed room-wide pan suppression. Background, pet and tap-only controls allow vertical scrolling; ball, apple, brush, bell and hold microphone retain gesture locking. Touch fallback checks the gesture origin, so moving off a prop stays locked without global state.
 - Bumped embedded page/CSS/touch-guard versions. Build passed; mobile CDP gestures verify background scrolling, all four prop locks, and scrolling after cancellation. Existing 390/1024 integration checks pass (feed, ball, recording, exit and unchanged saves). Physical iPhone acceptance remains pending.
+
+Live verification: Render dep-dc181556e07s73cjkr70 deployed 1001101 at 13:43 Taipei. Hosted 390/1024 integration and real CDP touch gestures PASS, including background scroll, four prop locks, cancellation recovery and unchanged fixture saves.
