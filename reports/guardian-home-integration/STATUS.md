@@ -16,3 +16,5 @@ Validation:
 - Browser offline reload of playhouse and its assets passed without recursive main app.
 - ffprobe validates all 20 new full-length recordings against official durations (within 10s). 40 tracks total.
 - Physical iPhone Safari not tested in this environment; user acceptance still needed.
+
+Production verification: Render deploy dep-dc17j1l9fdbs73a1k470 is Live at commit a979dd5. The same synthetic-family browser checks passed against https://holton-family-v2.onrender.com at390/1024, including mic release on close and unchanged child saves. All20 new media HEAD responses and byte lengths verified.

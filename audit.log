@@ -182,3 +182,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-20 actor=codex approval=user:24549 trigger=remember-last-card persist homework selection in child state; typecheck/export and reload regression320/390/844 passed
 
 2026-11-22 actor:codex approval:user-24661-and-followup trigger:four-music-groups-and-guardian-integration — added 20 licensed tracks and complete guardian-home surface; scoped progress unchanged; typecheck/build/browser/offline checks passed.
+
+2026-11-22 actor:codex approval:user trigger:production-verification — Render a979dd5 live; production browser fixtures and20 media checks passed.
