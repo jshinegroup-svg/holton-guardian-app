@@ -1,0 +1,29 @@
+// Floor-space simulation: positions/velocities are in stage-width units.
+// One RAF owns play; all existing reset/room/dialog actions cancel it.
+(()=>{
+ const stage=$('.stage'),ball=$('.ball'),sprite=pet.querySelector('.guardian-sprite');
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ let active=false,raf=0,last=0,elapsed=0,drag=null,suppressClick=false;
+ let b={x:.8,y:1.2,vx:0,vy:0,spin:0},p={x:.5,y:1.12,vx:0,vy:0},nextKick=0,restUntil=0,contacts=0,face=1;
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ function bounds(){return {left:.10,right:.90,top:.91,bottom:1.29}}
+ function stop(){active=false;cancelAnimationFrame(raf);raf=0;if(drag&&ball.hasPointerCapture(drag.id))ball.releasePointerCapture(drag.id);drag=null;stage.classList.remove('free-play');pet.classList.remove('ball-chase');pet.removeAttribute('data-ball-state');for(const key of ['left','top','width','transform'])pet.style.removeProperty(key);sprite.style.removeProperty('transform');sprite.style.removeProperty('background-position');sprite.style.removeProperty('animation');ball.removeAttribute('style');ball.dataset.caption='玩球';ball.setAttribute('aria-label','玩球，滑動球讓岩背龜追逐');lastPlay=Date.now()}
+ const beforeReset=resetPet;resetPet=function(){stop();beforeReset()};
+ function start(){if(active)return;if(panel.open||document.hidden)return;resetPet();active=true;elapsed=0;contacts=0;nextKick=.65;restUntil=.35;b={x:.80,y:1.19,vx:0,vy:0,spin:0};p={x:.50,y:1.12,vx:0,vy:0};stage.classList.add('free-play');pet.classList.add('ball-chase');ball.dataset.caption='滑一下球';say('把球滑出去，我來追！也可以點地毯傳球。');last=performance.now();render();raf=requestAnimationFrame(tick)}
+ function render(){const size=.36+(p.y-.91)*.15;pet.style.width=`${size*100}%`;pet.style.left=`${(p.x-size*.5)*100}%`;pet.style.top=`${(p.y-size*.82)/1.5*100}%`;const speed=Math.hypot(p.vx,p.vy);if(Math.abs(p.vx)>.025)face=p.vx>0?-1:1;const gait=elapsed*15;const bob=reduced.matches?0:Math.sin(gait)*Math.min(3,speed*10);sprite.style.animation='none';sprite.style.backgroundPosition=speed>.04?(Math.sin(gait)>0?'50% 100%':'100% 100%'):(elapsed<restUntil?'100% 0%':'0% 0%');sprite.style.transform=`translateY(${bob}px) scaleX(${face}) rotate(${reduced.matches?0:clamp(-p.vx*8,-4,4)}deg)`;ball.style.left=`${b.x*100}%`;ball.style.top=`${b.y/1.5*100}%`;ball.style.setProperty('--roll',`${b.spin}deg`);pet.dataset.ballState=drag?'watching':elapsed<restUntil?'resting':speed>.04?'chasing':'watching';}
+ function tick(now){if(!active)return;const dt=Math.min(.034,(now-last)/1000);last=now;elapsed+=dt;const lim=bounds();if(!drag){b.x+=b.vx*dt;b.y+=b.vy*dt;for(const [axis,vel,lo,hi] of [['x','vx',lim.left,lim.right],['y','vy',lim.top,lim.bottom]]){if(b[axis]<lo||b[axis]>hi){b[axis]=clamp(b[axis],lo,hi);b[vel]*=-.78}}const decay=Math.exp(-1.1*dt);b.vx*=decay;b.vy*=decay;b.spin+=b.vx*dt*1000;}
+ const dx=b.x+b.vx*.12-p.x,dy=b.y+b.vy*.12-p.y,d=Math.hypot(dx,dy);const speedCap=reduced.matches?.18:.39;let tx=0,ty=0;if(!drag&&elapsed>restUntil&&d>.085){const speed=Math.min(speedCap,d*1.8);tx=dx/d*speed;ty=dy/d*speed;}const ease=1-Math.exp(-5*dt);p.vx+=(tx-p.vx)*ease;p.vy+=(ty-p.vy)*ease;p.x=clamp(p.x+p.vx*dt,.18,.82);p.y=clamp(p.y+p.vy*dt,.96,1.27);
+ if(!drag&&elapsed>restUntil&&elapsed>nextKick&&Math.hypot(b.x-p.x,b.y-p.y)<.14){const angle=Math.atan2(b.y-p.y,b.x-p.x)+(Math.random()-.5)*1.4;const strength=.35+Math.random()*.22;b.vx=Math.cos(angle)*strength;b.vy=Math.sin(angle)*strength;if(b.x<.2)b.vx=Math.abs(b.vx);if(b.x>.8)b.vx=-Math.abs(b.vx);if(b.y<1)b.vy=Math.abs(b.vy);if(b.y>1.22)b.vy=-Math.abs(b.vy);contacts++;nextKick=elapsed+1;restUntil=elapsed+(contacts%4===0?2.4:.30);if(contacts%4===0)say('呼～休息一下，換你傳給我！');else if(contacts===1)say('頂到了！再來！');}
+ render();if(elapsed>32&&!drag){stop();say('玩得好開心！想再玩就碰一下球。');return}raf=requestAnimationFrame(tick)}
+ function point(e){const r=stage.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.width}}
+ ball.onclick=e=>{if(suppressClick){suppressClick=false;return}start();b.vx=(p.x-b.x)*1.5;b.vy=-.15;tone()};
+ ball.onpointerdown=e=>{if(e.button!==0||drag)return;e.preventDefault();start();if(!active)return;const q=point(e);drag={id:e.pointerId,x:q.x,y:q.y,t:performance.now(),vx:0,vy:0,moved:false,startX:q.x,startY:q.y};b.vx=b.vy=0;ball.setPointerCapture(e.pointerId)};
+ ball.onpointermove=e=>{if(!drag||e.pointerId!==drag.id)return;const q=point(e),now=performance.now(),dt=Math.max(.012,(now-drag.t)/1000),lim=bounds();drag.vx=clamp((q.x-drag.x)/dt,-1.3,1.3);drag.vy=clamp((q.y-drag.y)/dt,-1.3,1.3);drag.moved ||= Math.hypot(q.x-drag.startX,q.y-drag.startY)>.018;Object.assign(drag,{x:q.x,y:q.y,t:now});b.x=clamp(q.x,lim.left,lim.right);b.y=clamp(q.y,lim.top,lim.bottom)};
+ function release(e,cancelled){if(!drag||drag.id!==e.pointerId)return;const held=drag;drag=null;suppressClick=true;setTimeout(()=>suppressClick=false,300);if(ball.hasPointerCapture(e.pointerId))ball.releasePointerCapture(e.pointerId);if(cancelled){b.vx=b.vy=0;return}const fresh=performance.now()-held.t<150;b.vx=held.moved?(fresh?held.vx:0):(p.x-b.x)*1.5;b.vy=held.moved?(fresh?held.vy:0):-.15;restUntil=elapsed+.15;nextKick=elapsed+.25;}
+ ball.onpointerup=e=>release(e,false);ball.onpointercancel=e=>release(e,true);ball.onlostpointercapture=e=>{if(drag)release(e,true)};
+ stage.addEventListener('click',e=>{if(!active||e.target.closest('button')||drag)return;const q=point(e),lim=bounds();if(q.y<lim.top||q.y>lim.bottom)return;const dx=q.x-b.x,dy=q.y-b.y,d=Math.hypot(dx,dy);if(d>.02){b.vx=dx/d*.65;b.vy=dy/d*.65;restUntil=elapsed+.15;nextKick=elapsed+.25;}});
+ window.addEventListener('pagehide',stop);reduced.addEventListener('change',()=>{if(active)stop()});
+ $('.hint').textContent='滑動球一起追逐 · 點地毯傳球 · 點牠摸摸';
+ // Read-only state snapshot for interaction regression checks.
+ window.guardianBallState=()=>({active,ball:{...b},pet:{...p},contacts,dragging:!!drag,elapsed});
+})();

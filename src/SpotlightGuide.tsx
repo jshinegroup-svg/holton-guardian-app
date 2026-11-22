@@ -28,7 +28,7 @@ const rooms:Record<string,Step[]>={
   {selector:'[data-testid="reminder-settings"] [aria-label="任務到時提示音"]',text:'到時提醒和背景音樂分開控制，音量也各自設定。教學不會替你切換開關。',info:true},
   {selector:'[data-testid="reminder-duration"]',text:'填入 1～30 秒，再按「儲存秒數」。預設 3 秒，時間到只播放一次，不會每隔幾秒重複提醒。',info:true},
   {selector:'[data-testid="reminder-style-0"]',text:'鈴聲、鐘聲、遊戲音效各有 3 款。先「試聽」再點音效選用；試聽依已儲存秒數播放，不會打開已關閉的提醒。',info:true},
-  {selector:'[data-testid="music-categories"]',text:'先選一個音樂分類：專注或放鬆。安靜做任務也很好。'},
+  {selector:'[data-testid="music-categories"]',text:'先選一個音樂分類：專注、放鬆、鋼琴組或平靜環境音樂。每組 10 首，安靜做任務也很好。'},
   {selector:'[data-testid^="music-track-"] [aria-label^="展開"]',text:'點一首曲名，展開試聽與選用。'},
   {selector:'[data-testid="focus-music-settings"] [aria-label^="試聽"]',text:'點這裡試聽 20 秒。試聽不等於選用，也不會開啟任務自動播放。'},
   {selector:'[data-testid="focus-music-settings"] [role="radio"][aria-label^="選用"]',text:'喜歡這首就按「選用」。任務開始是否播放，由「任務開始時播放」開關決定；也能在計時器旁開關。'},

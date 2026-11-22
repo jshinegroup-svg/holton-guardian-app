@@ -19,8 +19,32 @@ export const focusMusicTracks = [
  {"id": "tales", "name": "故事微風", "title": "Teller of the Tales", "isrc": "USUAN1400020", "kind": "魯特琴・吉他", "category": "relax"},
  {"id": "valley", "name": "魔法山谷", "title": "Enchanted Valley", "isrc": "USUAN1200093", "kind": "鋼片琴・木管・弦樂", "category": "relax"},
  {"id": "pulse", "name": "片刻安寧", "title": "Touching Moments One - Pulse", "isrc": "USUAN1100039", "kind": "鋼琴", "category": "relax"},
+ {"id": "friday", "name": "Friday Morning", "title": "Friday Morning", "isrc": "USUAN1100224", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "moonstone", "name": "Moonstone", "title": "Moonstone", "isrc": "USUAN1100145", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "reminiscing", "name": "Reminiscing", "title": "Reminiscing", "isrc": "USUAN1100097", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "brady", "name": "A Very Brady Special", "title": "A Very Brady Special", "isrc": "USUAN1900060", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "mana1", "name": "Mana Two - Part 1", "title": "Mana Two - Part 1", "isrc": "USUAN1900036", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "mana2", "name": "Mana Two - Part 2", "title": "Mana Two - Part 2", "isrc": "USUAN1900037", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "mana3", "name": "Mana Two - Part 3", "title": "Mana Two - Part 3", "isrc": "USUAN1900038", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "daybreak", "name": "Daybreak", "title": "Daybreak", "isrc": "USUAN1100266", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "white", "name": "White", "title": "White", "isrc": "USUAN1100010", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "parting1", "name": "Parting of the Ways - Part 1", "title": "Parting of the Ways - Part 1", "isrc": "USUAN1100119", "category": "piano", "kind": "鋼琴／電鋼琴"},
+ {"id": "zen", "name": "That Zen Moment", "title": "That Zen Moment", "isrc": "USUAN2400001", "category": "ambient", "kind": "平靜環境音樂"},
+ {"id": "kalimba", "name": "Kalimba Relaxation Music", "title": "Kalimba Relaxation Music", "isrc": "USUAN1900039", "category": "ambient", "kind": "平靜環境音樂"},
+ {"id": "ethereal", "name": "Ethereal Relaxation", "title": "Ethereal Relaxation", "isrc": "USUAN2100031", "category": "ambient", "kind": "平靜環境音樂"},
+ {"id": "deep", "name": "Deep Relaxation", "title": "Deep Relaxation", "isrc": "USUAN1900045", "category": "ambient", "kind": "平靜環境音樂"},
+ {"id": "rainforest", "name": "Wind of the Rainforest", "title": "Wind of the Rainforest", "isrc": "USUAN1900044", "category": "ambient", "kind": "平靜環境音樂"},
+ {"id": "ancient", "name": "Ancient Winds", "title": "Ancient Winds", "isrc": "USUAN1900043", "category": "ambient", "kind": "平靜環境音樂"},
+ {"id": "fluidscape", "name": "Fluidscape", "title": "Fluidscape", "isrc": "USUAN1100393", "category": "ambient", "kind": "平靜環境音樂"},
+ {"id": "almostf", "name": "Almost in F", "title": "Almost in F", "isrc": "USUAN1100394", "category": "ambient", "kind": "平靜環境音樂"},
+ {"id": "tranquility", "name": "Tranquility", "title": "Tranquility", "isrc": "USUAN1100581", "category": "ambient", "kind": "平靜環境音樂"},
+ {"id": "cherry", "name": "Cherry Blossom", "title": "Cherry Blossom", "isrc": "USUAN1100382", "category": "ambient", "kind": "平靜環境音樂"},
 ] as const;
 export type FocusMusicId=typeof focusMusicTracks[number]['id'];
 export const DEFAULT_FOCUS_MUSIC:FocusMusicId='meditation';
 export const validFocusMusicId=(id:unknown):id is FocusMusicId=>focusMusicTracks.some(t=>t.id===id);
 export const focusMusicUrl=(id:FocusMusicId)=>`${process.env.EXPO_PUBLIC_BASE_URL||''}/music/${id}.mp3`;
+
+export const focusMusicCategories = [{id:"focus",name:"專注音樂"},{id:"relax",name:"放鬆音樂"},{id:"piano",name:"鋼琴組"},{id:"ambient",name:"平靜環境音樂"}] as const;
+export type FocusMusicCategory = typeof focusMusicCategories[number]["id"];
+export const focusMusicCategoryName = (id: string) => focusMusicCategories.find(c=>c.id===id)?.name || "";

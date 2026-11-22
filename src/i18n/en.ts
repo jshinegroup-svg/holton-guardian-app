@@ -1,5 +1,13 @@
 /** Interface copy only; names, custom tasks, saved records and card artwork stay intact. */
 export const english:Record<string,string> = {
+'先選一個音樂分類：專注、放鬆、鋼琴組或平靜環境音樂。每組 10 首，安靜做任務也很好。':'Choose Focus, Relaxation, Piano or Calm ambient music. Each has 10 tracks; silence is welcome too.',
+'鋼琴組':'Piano', '平靜環境音樂':'Calm ambient music',
+'四大組音樂，每組 10 首，共 40 首。分類是曲風參考，安靜也很好。':'Four groups of 10 tracks, 40 in total. Categories describe musical styles; silence is welcome too.',
+'守護獸互動小屋':'Guardian playhouse', '守護獸小屋':'Guardian playhouse',
+'進入守護獸小屋':'Enter guardian playhouse', '離開守護獸小屋，回到村莊':'Leave playhouse and return to village',
+'‹ 回到村莊':'‹ Back to village',
+'陪岩背龜玩球、餵食、梳毛，長按麥克風學說話。':'Play ball, feed and brush Stoneback. Hold the microphone to record and replay.',
+
 '離線使用中・進度已存本機':'Offline · Progress saved on this device',
 '進度已存本機・待同步（含獎勵）':'Saved on device · Sync pending (including rewards)',
 '點卡片，開始任務':'Tap the card to start',
@@ -143,7 +151,7 @@ Object.assign(english, {
 '背景音樂':'Background music','專注、放鬆各 10 首。分類是曲風參考，安靜也很好。':'10 focus tracks and 10 relaxing tracks. Choose a style you enjoy — silence is fine, too.','目前選用：':'Selected: ','放鬆':'Relax','專注':'Focus','專注音樂自動播放':'Autoplay focus music','♫ 已開啟':'♫ On','♫ 已關閉':'♫ Off','· 任務開始時播放':'· Play when the task starts','先試聽，再按「選用」。曲目會循環播放；任務時間旁也能隨時開關。':'Preview a track, then select it. Music loops during tasks and can be toggled beside the timer.','背景音樂音量':'Music volume','放鬆音樂':'Relaxing music','· 10 首　›':'· 10 tracks ›','返回音樂分類':'Back to music styles','‹ 返回音樂分類':'‹ Back to music styles','· 10 首':'· 10 tracks','點曲名展開試聽與選用。':'Tap a title to preview or select it.','正在載入試聽…':'Loading preview…','重試音樂試聽':'Retry preview','暫時未能播放，點此重試':'Could not play. Tap to retry.','已選用':'Selected','選用這首':'Use this track','停止試聽':'Stop preview','試聽 20 秒':'Preview 20 seconds','曲目來源 ↗':'Track source ↗','CC BY 4.0 授權 ↗':'CC BY 4.0 license ↗',
 '求助／休息、回村莊、進家長小屋或切換 App 時會暫停，完成任務後停止。回到任務會嘗試接續；手機若限制播放，可點時間旁的播放提示。':'Music pauses during help, rest, village visits, parent settings or app switching, and stops when a task ends. Returning tries to resume; tap Play beside the timer if your phone blocks autoplay.',
 '背景音樂與到時提醒各自控制；實際音量也受手機媒體音量影響。':'Music and timer sounds have separate controls. Your phone’s media volume also applies.',
-'以上 20 首錄音：Kevin MacLeod（incompetech.com）。Licensed under Creative Commons: By Attribution 4.0 License。本站調整音量、淡入淡出及檔案格式；中文名稱為介面別名。':'All 20 recordings: Kevin MacLeod (incompetech.com), licensed under CC BY 4.0. Volume, fades and file formats have been adjusted. Chinese titles are interface aliases.',
+'以上 40 首錄音：Kevin MacLeod（incompetech.com）。Licensed under Creative Commons: By Attribution 4.0 License。本站調整音量、淡入淡出及檔案格式；中文名稱為介面別名。':'All 40 recordings: Kevin MacLeod (incompetech.com), licensed under CC BY 4.0. Volume, fades and file formats have been adjusted. Chinese titles are interface aliases.',
 '時間到提醒':'Timer reminder','任務到時提示音':'Task timer sound','到時提醒：':'Timer reminder: ','單次播放秒數（1～30 秒）':'Sound length (1–30 seconds)','提醒播放秒數':'Sound duration','儲存提醒秒數':'Save sound duration','秒數已儲存':'Duration saved','尚未儲存，請重試':'Not saved. Please retry.','儲存秒數':'Save duration','請輸入 1～30 的整數。':'Enter a whole number from 1 to 30.','提醒音量':'Reminder volume','試聽':'Preview','每次播放約':'Play for about ','秒，時間到只提醒一次。試聽不會開啟提醒或改變任務。':'seconds, once when time is up. Previewing does not enable reminders or change your task.',
 '小禮物':'Small gift','喜歡的飲料':'Favorite drink','親子遊戲 15 分鐘':'15 minutes of family play','一起看電影':'Watch a movie together','喜歡的點心':'Favorite snack','自選室內活動':'Choose an indoor activity','自選戶外活動':'Choose an outdoor activity','自選活動':'Choose an activity','戶外冒險':'Outdoor adventure','自選遊戲':'Choose a game','自訂心願':'Custom wish','造型':'Style','原卡':'Original card','填入你的心願':'Enter your wish','內容與點數，由你們一起約定':'Agree on the wish and points together',
 '✓ 兌換完成！已記下所有心願，和大人一起安排實現吧！':'✓ Exchanged! Your wishes are recorded. Plan them with a grown-up.',

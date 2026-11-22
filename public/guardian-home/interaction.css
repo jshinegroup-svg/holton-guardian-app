@@ -1,0 +1,86 @@
+.pet{width:64%;left:14%;top:57%;transition:left 1.8s ease-in-out,top 1.8s ease-in-out,width 1.8s;outline-offset:-25px}.pet svg{width:100%;overflow:visible;display:block}.body{transform-origin:150px 150px;animation:body-breathe 3.8s ease-in-out infinite}.head{transform-origin:110px 128px;animation:look 9s ease-in-out infinite}.eye{transform-box:fill-box;transform-origin:center;animation:blink 5.3s infinite}.leg{transform-box:fill-box;transform-origin:50% 10%}.pet.walking .leg{animation:step .28s ease-in-out infinite alternate}.pet.walking .leg:nth-child(even){animation-delay:-.28s}.pet.walking .body{animation:body-breathe .4s infinite}.pet.laugh .head{animation:giggle .18s alternate 6}.pet.wave .front{animation:wave .35s alternate 4}.pet.cuddle .head{transform:rotate(-8deg);animation:none}.pet.cuddle .eye{transform:scaleY(.15);animation:none}.pet.sleep .eye{transform:scaleY(.1);animation:none}.pet.sleep .head{animation:none;transform:rotate(12deg)}.pet.sleep{top:39%;left:64%;width:33%}.pet.play{left:46%;top:61%;width:49%}.mouth{transform-box:fill-box;transform-origin:center}.pet.speaking .mouth{animation:mouth .16s infinite alternate}.pet.speaking .head{animation:giggle .5s infinite alternate}.sleep-z{opacity:0;font:26px system-ui;fill:#ffedb2}.sleep .sleep-z{animation:zzz 2.5s infinite}.toy{position:absolute;left:78%;top:72%;font-size:33px;z-index:5;pointer-events:none}.toy.kicked{animation:ball-roll 1.8s ease-in-out 2 alternate}.voice-status{min-height:48px;line-height:1.6}.voice-actions{display:flex;flex-wrap:wrap;gap:12px}.voice-actions button{flex:1;min-width:110px;min-height:48px}.voice-actions button:disabled{opacity:.45}.pet-label{font-size:11px;color:#b7c7ca;text-align:center;margin:0}.nav{flex-wrap:wrap}.nav button{min-width:100px}.nav #voice{background:linear-gradient(#78585a,#493646)}@keyframes blink{0%,43%,47%,100%{transform:scaleY(1)}45%{transform:scaleY(.06)}}@keyframes look{0%,30%,100%{transform:rotate(0)}40%,50%{transform:rotate(-5deg)}65%,75%{transform:rotate(4deg)}}@keyframes body-breathe{50%{transform:scale(1.012,1.03)}}@keyframes step{to{transform:rotate(19deg) translateY(-3px)}}@keyframes wave{to{transform:rotate(-45deg)}}@keyframes giggle{to{transform:rotate(5deg) translateY(-3px)}}@keyframes mouth{to{transform:scaleY(1.8)}}@keyframes zzz{to{opacity:1;transform:translate(7px,-22px)}}@keyframes ball-roll{to{left:24%;top:79%;transform:rotate(-480deg)}}@media(prefers-reduced-motion:reduce){.pet *,.toy{animation:none!important;transition:none!important}}
+.voice-avatar{position:relative;left:auto;top:auto;width:130px;margin:0 auto;filter:none;pointer-events:none}
+/* Six alpha-cutout poses of the approved Stoneback; room backgrounds stay separate. */
+.pet{top:49%;left:18%;width:64%;filter:drop-shadow(0 9px 5px #19241755)}
+.guardian-sprite{display:block;width:100%;aspect-ratio:1;background:url('assets/stoneback-poses-v1.png') 0 0/300% 200% no-repeat;transform-origin:50% 85%;animation:stone-breathe 3.8s ease-in-out infinite}
+.pet.wave .guardian-sprite,.pet.happy .guardian-sprite,.pet.laugh .guardian-sprite{background-position:50% 0;animation:stone-bounce .5s ease-in-out 3}
+.pet.cuddle .guardian-sprite,.pet.blink .guardian-sprite{background-position:100% 0}
+.pet.sleep{top:29%;left:65%;width:33%}.pet.sleep .guardian-sprite{background-position:0 100%;animation:stone-breathe 5s ease-in-out infinite}
+.pet.play{left:46%;top:51%;width:49%}
+.pet.walking .guardian-sprite{animation:stone-walk .6s steps(1,end) infinite}
+.pet.speaking .guardian-sprite{animation:stone-talk .7s steps(1,end) infinite}
+.voice-avatar{left:auto;top:auto;width:145px;filter:none}
+.bubble{top:39%}
+@keyframes stone-breathe{50%{transform:scale(1.012,1.025)}}
+@keyframes stone-bounce{50%{transform:translateY(-5px) rotate(-2deg)}}
+@keyframes stone-walk{0%,100%{background-position:50% 100%;transform:translateY(0)}50%{background-position:100% 100%;transform:translateY(-2px)}}
+@keyframes stone-talk{0%,100%{background-position:0 0}50%{background-position:50% 0}}
+@media(prefers-reduced-motion:reduce){.guardian-sprite{animation:none!important}.pet.walking .guardian-sprite{background-position:50% 100%}.pet.speaking .guardian-sprite{background-position:50% 0}}
+.action-deck{padding:10px 12px 0}.action-deck h2{font-size:14px;font-weight:600;margin:0 0 9px;color:#e8cf9b;letter-spacing:2px}.action-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.action-grid button{min-height:46px;padding:9px 3px;border:1px solid #9c834d;border-radius:13px;background:linear-gradient(#234d50,#153237);font-size:13px}.action-grid button[aria-pressed=true]{background:#71602f;border-color:#ffe3a0;box-shadow:0 0 12px #ebc77844}.pet{isolation:isolate}.guardian-sprite{position:relative;z-index:1}.ground-shadow{position:absolute;bottom:14%;left:17%;width:66%;height:8%;background:#17241c;border-radius:50%;filter:blur(5px);opacity:.23;z-index:0;pointer-events:none}.voice-avatar .ground-shadow{display:none}.pet.choreographed{filter:none}.stage.action-active .bubble{top:25%}.pet.choreographed .guardian-sprite{will-change:transform}.pet.sleep .ground-shadow{opacity:.12}@media(min-width:800px){.action-deck{grid-column:2;grid-row:2;padding:15px 30px}.nav{grid-row:3}footer{grid-row:4}.stage{grid-row:1/5}}
+
+/* Diegetic controls: the illustrated objects ARE the accessible buttons. */
+.room-playthings{display:contents}
+.stage .room-prop{position:absolute;z-index:5;width:23%;aspect-ratio:1;min-width:44px;min-height:44px;padding:0;border:0;border-radius:16px;box-shadow:none;background-color:transparent;background-image:url('assets/room-toys-v1.png');background-size:300% 200%;background-repeat:no-repeat;font-size:0;color:#fff7df;touch-action:manipulation;filter:drop-shadow(0 4px 3px #10231555)}
+.room-prop:after{content:attr(data-caption);position:absolute;bottom:0;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;line-height:1.4;padding:2px 6px;border-radius:9px;background:#173638df;pointer-events:none}
+
+.stage .prop-jump{left:4%;top:76%;background-position:0 0;width:29%}
+.stage .prop-dance{left:2%;top:46%;background-position:50% 0}
+.stage .prop-voice{right:2%;top:48%;background-position:100% 0}
+.stage .prop-turn{left:3%;top:26%;background-position:0 100%}
+.stage .prop-stretch{left:38%;top:80%;background-position:50% 100%;width:25%}
+.stage .prop-ball{right:3%;top:75%;background-position:100% 100%;width:24%}
+.stage .prop-bed{right:3%;top:29%;width:28%;height:15%;background-image:none;border:0}
+.stage .toy{background:url('assets/room-toys-v1.png') 100% 100%/300% 200%;width:24%;aspect-ratio:1;font-size:0;opacity:0;z-index:7}.stage .toy.kicked{opacity:1}
+.hint{bottom:5px;font-size:11px;padding:5px;left:4%;width:92%}
+@media(min-width:800px){.nav{grid-row:2}footer{grid-row:3}.stage{grid-row:1/4}}
+
+/* No rectangular touch outlines: light follows the transparent prop silhouette. */
+.stage .room-prop{outline:none!important;border:0;filter:drop-shadow(0 0 3px #ffe6a655);transition:filter .22s}
+.stage .room-prop:active,.stage .room-prop.tapped,.stage .room-prop[aria-pressed=true]{filter:drop-shadow(0 0 5px #ffe6a6) drop-shadow(0 0 10px #ffcd6688)}
+.stage .room-prop:focus-visible{filter:drop-shadow(0 0 3px white) drop-shadow(0 0 9px #ffe6a6)}
+@media(hover:hover){.stage .room-prop:hover{filter:drop-shadow(0 0 6px #ffe6a6)}}
+.stage .prop-bed:before{content:'';position:absolute;inset:12% 0 -4%;border-radius:50%;background:radial-gradient(ellipse,#ffda8540,transparent 70%);opacity:.35;pointer-events:none;transition:opacity .2s}
+.stage .prop-bed.tapped:before,.stage .prop-bed:focus-visible:before{opacity:1}
+
+.stage .prop-feed,.stage .prop-brush,.stage .prop-bell{background-image:url('assets/care-props-v2.png');width:19%;top:14%}
+.stage .prop-feed{left:30%;background-position:0 0}
+.stage .prop-brush{left:52%;background-position:50% 0}
+.stage .prop-bell{left:74%;background-position:100% 0}
+
+/* Free-play floor: one real movable ball, no duplicate animated toy. */
+.stage.free-play .prop-jump,.stage.free-play .prop-stretch{visibility:hidden}
+.stage.free-play .toy{display:none}
+.stage.free-play .pet.ball-chase{transition:none;filter:none;z-index:4}
+.stage.free-play .ball{width:16%;height:auto;min-width:44px;min-height:44px;right:auto;aspect-ratio:1;transform:translate(-50%,-65%);touch-action:none;background-image:none;z-index:7;transition:none}
+.stage.free-play .ball:before{content:'';position:absolute;inset:0;background:url('assets/room-toys-v1.png') 100% 100%/300% 200% no-repeat;transform:rotate(var(--roll,0deg));pointer-events:none}
+.stage.free-play .ball:after{bottom:-6px;font-size:10px}
+.stage.free-play .bubble{top:35%;font-size:13px}
+
+/* Held care props follow the finger; contact, not a click, causes reactions. */
+.stage .care-source{touch-action:none;user-select:none;-webkit-user-select:none}
+.stage .care-source.care-held{opacity:.25}
+.care-ghost{position:absolute;z-index:12;pointer-events:none;width:20%;aspect-ratio:1;background:url('assets/care-props-v2.png') 0 0/300% 200% no-repeat;transform:translate(-50%,-50%);filter:drop-shadow(0 4px 4px #10231566)}
+.care-ghost.care-brush{background-position:50% 0}
+.care-ghost.care-contact{filter:drop-shadow(0 0 7px #ffe4a6)}
+.care-ghost.care-consumed{transition:transform .7s,opacity .7s;transform:translate(-50%,-50%) scale(.12);opacity:0}
+.stage .pet.care-held-pet{transition:none}
+.care-held-pet .guardian-sprite{animation:none}
+.care-brushed .guardian-sprite{background-position:100% 0;animation:care-sway .8s ease-in-out infinite}
+.care-eating .guardian-sprite{animation:care-chew .32s steps(1,end) infinite}
+.stage.care-active .bubble{top:34%;font-size:13px}
+@keyframes care-sway{50%{transform:rotate(-3deg) translateY(2px)}}
+@keyframes care-chew{0%,100%{background-position:50% 0;transform:translateY(0)}50%{background-position:100% 0;transform:translateY(3px)}}
+@media(prefers-reduced-motion:reduce){.care-brushed .guardian-sprite,.care-eating .guardian-sprite{animation:none}.care-eating .guardian-sprite{background-position:50% 0}.care-ghost.care-consumed{opacity:0}}
+/* Lift only the apple from its bowl; the bowl stays on the shelf. */
+.care-ghost.care-feed{clip-path:polygon(24% 42%,28% 34%,40% 29%,45% 29%,45% 20%,49% 18%,54% 29%,58% 20%,70% 13%,86% 13%,79% 23%,68% 31%,74% 36%,78% 45%,78% 58%,74% 65%,61% 68%,44% 67%,31% 63%,25% 55%)}
+.care-ghost.care-call{background-position:100% 0}
+.stage .prop-dance.music-on{filter:drop-shadow(0 0 7px #ffdf8d)}
+.pet.music-sway .guardian-sprite{animation:care-sway 3s ease-in-out infinite}
+.stage .pet.being-called{transition:none}
+.pet.being-called .guardian-sprite{animation:none}
+
+/* V10: no one-finger page pan/pull-to-refresh from the interactive room.
+   Keep browser zoom and scrolling outside the room; never fix/lock body. */
+html,body{overscroll-behavior-y:none}
+.stage{touch-action:pinch-zoom;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.stage .room-prop,.stage .pet{touch-action:none;-webkit-touch-callout:none}

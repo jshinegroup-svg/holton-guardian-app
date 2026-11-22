@@ -44,7 +44,9 @@ self.addEventListener('fetch',event=>{
   if(!marker)return fetch(request);
   const cache=await caches.open('holton-public-'+await marker.text());
   const navigation=request.mode==='navigate';
-  const saved=await cache.match(navigation?'/index.html':url.pathname);
+  // Embedded playhouse owns its HTML; do not load the main app inside it offline.
+  const navigationPath=url.pathname.startsWith('/guardian-home/')?url.pathname:'/index.html';
+  const saved=await cache.match(navigation?navigationPath:url.pathname);
   if(navigation){try{return await fetch(request,{signal:AbortSignal.timeout(4000)});}catch{if(saved)return saved;throw Error('offline_not_prepared');}}
   if(!saved)return fetch(request);
   // iOS audio probes ranges even for downloaded media.
