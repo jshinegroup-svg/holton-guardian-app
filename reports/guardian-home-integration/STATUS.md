@@ -40,3 +40,5 @@ Final production: Render dep-dc18dnqfngtc73eubu40 Live5fd3e48 at14:10:22 Taipei.
 - Both entry selector and switch dialog show only currently allowed companions; no disabled unowned entries. Existing roster/ownership and task data untouched.
 - Replaced native text select with a labeled image button and two-column portrait buttons, selected outline/check, keyboard focus and accessible names. Portraits render the existing atlas first pose with its chroma key; only current/allowed images load, no new art.
 - Build, 320/390 roster and switching checks, and 390/1024 embedded gameplay/progress checks passed. Actual screenshots reviewed. Production deployment pending.
+
+Production: ef629e5 deployed successfully via Render dep-dc18sinf3r2c73c0sf3g. Hosted portrait rendering, allowed-only lists, current selection, modal switching and legacy fallback all PASS.
