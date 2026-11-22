@@ -42,7 +42,7 @@ try{for(const [width,height] of [[390,844],[1024,900]]){
  await f.waitForFunction(()=>window.guardianFace?.ready);
  assert(await f.evaluate(()=>guardianFace.state().active));
  console.log('home URL',await frame.getAttribute('src'),f.url());
- assert.deepEqual(await f.evaluate(()=>guardianRoster.allowed),['pip']);assert.equal(await f.locator('#home-companion option:disabled').count(),7);
+ assert.deepEqual(await f.evaluate(()=>guardianRoster.allowed),['pip']);assert.equal(await f.locator('#home-companion').getAttribute('data-companion'),'pip');
  if(width===390){
   const cdp=await context.newCDPSession(p);
   const swipe=async(x,y,dy,cancel=false)=>{

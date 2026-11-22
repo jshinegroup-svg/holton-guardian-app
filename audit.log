@@ -194,3 +194,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-22 actor:codex approval:user-24671 trigger:rollout-compatibility — missing-roster older entry now retains only legacy Stoneback demo; never implicitly opens all species.
 
 2026-11-22 actor:codex approval:user-24671 trigger:final-live-verification —5fd3e48 live; legacy/owned/full-roster checks pass.
+
+2026-11-22 actor:codex approval:user-24688-and-followup trigger:owned-only-picture-picker — hide unavailable companions; add existing-art portrait selector; build, mobile roster and integrated gameplay checks passed.

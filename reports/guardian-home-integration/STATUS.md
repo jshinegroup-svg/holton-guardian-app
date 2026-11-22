@@ -35,3 +35,8 @@ Live verification: Render dep-dc181556e07s73cjkr70 deployed 1001101 at 13:43 Tai
 Rollout follow-up: first hosted main-app test briefly loaded the previous app bundle while the new assets were already live, omitting roster query. Recheck confirmed new bundle passes roster. Hardened missing-roster fallback to legacy Stoneback-only instead of all species; all-species tests now pass an explicit fixture roster.
 
 Final production: Render dep-dc18dnqfngtc73eubu40 Live5fd3e48 at14:10:22 Taipei. Eight-species hosted gameplay and390/1024 account checks passed on a2aa97e; final legacy/owned/full-roster targeted hosted checks passed after5fd3e48.
+
+## Picture picker / owned-only display — user 24688 and follow-up
+- Both entry selector and switch dialog show only currently allowed companions; no disabled unowned entries. Existing roster/ownership and task data untouched.
+- Replaced native text select with a labeled image button and two-column portrait buttons, selected outline/check, keyboard focus and accessible names. Portraits render the existing atlas first pose with its chroma key; only current/allowed images load, no new art.
+- Build, 320/390 roster and switching checks, and 390/1024 embedded gameplay/progress checks passed. Actual screenshots reviewed. Production deployment pending.
