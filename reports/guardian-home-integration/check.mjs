@@ -41,6 +41,7 @@ try{for(const [width,height] of [[390,844],[1024,900]]){
  const frame=await p.getByTestId('guardian-home-frame').elementHandle();const f=await frame.contentFrame();
  await f.waitForFunction(()=>window.guardianFace?.ready);
  assert(await f.evaluate(()=>guardianFace.state().active));
+ console.log('home URL',await frame.getAttribute('src'),f.url());
  assert.deepEqual(await f.evaluate(()=>guardianRoster.allowed),['pip']);assert.equal(await f.locator('#home-companion option:disabled').count(),7);
  if(width===390){
   const cdp=await context.newCDPSession(p);

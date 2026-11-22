@@ -15,7 +15,7 @@ async function end(){await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',
 const ids=['stoneback','pip','hop','bomo','tidefin','emberwing','steel-eagle','bramblefang'];
 try{
 for(const id of ids){
- await p.goto(base+'/guardian-home/complete-home/index.html?companion='+id);
+ await p.goto(base+'/guardian-home/complete-home/index.html?companions='+ids.join(',')+'&companion='+id);
  await p.waitForFunction(()=>window.guardianFace?.ready);
  assert.equal(await p.locator('#home-companion').inputValue(),id);
  assert.equal(await p.locator('#home-companion option').count(),8);

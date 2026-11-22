@@ -190,3 +190,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-22 actor:codex approval:user-24668 trigger:live-verification — 1001101 live; hosted touch/integration checks passed; refreshed test screenshots.
 
 2026-11-22 actor:codex approval:user-24671 trigger:all-companions — seven reference-derived atlases, eight-species home support, owned-only roster with no child-save changes; typecheck/build/touch/integration checks passed.
+
+2026-11-22 actor:codex approval:user-24671 trigger:rollout-compatibility — missing-roster older entry now retains only legacy Stoneback demo; never implicitly opens all species.

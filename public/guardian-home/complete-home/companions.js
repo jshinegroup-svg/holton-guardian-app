@@ -228,7 +228,7 @@ window.guardianCompanions={
 (()=>{
  const params=new URLSearchParams(location.search),catalog=window.guardianCompanions;
  const requested=params.get('companions');
- const allowed=requested===null?Object.keys(catalog):[...new Set(requested.split(',').filter(id=>Object.hasOwn(catalog,id)))];
+ const allowed=requested===null?['stoneback']:[...new Set(requested.split(',').filter(id=>Object.hasOwn(catalog,id)))];
  const chosen=params.get('companion');
  const id=allowed.includes(chosen)?chosen:allowed[0];
  window.guardianAllowed=allowed;
