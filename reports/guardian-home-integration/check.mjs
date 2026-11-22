@@ -41,6 +41,7 @@ try{for(const [width,height] of [[390,844],[1024,900]]){
  const frame=await p.getByTestId('guardian-home-frame').elementHandle();const f=await frame.contentFrame();
  await f.waitForFunction(()=>window.guardianFace?.ready);
  assert(await f.evaluate(()=>guardianFace.state().active));
+ assert.deepEqual(await f.evaluate(()=>guardianRoster.allowed),['pip']);assert.equal(await f.locator('#home-companion option:disabled').count(),7);
  if(width===390){
   const cdp=await context.newCDPSession(p);
   const swipe=async(x,y,dy,cancel=false)=>{
@@ -70,7 +71,7 @@ try{for(const [width,height] of [[390,844],[1024,900]]){
  await f.locator('[data-room="1"]').click();await f.locator('[data-room="2"]').click();await f.locator('[data-room="0"]').click();
  await f.locator('.sound').click();await f.waitForFunction(()=>guardianHome.state().speaking);
  const apple=await f.locator('.prop-feed').boundingBox(),pet=await f.locator('.stage .pet').boundingBox();
- await p.mouse.move(apple.x+apple.width/2,apple.y+apple.height/2);await p.mouse.down();await p.waitForTimeout(1400);const stablePet=await f.locator('.stage .pet').boundingBox();await p.mouse.move(stablePet.x+stablePet.width*.29,stablePet.y+stablePet.height*.55);await f.waitForFunction(()=>guardianCareState().eaten);await p.mouse.up();await f.waitForFunction(()=>guardianHome.state().joy);
+ await p.mouse.move(apple.x+apple.width/2,apple.y+apple.height/2);await p.mouse.down();await p.waitForTimeout(1400);const stablePet=await f.locator('.stage .pet').boundingBox();const mouth=await f.evaluate(()=>guardianProfile.mouth);await p.mouse.move(stablePet.x+stablePet.width*mouth[0],stablePet.y+stablePet.height*mouth[1]);await f.waitForFunction(()=>guardianCareState().eaten);await p.mouse.up();await f.waitForFunction(()=>guardianHome.state().joy);
  await p.screenshot({path:`reports/guardian-home-integration/home-${width}.png`,fullPage:true});
  const mic=await f.locator('#voice').boundingBox();await p.mouse.move(mic.x+mic.width/2,mic.y+mic.height/2);await p.mouse.down();await f.waitForFunction(()=>guardianHoldState().recording);await p.waitForTimeout(700);await p.mouse.up();await f.waitForFunction(()=>guardianHoldState().playing);
  await p.getByRole('button',{name:'離開守護獸小屋，回到村莊',exact:true}).click();

@@ -1,0 +1,53 @@
+{
+  "pip": {
+    "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a201b8-94ec-7a13-9c3a-88f73ff6d7ed/exec-f1685a68-86ad-471f-a6bf-9334218333c5.png",
+    "prompt": "Create ONE production game sprite atlas of PIP, ONLY the robot animal on the RIGHT of the reference card sheet. Preserve its exact distinctive navy/cream/gold mechanical body, luminous cyan chest core, big blue eyes, pointed crystal ears, proportions and polished illustration style. Do NOT include the white fox from left card. Transparent background, no scenery, floor, words, labels or card frames. Canvas landscape 1536x1024, strict 3 columns x 2 rows of six equally sized 512x512 cells. Full same character in every cell centered at same scale, feet baseline at 90% cell height, generous padding ears and tail fully inside each cell. Camera three-quarter view facing left, identical camera throughout. Cells row-major: 1 neutral attentive mouth closed; 2 happy slight open mouth and lifted front paw; 3 eyes gently closed enjoying brushing; 4 curled relaxed sleeping; 5 walking left forepaw forward; 6 walking opposite forepaw forward. No objects/apple. Real transparent alpha. These are faithful pose derivatives, not a new character design. Save as a usable PNG sprite sheet.",
+    "output": "public/guardian-home/assets/pip-poses-v1.png",
+    "method": "Built-in image_gen; reference-derived six-pose sprite atlas, rendered using chroma-key shader",
+    "reference": "assets/companions/pip-sheet.jpg",
+    "editPrompt": "Edit this PIP game sprite sheet. Keep ALL SIX robot character poses, sizes, positions, original colors and details exactly unchanged. ONLY replace the entire off-white backdrop including cast floor shadows with absolutely flat opaque pure magenta RGB(255,0,255), hex #FF00FF. Remove all cast shadows and background gradients, no magenta light or reflection on characters. This is intentionally a chroma-key GAME texture: solid uniformly magenta background across the entire canvas, characters untouched. Keep 1536x1024, exact 3x2 cell layout."
+  },
+  "hop": {
+    "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a201b8-94ec-7a13-9c3a-88f73ff6d7ed/exec-364071fc-9db4-4ab7-8f24-0f9333b25c43.png",
+    "prompt": "Make a production 2D game sprite atlas using ONLY HOP the long-eared robot rabbit on LEFT of reference. Preserve exact gold/navy/ivory armor, blue glowing eyes and chest core, long blue crystal ears, cute proportions. No bear. 1536x1024 canvas, strict 3x2 grid, six equal square cells, full character centered within each, same scale and three-quarter camera facing viewer/right, feet at 90% cell height, ears and tail fully inside cell. Row-major poses: neutral closed mouth; happy open mouth one paw raised; eyes closed being brushed; curled sleeping; walking forepaw A; walking forepaw B. NO text, frames, scenery, objects, ground or cast shadows. Transparent alpha background required, only character pixels. Faithfully derive poses from source, never redesign.",
+    "output": "public/guardian-home/assets/hop-poses-v1.png",
+    "method": "Built-in image_gen; reference-derived six-pose sprite atlas, rendered using chroma-key shader",
+    "reference": "assets/companions/hop-bomo-sheet.jpg",
+    "editPrompt": "Edit HOP atlas: preserve all six robot rabbit poses exactly. Replace entire off-white/checkerboard background, thin grid lines and shadows with absolutely flat opaque pure magenta #FF00FF. No lines, no shadows, no gradients, no magenta light on robot. Keep same 1536x1024 3x2 layout and each character unchanged. Production chroma-key sprite texture."
+  },
+  "bomo": {
+    "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a201b8-94ec-7a13-9c3a-88f73ff6d7ed/exec-d5fb456b-66c5-4a1b-bb48-4e71f74142e4.png",
+    "prompt": "Production game sprite atlas of ONLY BOMO, robot bear on RIGHT of reference. EXACT distinctive original cream face, gold/navy mechanical armor, big cyan blue eyes, ROUND circular luminous blue ears (not rabbit/fox), blue chest core, round bear paws and friendly proportions. Strict 1536x1024 3 columns x2 rows, six equal square cells centered same scale, feet baseline at90%, whole character contained with padding. Camera three-quarter facing viewer/right. Row-major neutral mouth closed; happy small open mouth paw raised; eyes closed comfort; curled sleeping; walking forepaw A; walking forepaw B. No card borders, words, objects, scenery, shadows, grid lines. Entire background opaque uniformly pure magenta #FF00FF for chroma-key rendering, no magenta reflections. Only pose changes, do not redesign.",
+    "output": "public/guardian-home/assets/bomo-poses-v1.png",
+    "method": "Built-in image_gen; reference-derived six-pose sprite atlas, rendered using chroma-key shader",
+    "reference": "assets/companions/hop-bomo-sheet.jpg"
+  },
+  "tidefin": {
+    "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a201b8-94ec-7a13-9c3a-88f73ff6d7ed/exec-45a098e1-5e3c-440b-9e38-a964f790e6f0.png",
+    "prompt": "Production game sprite atlas of Tidefin Shark from attached original card. Preserve original fierce-cute shark shape: slate blue scaled back, pale cream underside, green eyes, broad toothy mouth and jagged luminous cyan fins and tail. Not a dolphin, no legs, not a robot, no extra accessories. Six full-body floating/swimming poses in strict 3 columns x2 rows on1536x1024, equal512square cells, entire fish centered same scale each cell, generous margin, camera three-quarter facing LEFT identical throughout. Row major: neutral small closed smile; happy mouth open; eyes closed comfortable; relaxed eyes closed resting with fins lowered; swimming fins forward; swimming fins swept back. NO waves/water, no card, words, borders, shadows or grid. Entire background pure opaque flat #FF00FF magenta for game chroma key. No magenta lighting. Faithful derivative of original character.",
+    "output": "public/guardian-home/assets/tidefin-poses-v1.png",
+    "method": "Built-in image_gen; reference-derived six-pose sprite atlas, rendered using chroma-key shader",
+    "reference": "assets/cards/core-guardians/tidefin/tidefin-stage1.png"
+  },
+  "emberwing": {
+    "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a201b8-94ec-7a13-9c3a-88f73ff6d7ed/exec-f7318eab-7584-45ff-8ce5-d8c05f866462.png",
+    "prompt": "Production sprite atlas of Emberwing from reference card: faithful cute orange red scaled baby dragon, huge amber eyes, dark brown pointed horns, cream chin/belly, four paws, spiked back, curved tail with small orange flame tip. Preserve original head shape, proportions and all colors. NO new wings or accessories not on reference. Strict1536x1024 3x2 grid six equal512x512 cells, full character contained centered same scale camera three-quarter facing LEFT, paws baseline90%, padding. Row-major neutral closed smile; happy open mouth paw lifted; eyes closed comfort; curled sleeping; walking left paw forward; walking opposite paw. Entire background perfectly flat opaque pure magenta #FF00FF chroma key. No text/borders/lines, no shadows, scenery or fire outside tail tip. No magenta reflections.",
+    "output": "public/guardian-home/assets/emberwing-poses-v1.png",
+    "method": "Built-in image_gen; reference-derived six-pose sprite atlas, rendered using chroma-key shader",
+    "reference": "assets/cards/core-guardians/emberwing/emberwing-stage1.png"
+  },
+  "steel-eagle": {
+    "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a201b8-94ec-7a13-9c3a-88f73ff6d7ed/exec-c66b03d3-7287-43b9-b60d-0eedbdac9ffc.png",
+    "prompt": "Production game sprite atlas of Steel Eagle from original reference. Keep original angular steel gray metallic layered feathers, gold crest/beak trim and claws, bright cyan eyes and round blue wing-joint cores. Eagle anatomy, two wings two taloned feet, no arms, no furry body, no redesign. Strict1536x1024 3 columns x2 rows, equal512square cells, same scale character centered entire wings inside each cell with margin. Three-quarter facing LEFT. Row-major: standing wings partly folded calm beak closed; happy beak slightly open wing raised; eyes closed comfortable wings folded; sleeping head tucked; flying wingbeat up; flying wingbeat down. Background perfectly flat pure opaque #FF00FF magenta chroma key. No scenery, lightning, rocks, shadows, grid, text or card frames, no magenta light.",
+    "output": "public/guardian-home/assets/steel-eagle-poses-v1.png",
+    "method": "Built-in image_gen; reference-derived six-pose sprite atlas, rendered using chroma-key shader",
+    "reference": "assets/cards/core-guardians/steel-eagle/steel-eagle-stage1.png"
+  },
+  "bramblefang": {
+    "path": "/Users/user/.openclaw/agents/main/agent/codex-home/generated_images/01a201b8-94ec-7a13-9c3a-88f73ff6d7ed/exec-87dc460a-acf2-44c4-8bcc-bd1545e1aea1.png",
+    "prompt": "Production sprite atlas of Bramblefang from original reference: preserve this green leaf-furred wolf/fox cub, huge yellow-green eyes, cream muzzle, pointed ears, detailed layered leafy fur, vine thorns around back, curled bushy leafy tail and small claws. No added jewelry or robot armor. Same original face/proportions and green palette, not generic new fox. Strict1536x1024,3columns x2rows six equal512square cells, full same character centered same scale each cell feet90% baseline, camera three-quarter facing LEFT. Row major: neutral closed smile; happy open mouth paw lifted; eyes closed comfortable; curled sleeping; walking forepawA; walking forepawB. Background perfectly flat opaque pure magenta #FF00FF for chroma key. No forest, shadows, words, lines, frames or props. No magenta reflected light. Generous margins within each cell.",
+    "output": "public/guardian-home/assets/bramblefang-poses-v1.png",
+    "method": "Built-in image_gen; reference-derived six-pose sprite atlas, rendered using chroma-key shader",
+    "reference": "assets/cards/core-guardians/bramblefang/bramblefang-stage1.png"
+  }
+}
