@@ -1,6 +1,6 @@
 try {
  if(!window.guardianProfile)throw Error('no_available_companion');
- await import(window.guardianProfile.id==='stoneback'?'./face.js?v=1':'./companion-face.js?v=1');
+ await import(window.guardianProfile.id==='stoneback'?'./face.js?v=2':'./companion-face.js?v=2');
 } catch(error) {
  document.querySelector('.pet').hidden=true;
  const hint=document.querySelector('.hint');

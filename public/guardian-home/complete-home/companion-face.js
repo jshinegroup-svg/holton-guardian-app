@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {createRenderSize} from './render-size.js?v=1';
 // A chroma-key atlas is rendered in WebGL; source bitmaps remain unchanged.
 // Existing gameplay still drives pose, movement, food, brush and recorded voice.
 const profile=window.guardianProfile,host=document.querySelector('.stage .guardian-sprite');
@@ -22,8 +23,7 @@ const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,unifo
  gl_FragColor=vec4(c.rgb,alpha);}`});
 const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera(-.5,.5,.5,-.5,.1,10);camera.position.z=2;
 scene.add(new THREE.Mesh(new THREE.PlaneGeometry(1,1,24,24),material));
-const resize=()=>renderer.setSize(Math.max(1,host.clientWidth),Math.max(1,host.clientHeight));
-const observer=new ResizeObserver(resize);observer.observe(host);resize();
+const renderSize=createRenderSize(renderer,host);
 let pose=0,mouth=0,nextBlink=performance.now()+3000,blinkUntil=0;
 renderer.setAnimationLoop(ms=>{
  if(document.hidden)return;
@@ -38,7 +38,7 @@ renderer.setAnimationLoop(ms=>{
  }
  col=THREE.MathUtils.clamp(col,0,2);row=THREE.MathUtils.clamp(row,0,1);
  pose=row*3+col;uniforms.cell.value.set(col,row);uniforms.chew.value=mouth;
- renderer.render(scene,camera);
+ renderSize.apply();renderer.render(scene,camera);
 });
-window.addEventListener('pagehide',()=>{renderer.setAnimationLoop(null);observer.disconnect();texture.dispose();material.dispose();renderer.dispose();});
+window.addEventListener('pagehide',()=>{renderer.setAnimationLoop(null);renderSize.dispose();texture.dispose();material.dispose();renderer.dispose();});
 window.guardianFace={ready:true,state:()=>({mouth,active:true,pose,character:profile.id})};

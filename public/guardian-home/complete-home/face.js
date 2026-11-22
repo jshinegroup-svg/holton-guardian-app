@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {createRenderSize} from './render-size.js?v=1';
 const $=s=>document.querySelector(s),host=$('.stage .guardian-sprite'),stage=$('.stage');
 const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0,0);host.appendChild(renderer.domElement);
 const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera(0,512,512,0,.1,20);camera.position.z=10;
@@ -39,7 +40,7 @@ const mouth=new THREE.Mesh(mouthGeometry,mouthMaterial);mouth.position.set(132,5
 let elapsed=0,last=0,nextBlink=3,blinkStart=-10,eatStart=0,wasEating=false;
 const target=new THREE.Vector2(),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 stage.addEventListener('pointermove',e=>{const r=host.getBoundingClientRect();target.set(THREE.MathUtils.clamp(((e.clientX-r.left)/r.width*512-145)/180,-1,1),THREE.MathUtils.clamp(((e.clientY-r.top)/r.height*512-245)/180,-1,1))});
-function resize(){renderer.setSize(host.clientWidth,host.clientHeight)}new ResizeObserver(resize).observe(host);resize();
+const renderSize=createRenderSize(renderer,host);
 renderer.setAnimationLoop(ms=>{const dt=Math.min(.035,(ms-last)/1000||.016);last=ms;if(document.hidden)return;elapsed+=dt;
  const s=window.guardianHome.state();
  const active=!s.poseOnly;host.classList.toggle('face-on',active);renderer.domElement.style.display=active?'block':'none';if(!active)return;
@@ -50,6 +51,7 @@ renderer.setAnimationLoop(ms=>{const dt=Math.min(.035,(ms-last)/1000||.016);last
  else opening=Math.max(opening,s.voiceLevel);
  const comfort=s.comfort?1:0;
  uniforms.gaze.value.lerp(target,1-Math.exp(-8*dt));uniforms.blink.value=Math.max(0,1-Math.abs((elapsed-blinkStart-.1)/.1));uniforms.comfort.value=comfort;uniforms.chew.value=eating?Math.sin((elapsed-eatStart)*13):0;uniforms.breath.value=reduced?0:Math.sin(elapsed*1.7)*.5;
- mouthMaterial.opacity=opening;mouth.scale.y=Math.max(.05,opening);mouth.position.x=132+uniforms.gaze.value.x*1.5+comfort*2;mouth.position.y=512-280-uniforms.gaze.value.y+comfort*3;renderer.render(scene,camera);
+ mouthMaterial.opacity=opening;mouth.scale.y=Math.max(.05,opening);mouth.position.x=132+uniforms.gaze.value.x*1.5+comfort*2;mouth.position.y=512-280-uniforms.gaze.value.y+comfort*3;renderSize.apply();renderer.render(scene,camera);
 });
+window.addEventListener('pagehide',()=>{renderer.setAnimationLoop(null);renderSize.dispose();renderer.dispose();});
 window.guardianFace={ready:true,state:()=>({mouth:mouthMaterial.opacity,active:host.classList.contains('face-on')})};

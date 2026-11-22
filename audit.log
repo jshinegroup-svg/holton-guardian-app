@@ -206,3 +206,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-22 actor=codex approval=user:24708 trigger=floating-side-tools — move existing eight controls into touch-through left/right overlay outside scene scroller; preserve gameplay and responsive landscape layout.
 
 2026-11-22 actor=codex approval=user:24713 trigger=ipad-sized-panorama — fixed 1024px world and max app width; viewport-filling panorama on phones including landscape; proportion-preserving background crop, height-aware pet/ball, frame-fixed HUD and side tools; regression and visual checks.
+
+2026-11-22 actor=codex approval=user:24716 trigger=movement-flicker — reproduced chase canvas resize clearing: pip506 dimension mutations/13 blank RO observations, stoneback556/45 in6.5s; defer backing resize to immediately before draw, bucket dimensions and preserve CSS sizing. Initial corrected chase both2 mutations/0 blank, gameplay maintained.
