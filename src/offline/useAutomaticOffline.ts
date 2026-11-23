@@ -13,7 +13,7 @@ export function useAutomaticOffline(storage:ScopedStorage){
    // A failed photo request must not prevent the public package downloading.
    const results=await Promise.allSettled([storage.prepareOffline?.(),prepareAssets(setStatus,force)]);
    if(results.some(result=>result.status==='rejected'))throw Error('offline_incomplete');
-   setStatus('已可離線使用・連網時自動更新');
+   setStatus('已可離線使用・音樂需先連網播放下載');
   }catch{setStatus('離線準備未完成・連網時會自動重試');}
   finally{running.current=false;setBusy(false);if(pending.current){pending.current=false;void prepare();}}
  },[storage]);

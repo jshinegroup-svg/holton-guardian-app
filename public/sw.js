@@ -35,10 +35,42 @@ self.addEventListener('message',event=>{
   }catch(e){port.postMessage({error:String(e.message||e)});}finally{preparing=false;}
  })());
 });
+// Music is downloaded only on request, independently of app/offline releases.
+const musicRequests=new Map();
+async function musicResponse(request,url){
+ const hash=self.__OFFLINE_MANIFEST?.musicHashes?.[url.pathname];
+ if(!hash)return fetch(request);
+ const cache=await caches.open('holton-music-v1');
+ const key=url.origin+url.pathname+'?content='+hash;
+ let saved=await cache.match(key);
+ if(!saved){
+  if(!musicRequests.has(key))musicRequests.set(key,(async()=>{
+   const response=await fetch(url.origin+url.pathname);
+   if(response.status!==200)throw Error('music_download_failed');
+   const bytes=await response.clone().arrayBuffer();
+   const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(v=>v.toString(16).padStart(2,'0')).join('');
+   if(digest!==hash)throw Error('music_version_mismatch');
+   // Storage pressure must not prevent online playback.
+   try{await cache.put(key,response.clone());}catch{}
+   return response;
+  })().finally(()=>musicRequests.delete(key)));
+  saved=(await musicRequests.get(key)).clone();
+ }
+ const range=request.headers.get('range');
+ if(!range)return saved;
+ const match=/^bytes=(\d*)-(\d*)$/.exec(range);
+ if(!match||(!match[1]&&!match[2]))return new Response(null,{status:416});
+ const bytes=await saved.arrayBuffer(),length=bytes.byteLength;
+ const start=match[1]?Number(match[1]):Math.max(0,length-Number(match[2]));
+ const end=match[1]&&match[2]?Math.min(Number(match[2]),length-1):length-1;
+ if(start>end||start>=length)return new Response(null,{status:416,headers:{'Content-Range':`bytes */${length}`}});
+ return new Response(bytes.slice(start,end+1),{status:206,headers:{'Content-Type':'audio/mpeg','Content-Range':`bytes ${start}-${end}/${length}`,'Content-Length':String(end-start+1),'Accept-Ranges':'bytes'}});
+}
 self.addEventListener('fetch',event=>{
  const request=event.request,url=new URL(request.url);
  if(request.method!=='GET'||url.origin!==self.location.origin)return;
  if(url.searchParams.has('code')||url.searchParams.has('auth')||url.pathname.startsWith('/api/'))return;
+ if(url.pathname.startsWith('/music/')){event.respondWith(musicResponse(request,url));return;}
  event.respondWith((async()=>{
   const meta=await caches.open('holton-offline-meta');const marker=await meta.match('/active');
   if(!marker)return fetch(request);
