@@ -44,3 +44,11 @@ export function confirmHomeworkTask(s:LightState,date:string,id:string,now=new D
  const next={...s,homework:{...h,drawReceipts:[...receipts],days:{...h.days,[date]:{...d,tasks:d.tasks.map(task=>task.id===id?{...task,confirmed:true,drawCounted:true}:task)}}}};
  return eligible?addDrawCredit(next,`homework:${receipt}`):next;
 }
+
+// Validate the exact reviewed snapshot before applying the whole batch in one save.
+export function confirmHomeworkTasks(s:LightState,date:string,expected:HomeworkTask[],now=new Date()):LightState {
+ const h=homework(s),day=h.days[date];
+ if(!expected.length||new Set(expected.map(t=>t.id)).size!==expected.length||h.timer||!day||day.claimedAt||date>dateKey(now))return s;
+ if(expected.some(t=>{const current=day.tasks.find(x=>x.id===t.id);return !current||current.confirmed||current.waived||JSON.stringify(current)!==JSON.stringify(t)}))return s;
+ return expected.reduce((next,t)=>confirmHomeworkTask(next,date,t.id,now),s);
+}

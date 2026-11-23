@@ -7,14 +7,14 @@ import PhotoImport from './PhotoImport';
 import HomeworkGuide,{HOMEWORK_GUIDE_KEY} from './HomeworkGuide';
 import {subjects,normalizeSubjectTasks} from './subjects';
 import SubjectIcon from './SubjectIcon';
-import React,{useCallback,useEffect,useState} from 'react';
+import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {View,ScrollView,StyleSheet,Pressable} from 'react-native';
 import {Text,TextInput} from '../i18n/ui';
 import {useLocale} from '../i18n/locale';
 import {ParentPinGate} from '../ParentPinGate';
 import {useFamilyStorage} from '../family/context';
 import type {LightState} from '../LightApp';
-import {homework,dateKey,allConfirmed,claimHomework,confirmHomeworkTask,updateDay} from './model';
+import {homework,dateKey,allConfirmed,claimHomework,confirmHomeworkTasks,type HomeworkTask,updateDay} from './model';
 import StarBoard from './StarBoard';
 import SavedHomeworkEditor from './SavedHomeworkEditor';
 
@@ -28,6 +28,8 @@ export default function HomeworkAdventure({editingRef,state,change,onClose,error
  const {locale}=useLocale(),en=locale==='en',tr=(zh:string,english:string)=>en?english:zh;
  const {storage,familyMode,childName,offlinePreparation}=useFamilyStorage();const h=homework(state);
  const [date,setDate]=useState(h.timer?.date??dateKey()),[page,setPage]=useState('map'),[selected,setSelected]=useState(h.timer?.task??''),[gate,setGate]=useState('');
+ const [reviewIds,setReviewIds]=useState<string[]>([]),[reviewBusy,setReviewBusy]=useState(false);
+ const reviewRequest=useRef<{date:string;tasks:HomeworkTask[]}|null>(null),reviewLock=useRef(false);
  const [draft,setDraft]=useState<string[]>([]),[details,setDetails]=useState<Record<string,string>>({}),[custom,setCustom]=useState(''),[notice,setNotice]=useState(''),[photo,setPhoto]=useState('');
  useEffect(()=>{if(editingRef)editingRef.current=['setup','import','review','edit','attach'].includes(page);return()=>{if(editingRef)editingRef.current=false}},[page,editingRef]);
  const [focusMinutes,setFocusMinutes]=useState<10|15>(10);
@@ -38,13 +40,26 @@ export default function HomeworkAdventure({editingRef,state,change,onClose,error
  const closeGuide=()=>{setGuideVisible(false);void storage.setItem(HOMEWORK_GUIDE_KEY,'seen').catch(()=>{})};
  const [today,setToday]=useState(()=>dateKey());const day=h.days[date],task=day?.tasks.find(t=>t.id===selected),timer=h.timer;
  useEffect(()=>{const refresh=()=>setToday(dateKey());const id=setInterval(refresh,60000);document.addEventListener('visibilitychange',refresh);return()=>{clearInterval(id);document.removeEventListener('visibilitychange',refresh)}},[]);
- useEffect(()=>{const hide=()=>{setGate('')};document.addEventListener('visibilitychange',hide);return()=>document.removeEventListener('visibilitychange',hide)},[]);
+ useEffect(()=>{const hide=()=>{if(document.hidden){reviewRequest.current=null;setGate('');setReviewIds([])}};document.addEventListener('visibilitychange',hide);return()=>document.removeEventListener('visibilitychange',hide)},[]);
  useEffect(()=>{if(photoBusy||page!=='setup'&&page!=='review'&&page!=='edit'&&page!=='attach')return;const id=setTimeout(()=>setPage('map'),120000);return()=>clearTimeout(id)},[page,photoBusy]);
  const pendingTasks=normalizeSubjectTasks([...draft.map(title=>({id:title,title,detail:details[title]??''})),...(custom.trim()?[{id:'custom-input',title:custom.trim(),detail:''}]:[])]);
  const pendingTitles=pendingTasks.map(t=>t.title);
  const history=historyGroups(h.days,today);
  const save=(fn:(s:LightState)=>LightState)=>{setNotice('');return change(fn)};
- const taskChange=(id:string)=>save(s=>confirmHomeworkTask(s,date,id));
+ const reviewable=(day?.tasks??[]).filter(t=>!t.confirmed&&!t.waived);
+ const chosen=reviewable.filter(t=>reviewIds.includes(t.id));
+ const requestReview=(tasks:HomeworkTask[])=>{if(reviewLock.current||!tasks.length||date>dateKey())return;reviewRequest.current={date,tasks:tasks.map(t=>({...t}))};setGate('confirm-review')};
+ const confirmReview=async()=>{
+  const request=reviewRequest.current;reviewRequest.current=null;setGate('');
+  if(!request||reviewLock.current)return;
+  reviewLock.current=true;setReviewBusy(true);let applied=false;
+  try{const ok=await save(s=>{const next=confirmHomeworkTasks(s,request.date,request.tasks);applied=next!==s;return next});
+   setReviewIds([]);
+   if(ok&&applied){setPage('map');setNotice(tr(`已確認 ${request.tasks.length} 項功課完成。`,`Confirmed ${request.tasks.length} tasks.`))}
+   else if(ok)setNotice(tr('功課內容或狀態已變更，請重新核對並勾選。','Homework changed. Review and select the tasks again.'));
+  }finally{reviewLock.current=false;setReviewBusy(false)}
+ };
+ useEffect(()=>{setReviewIds([]);reviewRequest.current=null;setGate('')},[date]);
  const dateAt=(offset:number)=>{const d=new Date(`${today}T12:00:00`);d.setDate(d.getDate()+offset);return dateKey(d)};
  const viewLabel=tr(`查看 ${date.slice(5).replace('-','/')} 聯絡簿`,`Notebook · ${date.slice(5)}`);
  const browseDate=useCallback((next:string)=>{if(timer||photoBusy)return;setDate(next);setSelected('');setPhoto('');setNotice('');setPage('map')},[timer,photoBusy]);
@@ -99,7 +114,7 @@ export default function HomeworkAdventure({editingRef,state,change,onClose,error
  <div className="hw-overflow-tasks">{day?.tasks.slice(7).map(t=><View key={t.id} style={{flexDirection:'row',alignItems:'center',gap:8}}><SubjectIcon title={t.title} confirmed={!!t.confirmed}/><View style={{flex:1}}>{button(`${t.confirmed?'✓ ':''}${t.title}${t.detail?' · '+t.detail:''}`,()=>{if(!timer){setSelected(t.id);setPage('detail')}})}</View></View>)}
  </div><View testID="homework-map-actions" style={styles.actionGrid}>
  <View style={styles.actionCell}>{button(photoBusy?tr('讀取中…','Loading…'):viewLabel,()=>void showPhoto(),true,photoBusy)}</View>
- <View style={styles.actionCell}>{button(tr('老師／家長確認','Grown-up review'),()=>setGate('review'),true)}</View>
+ <View style={styles.actionCell}>{button(tr('老師／家長確認','Grown-up review'),()=>{setReviewIds([]);setPage('review')},true)}</View>
  <View style={styles.actionCell}>{button(tr('安排功課','Prepare homework'),()=>{if(timer){setNotice(tr('請先結束計時。','End the timer first.'));return}setGate('setup')},true)}</View>
  <View style={styles.actionCell}>{button(tr('7天紀錄／未完成','7-day history / unfinished'),()=>setPage('history'),true)}</View></View></div></div>:null}
  {page==='map'&&familyMode&&offlinePreparation?<View testID="offline-prepare"><Text accessibilityLiveRegion="polite" style={styles.text}>{en?(offlinePreparation.busy?'Preparing offline data automatically…':offlinePreparation.status.startsWith('已可')?'Ready offline · updates automatically online':'Offline setup incomplete · will retry online'):offlinePreparation.status}</Text>{!offlinePreparation.busy&&!offlinePreparation.status.startsWith('已可')?button(tr('重試離線準備','Retry offline preparation'),offlinePreparation.retry,true):null}<Text style={styles.text}>{offlinePreparation.status.startsWith('已可')?tr('不用按下載；新功課與照片會自動保存到這台裝置。','No download button needed. New homework and photos are saved on this device automatically.'):tr('正在自動處理，不用按下載。首次約151 MB，建議 Wi-Fi；準備完成前請保持頁面開啟。','Preparation is automatic. About 151 MB initially; use Wi-Fi and keep this page open until ready.')}</Text></View>:null}
@@ -124,8 +139,15 @@ export default function HomeworkAdventure({editingRef,state,change,onClose,error
  }}/> :null}
  {page==='edit'&&day?<SavedHomeworkEditor state={state} date={date} change={change} button={button} onClose={()=>setPage('setup')} onSaved={d=>{setDate(d);setPage('map')}}/>:null}
  {page==='setup'?<>{day?.tasks.length?button(tr('編輯已保存功課／修改日期','Edit saved homework / date'),()=>setPage('edit'),true):null}{button(tr('拍照／上傳，自動填入','Photo / upload — auto-fill'),()=>setPage('import'),false,!!day?.claimedAt)}<Text style={styles.text}>{tr('左邊勾科目，右邊填細節（選填）；輸入細節會自動勾選。','Select subjects on the left; optional details on the right. Entering details selects the task.')}</Text>{[...new Set([...subjects,...draft])].map(name=><View key={name} testID="homework-subject-row" style={[styles.subjectRow,draft.includes(name)&&styles.subjectRowSelected]}><Pressable accessibilityRole="checkbox" accessibilityLabel={name} aria-checked={draft.includes(name)} onPress={()=>setDraft(v=>v.includes(name)?v.filter(x=>x!==name):[...v,name])} style={styles.subjectChoice}><Text style={styles.subjectCheck}>{draft.includes(name)?'✓':'□'}</Text><SubjectIcon title={name} size={36}/><Text numberOfLines={2} style={styles.subjectName}>{name}</Text></Pressable><TextInput accessibilityLabel={`${name} ${tr('細節','details')}`} placeholder={tr('頁數／課次／次數（選填）','Pages / lesson (optional)')} placeholderTextColor="#9fbbc7" value={details[name]??''} onChangeText={v=>{setDetails(d=>({...d,[name]:v}));if(v.trim())setDraft(d=>d.includes(name)?d:[...d,name])}} style={styles.subjectDetail}/></View>)}<TextInput accessibilityLabel={tr('自訂功課','Custom task')} placeholder={tr('自訂功課','Custom task')} value={custom} onChangeText={setCustom} style={styles.input}/>{button(tr('加入自訂功課','Add custom task'),()=>{if(custom.trim().length>40){setNotice(tr('自訂功課名稱最多40字。','Custom task names can contain up to 40 characters.'));return}if(custom.trim()){setDraft(pendingTitles);setDetails(Object.fromEntries(pendingTasks.map(t=>[t.title,t.detail])));setCustom('');setNotice(tr('已加入清單，請按「保存功課」更新星陣。','Added to the list. Save homework to update the star array.'))}},true)}{button(tr('補上／更換聯絡簿照片','Attach / replace notebook photo'),()=>{setAttachment(null);setPage('attach')},true,photoBusy)}<Text testID="homework-draft-count" style={styles.text}>{tr(`將保存 ${pendingTitles.length} 項功課（含輸入中的自訂功課）`,`Saving ${pendingTitles.length} tasks (including the custom task entered above)`)} </Text>{button(tr('保存功課','Save homework'),()=>void (async()=>{if(custom.trim().length>40){setNotice(tr('自訂功課名稱最多40字。','Custom task names can contain up to 40 characters.'));return}if(!pendingTitles.length||pendingTitles.length>20)return;const ok=await save(s=>updateDay(s,date,d=>({...d,tasks:pendingTasks.map(({title,detail})=>{const old=normalizeSubjectTasks(d.tasks).find(t=>t.title===title);return old?{...old,detail}:{id:crypto.randomUUID(),title,detail}})})));if(ok){setCustom('');setPage('map');setNotice(tr(`已保存 ${pendingTitles.length} 項功課。`,`Saved ${pendingTitles.length} tasks.`))}})(),false,photoBusy||!pendingTitles.length||!!day?.claimedAt||pendingTitles.length>20)}<Text style={styles.text}>{tr('最多20項；已領獎日期不可修改，已存在的科目保留完成狀態。','Up to 20 tasks. Claimed days are locked; existing task status is preserved.')}</Text>{button(tr('取消','Cancel'),()=>setPage('map'),true)}</>:null}
- {page==='review'?<><Text style={styles.title}>{tr('大人確認','Grown-up review')}</Text>{day?.tasks.map(t=><View key={t.id} style={styles.panel}><Text style={styles.text}>{t.title} · {t.detail}</Text><Text style={styles.text}>{t.reported?tr('孩子已回報','Child reported finished'):tr('尚未回報','Not reported yet')}</Text>{button(t.confirmed?tr('✓ 已確認','✓ Confirmed'):tr('確認完成','Confirm complete'),()=>void (async()=>{if(await taskChange(t.id)){setPage('map');setNotice(`${t.title} ✓`)}})(),false,!!t.confirmed||date>dateKey())}</View>)}{button(tr('離開確認','Leave review'),()=>setPage('map'),true)}</>:null}
+ {page==='review'?<View testID="homework-batch-review" style={{gap:10}}><Text style={styles.title}>{tr('大人確認','Grown-up review')}</Text><Text style={styles.text}>{childName||''} · {date}</Text><Text style={styles.text}>{tr('勾選已檢查的功課，再一次輸入密碼確認。也可只確認單項；完成後立即鎖定。','Select the work you have checked, then enter the PIN once. You can also confirm one task. Authorization ends immediately afterward.')}</Text>
+ {button(tr('全選待確認','Select all pending'),()=>setReviewIds(reviewable.map(t=>t.id)),true,reviewBusy||!reviewable.length||date>dateKey())}
+ {button(tr('清除勾選','Clear selection'),()=>setReviewIds([]),true,reviewBusy||!chosen.length)}
+ {day?.tasks.map(t=><View key={t.id} style={styles.panel}><Pressable accessibilityRole="checkbox" accessibilityLabel={tr(`勾選 ${t.title}`,`Select ${t.title}`)} accessibilityState={{checked:chosen.some(x=>x.id===t.id),disabled:!!t.confirmed||!!t.waived||reviewBusy||date>dateKey()}} disabled={!!t.confirmed||!!t.waived||reviewBusy||date>dateKey()} onPress={()=>setReviewIds(ids=>ids.includes(t.id)?ids.filter(id=>id!==t.id):[...ids,t.id])} style={{minHeight:52,flexDirection:'row',alignItems:'center',gap:10}}><Text style={styles.title}>{t.confirmed?'✓':chosen.some(x=>x.id===t.id)?'☑':'□'}</Text><View style={{flex:1}}><Text style={styles.text}>{t.title} · {t.detail}</Text><Text style={styles.text}>{t.confirmed?tr('已確認','Confirmed'):t.reported?tr('孩子已回報 · 待確認','Reported · awaiting review'):tr('尚未回報，請先核對','Not reported — check the work first')}</Text></View></Pressable>
+ {button(t.confirmed?tr('✓ 已確認','✓ Confirmed'):tr('確認這一項','Confirm this task'),()=>requestReview([t]),true,!!t.confirmed||!!t.waived||reviewBusy||date>dateKey())}</View>)}
+ {!reviewable.length?<Text style={styles.text}>{tr('目前沒有待確認功課。','No tasks awaiting review.')}</Text>:null}
+ {button(tr(`確認這 ${chosen.length} 項完成`,`Confirm ${chosen.length} selected tasks`),()=>requestReview(chosen),false,!chosen.length||reviewBusy||date>dateKey())}
+ {button(tr('離開確認','Leave review'),()=>{setReviewIds([]);setPage('map')},true,reviewBusy)}</View>:null}
  {page==='treasure'?<><img src={`/homework/${day?.claimedAt?'chest-open':'chest'}.png`} alt="Treasure" style={{width:'100%'}}/><Text style={styles.title}>{day?.claimedAt?tr('已領10點','Collected: 10 points'):tr('今日寶藏：10點','Today’s treasure: 10 points')}</Text>{button(tr('開寶箱','Open treasure'),()=>void save(s=>claimHomework(s,date)),false,!allConfirmed(day)||date>dateKey())}{button(tr('回到星陣','Back to star array'),()=>setPage('map'),true)}</>:null}
- </View><HomeworkGuide visible={guideVisible} onClose={closeGuide} button={button}/><ParentPinGate visible={!!gate} onCancel={()=>setGate('')} onConfirm={()=>{const next=gate;setGate('');setCustom('');const editable=normalizeSubjectTasks(day?.tasks??[]);setDraft(editable.map(t=>t.title));setDetails(Object.fromEntries(editable.map(t=>[t.title,t.detail])));setPage(next)}}/></div></ScrollView>
+ </View><HomeworkGuide visible={guideVisible} onClose={closeGuide} button={button}/><ParentPinGate visible={!!gate} onCancel={()=>{reviewRequest.current=null;setGate('')}} onConfirm={()=>{if(gate==='confirm-review'){void confirmReview();return}if(!gate)return;const next=gate;setGate('');setCustom('');const editable=normalizeSubjectTasks(day?.tasks??[]);setDraft(editable.map(t=>t.title));setDetails(Object.fromEntries(editable.map(t=>[t.title,t.detail])));setPage(next)}}/></div></ScrollView>
 }
 const styles=StyleSheet.create({taskItem:{flexDirection:"row",alignItems:"center",gap:10,padding:12,borderRadius:16,backgroundColor:"#103448",borderWidth:1,borderColor:"#52646b",minHeight:64},subjectRow:{flexDirection:'row',alignItems:'center',minHeight:52,borderWidth:1,borderColor:'#a18c59',borderRadius:16,backgroundColor:'#12384a',overflow:'hidden'},subjectRowSelected:{borderColor:'#e4c779',backgroundColor:'#194657'},subjectChoice:{width:'39%',minWidth:148,minHeight:52,flexDirection:'row',alignItems:'center',paddingHorizontal:6,gap:4},subjectCheck:{color:'#ffe6a6',fontSize:16},subjectName:{flex:1,color:'#e1f1f5',fontSize:13,lineHeight:18,fontWeight:'700'},subjectDetail:{flex:1,minWidth:0,minHeight:50,borderLeftWidth:1,borderLeftColor:'#82734e',paddingHorizontal:9,color:'#fff',fontSize:16,backgroundColor:'#091f2c'},timerDisplay:{backgroundColor:'#04121e',borderWidth:1,borderColor:'#d8bc76',borderRadius:18,paddingVertical:16,alignItems:'center',justifyContent:'center'},timerLabel:{fontSize:18,lineHeight:26,color:'#ffe6a6',fontWeight:'700'},timerDigits:{fontSize:64,lineHeight:80,fontWeight:'800',color:'#ffffff',fontVariant:['tabular-nums'],textAlign:'center'},actionGrid:{flexDirection:'row',flexWrap:'wrap',gap:8},actionCell:{width:'48%',flexGrow:1,minWidth:0},root:{flex:1,backgroundColor:'#071e2d'},page:{alignItems:'center',padding:10,paddingBottom:28},card:{width:'100%',maxWidth:380,gap:8},panel:{padding:16,borderRadius:22,backgroundColor:'#103448',gap:8},title:{fontSize:24,color:'#fff0c1',fontWeight:'700'},text:{fontSize:16,lineHeight:24,color:'#d5e5ea'},error:{color:'#ffbda5',fontSize:16},input:{borderWidth:1,borderColor:'#a18c59',borderRadius:12,padding:12,color:'#fff',fontSize:18}});

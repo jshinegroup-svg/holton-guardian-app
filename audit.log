@@ -217,3 +217,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-23 actor=codex approval=user-24733 trigger=home-play-verification: document trial behavior/recovery limitations and assert unconfirmed reports grant no play time.
 
 2026-11-23 actor:codex approval:user-24736 trigger:music-investigation — added synthetic-family real-media regression and investigation status; no production changes.
+
+2026-11-23 actor:codex approval:user-24741 trigger:batch-review — add snapshot-bound batch/single PIN confirmation and guide; local checks passed; Render bandwidth suspension blocks release.
