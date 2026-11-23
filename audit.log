@@ -221,3 +221,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-23 actor:codex approval:user-24741 trigger:batch-review — add snapshot-bound batch/single PIN confirmation and guide; local checks passed; Render bandwidth suspension blocks release.
 
 2026-11-23 actor:codex approval:user-24761 trigger:vercel-migration — added deployment config, on-demand music cache, offline status and migration test/report.
+
+2026-11-23 actor:codex approval:user-24761 trigger:migration-handoff — recorded Vercel existing-account login blocker and regression outcomes.

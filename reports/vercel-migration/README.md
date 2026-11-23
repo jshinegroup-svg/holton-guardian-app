@@ -9,3 +9,9 @@ Authorized by Jerry (Telegram 24761). Existing Supabase and family data remain u
 - Typecheck/export and migration browser checks passed (no music in PREPARE, one network download, repeated and offline range reads).
 - Pending: authenticated Vercel deployment and hosted checks, login/account/child-data continuity on the new origin. Local-only unsynced data cannot automatically cross origins. Do not claim migration complete.
 - Includes previously committed homework batch confirmation 9d3f3d6.
+
+## Handoff
+- Saved/pushed on isolated branch `feat/vercel-migration`; Render deploy branch untouched.
+- Vercel GitHub sign-in reports an existing account for the same email and requires original email login then linking GitHub. No account created or paid plan enabled. User must complete original-account login directly at https://vercel.com/login (never share codes/passwords in chat).
+- Batch reward model regression passed.
+- Legacy standalone guardian offline-check timed out waiting for guardianFace.ready before exercising offline mode; not counted as a pass. Hosted/embedded guardian regression remains pending.
