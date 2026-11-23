@@ -215,3 +215,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 
 2026-11-23 actor=codex approval=user-24733 trigger=guardian-home-hybrid-time: add per-child daily 2-minute homework credits, +10-minute completion bonus, 15-minute cap, persisted pause/resume and task reentry gate; friendly expiry; prominent PIN cancellation; guides and scoped model/UI checks.
 2026-11-23 actor=codex approval=user-24733 trigger=home-play-verification: document trial behavior/recovery limitations and assert unconfirmed reports grant no play time.
+
+2026-11-23 actor:codex approval:user-24736 trigger:music-investigation — added synthetic-family real-media regression and investigation status; no production changes.
