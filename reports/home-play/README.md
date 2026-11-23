@@ -1,0 +1,9 @@
+# Guardian home hybrid play trial — 2026-11-23
+
+Authorized by user 24733. Fixed initial rules: today's confirmed, non-waived Homework Adventure task IDs grant 120s each; all confirmed (nonempty) grants one 600s bonus. Earned/used budget capped at 900s/day, local date, no rollover. Today's already-confirmed tasks count on first use. Reports without confirmation do not grant time. No orb/history rewards changed.
+
+Before all complete, a session is max120s and consumes the current completion-count gate. Further entry after exhaustion requires a newly confirmed task; an interrupted session retains its own remaining allowance. After all complete, max600s per session, bounded by available daily balance. Start requires successful revisioned child save. Deadlines survive reload; exit/visibility/pagehide settle elapsed time. Abrupt process termination may prevent pause delivery: recovery conservatively charges elapsed deadline time, never resets a fresh session. This is app-level control, not tamper-resistant OS screen-time management; offline concurrent devices are subject to existing sync conflicts.
+
+Zero: iframe unmount stops toys/audio/mic; friendly farewell, return button and5s auto return.30s warning. Parent PIN gates retain authentication but add always-enabled top return and Escape cancellation; in-flight verification cannot reopen parent mode after cancel. Initial PIN setup still requires an adult before first device setup, as before.
+
+Checks: npm run typecheck; npm run export:web; node reports/home-play/model-check.cjs; node reports/home-play/ui-check.mjs. UI uses synthetic family API, verifies portrait390x844/landscape844x390 entry, pause/resume/background, expiry, auto return, reentry denial, sibling/orb isolation, PIN escape. TEST_BASE_URL selects hosted app. Physical iPhone keyboard/gesture feel is not certified by emulation.

@@ -2,6 +2,7 @@ const ts=require('typescript'),fs=require('fs'),vm=require('vm'),assert=require(
 const code=ts.transpileModule(fs.readFileSync('src/lib/homePlay.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
 const exports_={};vm.runInNewContext(code,{exports:exports_,require:()=>({dateKey:d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}),Date,Math});
 const {startPlay,settlePlay,playAccount,playBalance}=exports_;const now=new Date(2026,10,23,12).getTime(),day='2026-11-23';
+assert.equal(playBalance(playAccount({homework:{days:{[day]:{tasks:[{id:'report',reported:true}]}}}},now)),0);
 let s={homework:{days:{[day]:{tasks:[{id:'a',confirmed:true},{id:'b'},{id:'c'}]}}}};
 const original=JSON.stringify(s);s=startPlay(s,now);assert.equal(s.homePlay.session.remainingMs,120000);assert.equal(s.homePlay.receipts.length,1);
 s=settlePlay(s,now+30000);assert.equal(s.homePlay.usedMs,30000);assert.equal(s.homePlay.session.remainingMs,90000);
