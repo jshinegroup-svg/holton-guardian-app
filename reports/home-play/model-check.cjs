@@ -1,0 +1,16 @@
+const ts=require('typescript'),fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const code=ts.transpileModule(fs.readFileSync('src/lib/homePlay.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
+const exports_={};vm.runInNewContext(code,{exports:exports_,require:()=>({dateKey:d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}),Date,Math});
+const {startPlay,settlePlay,playAccount,playBalance}=exports_;const now=new Date(2026,10,23,12).getTime(),day='2026-11-23';
+let s={homework:{days:{[day]:{tasks:[{id:'a',confirmed:true},{id:'b'},{id:'c'}]}}}};
+const original=JSON.stringify(s);s=startPlay(s,now);assert.equal(s.homePlay.session.remainingMs,120000);assert.equal(s.homePlay.receipts.length,1);
+s=settlePlay(s,now+30000);assert.equal(s.homePlay.usedMs,30000);assert.equal(s.homePlay.session.remainingMs,90000);
+const previous=s,snapshot=JSON.stringify(s);s=startPlay(s,now+60000);assert.equal(JSON.stringify(previous),snapshot);assert.equal(s.homePlay.session.deadline,now+150000);
+s=settlePlay(s,now+150000);assert.equal(s.homePlay.usedMs,120000);assert(!startPlay(s,now+160000).homePlay.session);
+s.homework.days[day].tasks[1].confirmed=true;s=startPlay(s,now+170000);assert.equal(s.homePlay.session.remainingMs,120000);
+s=settlePlay(s,now+290000);assert.equal(s.homePlay.usedMs,240000);
+s.homework.days[day].tasks[2].confirmed=true;s=startPlay(s,now+300000);assert.equal(s.homePlay.session.remainingMs,600000);assert.equal(playBalance(s.homePlay),660000);
+s=settlePlay(s,now+900000);s=startPlay(s,now+901000);assert.equal(s.homePlay.session.remainingMs,60000);s=settlePlay(s,now+961000);assert.equal(s.homePlay.usedMs,900000);assert(!startPlay(s,now+962000).homePlay.session);
+s.homework.days[day].tasks[0].confirmed=false;s.homework.days[day].tasks[0].confirmed=true;assert.equal(playAccount(s,now).receipts.length,3);assert.equal(playBalance(playAccount(s,now)),0);
+assert.equal(playBalance(playAccount(s,now+86400000)),0);assert.equal(playAccount(s,now+86400000).usedMs,0);
+assert(original.includes('confirmed'));console.log('PASS 2-minute sessions, pause/resume, task gate, dedup, +10 bonus, 15-minute cap, rollover');
