@@ -15,3 +15,8 @@ Authorized by Jerry (Telegram 24761). Existing Supabase and family data remain u
 - Vercel GitHub sign-in reports an existing account for the same email and requires original email login then linking GitHub. No account created or paid plan enabled. User must complete original-account login directly at https://vercel.com/login (never share codes/passwords in chat).
 - Batch reward model regression passed.
 - Legacy standalone guardian offline-check timed out waiting for guardianFace.ready before exercising offline mode; not counted as a pass. Hosted/embedded guardian regression remains pending.
+
+## 2026-11-24 deployment continuation
+- Authenticated Vercel Jerry H Hobby account via host-owned cookie sync (no credentials extracted).
+- Previous standalone offline timeout was caused by intentional top-level playhouse redirect. Updated test to embed iframe like production; offline playhouse passed.
+- Batch UI regression passed 320x740 and 844x390.

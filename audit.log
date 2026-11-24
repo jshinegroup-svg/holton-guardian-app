@@ -223,3 +223,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-23 actor:codex approval:user-24761 trigger:vercel-migration — added deployment config, on-demand music cache, offline status and migration test/report.
 
 2026-11-23 actor:codex approval:user-24761 trigger:migration-handoff — recorded Vercel existing-account login blocker and regression outcomes.
+
+2026-11-24 actor:codex approval:user-24777 trigger:deploy — corrected offline fixture to embed playhouse like production; offline and batch UI tests pass.
