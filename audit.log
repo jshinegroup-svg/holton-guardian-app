@@ -225,3 +225,5 @@ actor=bot approval=explicit-user-request trigger=first-season-brand; changed dis
 2026-11-23 actor:codex approval:user-24761 trigger:migration-handoff — recorded Vercel existing-account login blocker and regression outcomes.
 
 2026-11-24 actor:codex approval:user-24777 trigger:deploy — corrected offline fixture to embed playhouse like production; offline and batch UI tests pass.
+
+2026-11-24 actor:codex approval:user-24777 trigger:deploy-complete — claimed prebuilt Vercel production deployment in Hobby, added permanent holton-family-v2.vercel.app, updated Supabase auth redirect configuration preserving Render allowlist; added hosted artifact/music test and result report; no database writes or paid plan.
