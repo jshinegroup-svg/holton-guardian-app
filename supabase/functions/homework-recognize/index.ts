@@ -1,13 +1,19 @@
 import {createClient} from 'npm:@supabase/supabase-js@2';
-const origin='https://holton-family-v2.onrender.com';
-const headers={'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info','Access-Control-Allow-Methods':'POST, OPTIONS','Content-Type':'application/json','Cache-Control':'no-store'};
-const respond=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers});
+const allowedOrigins=new Set([
+ 'https://holton-family-v2.vercel.app',
+ 'https://holton-family-v2.onrender.com',
+]);
+const baseHeaders={'Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info','Access-Control-Allow-Methods':'POST, OPTIONS','Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin'};
 const str={type:'string'};
 const schema={type:'object',additionalProperties:false,required:['dateText','tasks','excluded','warnings'],properties:{dateText:str,tasks:{type:'array',items:{type:'object',additionalProperties:false,required:['title','detail','uncertainty'],properties:{title:str,detail:str,uncertainty:str}}},excluded:{type:'array',items:{type:'object',additionalProperties:false,required:['text','reason'],properties:{text:str,reason:str}}},warnings:{type:'array',items:str}}};
 Deno.serve(async req=>{
+ const origin=req.headers.get('origin');
+ const headers:Record<string,string>={...baseHeaders};
+ if(origin&&allowedOrigins.has(origin))headers['Access-Control-Allow-Origin']=origin;
+ const respond=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers});
+ if(origin&&!allowedOrigins.has(origin))return respond({error:'origin'},403);
  if(req.method==='OPTIONS')return new Response(null,{headers});
  if(req.method!=='POST')return respond({error:'method'},405);
- if(req.headers.get('origin')&&req.headers.get('origin')!==origin)return respond({error:'origin'},403);
  const url=Deno.env.get('SUPABASE_URL')!,service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
  const db=createClient(url,service,{auth:{persistSession:false}});
  const token=req.headers.get('authorization')?.replace(/^Bearer /i,'');
