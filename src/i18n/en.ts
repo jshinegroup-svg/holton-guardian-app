@@ -1,5 +1,12 @@
 /** Interface copy only; names, custom tasks, saved records and card artwork stay intact. */
 export const english:Record<string,string> = {
+'阿爾法・安靜專注':'Alpha · Quiet Focus',
+'Alpha 專注音樂・20 分鐘循環版':'Alpha Focus · 20-minute loop',
+'立體聲・20 分鐘':'Stereo · 20 minutes',
+'四大組音樂，共 41 首。專注音樂第一首為 20 分鐘 Alpha 循環版，安靜也很好。':'Four music groups, 41 tracks. Focus starts with the 20-minute Alpha loop; silence is welcome too.',
+'先選一個音樂分類：專注、放鬆、鋼琴組或平靜環境音樂。專注音樂第一首是 20 分鐘 Alpha 循環版，安靜做任務也很好。':'Choose Focus, Relaxation, Piano or Calm ambient music. Focus starts with the 20-minute Alpha loop; silence is welcome too.',
+'Alpha 音樂來源：Healing & Meditation，本站剪輯為 20 分鐘循環版。其餘 40 首錄音：Kevin MacLeod（incompetech.com）。Licensed under Creative Commons: By Attribution 4.0 License。本站調整音量、淡入淡出及檔案格式；中文名稱為介面別名。':'Alpha recording: Healing & Meditation, edited into a 20-minute loop. The other 40 recordings: Kevin MacLeod (incompetech.com), licensed under CC BY 4.0. Volume, fades and formats adjusted; Chinese names are interface aliases.',
+
 '先選一個音樂分類：專注、放鬆、鋼琴組或平靜環境音樂。每組 10 首，安靜做任務也很好。':'Choose Focus, Relaxation, Piano or Calm ambient music. Each has 10 tracks; silence is welcome too.',
 '鋼琴組':'Piano', '平靜環境音樂':'Calm ambient music',
 '四大組音樂，每組 10 首，共 40 首。分類是曲風參考，安靜也很好。':'Four groups of 10 tracks, 40 in total. Categories describe musical styles; silence is welcome too.',

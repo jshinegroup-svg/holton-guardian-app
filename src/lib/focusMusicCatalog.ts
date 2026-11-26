@@ -1,4 +1,5 @@
 export const focusMusicTracks = [
+ {id:'alpha20',name:'阿爾法・安靜專注',title:'Alpha 專注音樂・20 分鐘循環版',isrc:'',category:'focus',kind:'立體聲・20 分鐘'},
  {id:'meditation',name:'靜心鋼琴',title:'Meditation Impromptu 01',isrc:'USUAN1100163',category:'focus',kind:'輕柔鋼琴'},
  {id:'morning',name:'晨光輕語',title:'Morning',isrc:'USUAN2300003',category:'focus',kind:'吉他・豎琴・長笛'},
  {id:'evening',name:'晚風陪伴',title:'Evening',isrc:'USUAN2300002',category:'focus',kind:'吉他・大提琴・雙簧管'},
@@ -41,10 +42,13 @@ export const focusMusicTracks = [
  {"id": "cherry", "name": "Cherry Blossom", "title": "Cherry Blossom", "isrc": "USUAN1100382", "category": "ambient", "kind": "平靜環境音樂"},
 ] as const;
 export type FocusMusicId=typeof focusMusicTracks[number]['id'];
-export const DEFAULT_FOCUS_MUSIC:FocusMusicId='meditation';
+export const DEFAULT_FOCUS_MUSIC:FocusMusicId='alpha20';
 export const validFocusMusicId=(id:unknown):id is FocusMusicId=>focusMusicTracks.some(t=>t.id===id);
 export const focusMusicUrl=(id:FocusMusicId)=>`${process.env.EXPO_PUBLIC_BASE_URL||''}/music/${id}.mp3`;
 
 export const focusMusicCategories = [{id:"focus",name:"專注音樂"},{id:"relax",name:"放鬆音樂"},{id:"piano",name:"鋼琴組"},{id:"ambient",name:"平靜環境音樂"}] as const;
 export type FocusMusicCategory = typeof focusMusicCategories[number]["id"];
 export const focusMusicCategoryName = (id: string) => focusMusicCategories.find(c=>c.id===id)?.name || "";
+
+// Apply the new default to older preferences without writing over cloud progress.
+export const selectedFocusMusic=(state?:{focusMusicTrackId?:unknown;focusMusicSelectionVersion?:number}|null):FocusMusicId=>state?.focusMusicSelectionVersion===1&&validFocusMusicId(state.focusMusicTrackId)?state.focusMusicTrackId:DEFAULT_FOCUS_MUSIC;
